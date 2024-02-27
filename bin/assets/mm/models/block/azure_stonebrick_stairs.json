@@ -1,8 +1,0 @@
-{
-    "parent": "block/stairs",
-    "textures": {
-        "bottom": "mm:blocks/azure_stonebrick",
-        "top": "mm:blocks/azure_stonebrick",
-        "side": "mm:blocks/azure_stonebrick"
-    }
-}

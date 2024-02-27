@@ -1,8 +1,0 @@
-{
-    "variants": {
-        "axis=y":  { "model": "mm:azure_log" },
-        "axis=z":   { "model": "mm:azure_log", "x": 90 },
-        "axis=x":   { "model": "mm:azure_log", "x": 90, "y": 90 },
-        "axis=none": { "model": "mm:azure_bark" }
-    }
-}

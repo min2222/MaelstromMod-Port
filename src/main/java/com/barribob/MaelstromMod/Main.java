@@ -1,30 +1,39 @@
 package com.barribob.MaelstromMod;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import com.barribob.MaelstromMod.commands.CommandDimensionTeleport;
 import com.barribob.MaelstromMod.commands.CommandInvasion;
 import com.barribob.MaelstromMod.commands.CommandReloadConfigs;
 import com.barribob.MaelstromMod.commands.CommandRunUnitTests;
 import com.barribob.MaelstromMod.config.JsonConfigManager;
-import com.barribob.MaelstromMod.init.*;
+import com.barribob.MaelstromMod.init.ModBBAnimations;
+import com.barribob.MaelstromMod.init.ModDimensions;
+import com.barribob.MaelstromMod.init.ModEntities;
+import com.barribob.MaelstromMod.init.ModProfessions;
+import com.barribob.MaelstromMod.init.ModRecipes;
+import com.barribob.MaelstromMod.init.ModStructures;
 import com.barribob.MaelstromMod.loot.functions.ModEnchantWithLevels;
+import com.barribob.MaelstromMod.proxy.ClientProxy;
 import com.barribob.MaelstromMod.proxy.CommonProxy;
 import com.barribob.MaelstromMod.util.Reference;
 import com.barribob.MaelstromMod.util.handlers.SoundsHandler;
 import com.barribob.MaelstromMod.world.gen.WorldGenCustomStructures;
 import com.barribob.MaelstromMod.world.gen.WorldGenOre;
-import com.typesafe.config.Config;
+import com.electronwill.nightconfig.core.Config;
+
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.storage.loot.functions.LootFunctionManager;
+import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
-import net.minecraftforge.fml.common.Mod.Instance;
-import net.minecraftforge.fml.common.SidedProxy;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
-import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
 import net.minecraftforge.fml.common.registry.GameRegistry;
-import org.apache.logging.log4j.Logger;
+import net.minecraftforge.network.NetworkRegistry;
+import net.minecraftforge.network.simple.SimpleChannel;
 
 /**
  * Main mod class Many of the base boilerplate here is thanks to loremaster's
@@ -36,14 +45,16 @@ import org.apache.logging.log4j.Logger;
  * <p>
  * Also other tools that I used: World Edit from Single Player Commands, as well as MCEdit
  */
-@Mod(modid = Reference.MOD_ID, name = Reference.NAME, version = Reference.VERSION, updateJSON = "https://raw.githubusercontent.com/miyo6032/MaelstromMod/LibraryIntegration/update.json")
+@Mod(Reference.MOD_ID)
 public class Main {
-    @Instance
-    public static Main instance;
-
-    @SidedProxy(clientSide = Reference.CLIENT_PROXY_CLASS, serverSide = Reference.COMMON_PROXY_CLASS)
-    public static CommonProxy proxy;
-    public static SimpleNetworkWrapper network;
+    public static final CommonProxy PROXY = DistExecutor.safeRunForDist(() -> ClientProxy::new, () -> CommonProxy::new);
+    private static final String PROTOCOL_VERSION = "1";
+	public static final SimpleChannel NETWORK = NetworkRegistry.newSimpleChannel(
+			new ResourceLocation(Reference.MOD_ID, Reference.NETWORK_CHANNEL_NAME),
+			() -> PROTOCOL_VERSION,
+			PROTOCOL_VERSION::equals,
+			PROTOCOL_VERSION::equals
+	);
 
     public static final JsonConfigManager CONFIG_MANAGER = new JsonConfigManager();
     public static Config itemsConfig;
@@ -53,7 +64,7 @@ public class Main {
     public static Config manaConfig;
     public static Config maelstromFriendsConfig;
 
-    public static Logger log;
+    public static final Logger LOG = LogManager.getLogger();
 
     public static final String CONFIG_DIRECTORY_NAME = "Maelstrom Mod";
 
@@ -84,11 +95,6 @@ public class Main {
         SoundsHandler.registerSounds();
         ModStructures.registerStructures();
         ModProfessions.associateCareersAndTrades();
-    }
-
-    @EventHandler
-    public static void PostInit(FMLPostInitializationEvent event) {
-
     }
 
     @EventHandler

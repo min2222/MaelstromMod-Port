@@ -1,7 +1,0 @@
-{
-    "parent": "block/cube_column",
-    "textures": {
-        "end": "mm:blocks/swamp_log",
-        "side": "mm:blocks/swamp_bark"
-    }
-}
