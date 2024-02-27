@@ -1,10 +1,10 @@
 package com.barribob.MaelstromMod.world.gen.maelstrom_fortress;
 
 import com.google.common.collect.Lists;
+import net.minecraft.core.BlockPos;
 import net.minecraft.util.Rotation;
 import net.minecraft.util.Tuple;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.gen.structure.StructureComponent;
 import net.minecraft.world.gen.structure.template.TemplateManager;
 
@@ -24,7 +24,7 @@ public class MaelstromFortress {
     /**
      * Begin the fortress generation with the main boss tower
      */
-    public static void startFortress(World world, TemplateManager manager, BlockPos pos, Rotation rotation, List<StructureComponent> components, Random rand) {
+    public static void startFortress(Level world, TemplateManager manager, BlockPos pos, Rotation rotation, List<StructureComponent> components, Random rand) {
         FortressTemplate template = new FortressTemplate(manager, "boss_tower", 0, pos, rotation, false);
         components.add(template);
 

@@ -8,10 +8,10 @@ import com.barribob.MaelstromMod.init.ModEntities;
 import com.barribob.MaelstromMod.util.Element;
 import com.barribob.MaelstromMod.util.handlers.LevelHandler;
 import com.barribob.MaelstromMod.util.handlers.LootTableHandler;
-import net.minecraft.tileentity.TileEntity;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.tileentity.TileEntityChest;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
 
 import java.util.Arrays;
 import java.util.Random;
@@ -22,10 +22,10 @@ public class WorldGenMaelstromCave extends WorldGenCliffLedge {
     }
 
     @Override
-    protected void handleDataMarker(String function, BlockPos pos, World worldIn, Random rand) {
+    protected void handleDataMarker(String function, BlockPos pos, Level worldIn, Random rand) {
         if (function.startsWith("enemy")) {
             worldIn.setBlockState(pos, ModBlocks.DISAPPEARING_SPAWNER.getDefaultState(), 2);
-            TileEntity tileentity = worldIn.getTileEntity(pos);
+            BlockEntity tileentity = worldIn.getTileEntity(pos);
 
             if (tileentity instanceof TileEntityMobSpawner) {
                 ((TileEntityMobSpawner) tileentity).getSpawnerBaseLogic().setData(
@@ -40,7 +40,7 @@ public class WorldGenMaelstromCave extends WorldGenCliffLedge {
         } else if (function.startsWith("chest")) {
             worldIn.setBlockToAir(pos);
             pos = pos.down();
-            TileEntity tileentity = worldIn.getTileEntity(pos);
+            BlockEntity tileentity = worldIn.getTileEntity(pos);
 
             if (tileentity instanceof TileEntityChest) {
                 ((TileEntityChest) tileentity).setLootTable(LootTableHandler.MAELSTROM_RUINS, rand.nextLong());
@@ -56,7 +56,7 @@ public class WorldGenMaelstromCave extends WorldGenCliffLedge {
 
     ;
 
-    private boolean isBlockNearby(World world, BlockPos pos) {
+    private boolean isBlockNearby(Level world, BlockPos pos) {
         for (BlockPos dir : Arrays.asList(pos.up(), pos.east(), pos.west(), pos.north(), pos.south(), pos.down())) {
             if (world.getBlockState(dir).getBlock() == ModBlocks.CLIFF_STONE) {
                 return true;

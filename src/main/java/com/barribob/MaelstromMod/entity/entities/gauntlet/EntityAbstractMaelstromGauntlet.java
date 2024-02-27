@@ -11,35 +11,39 @@ import com.barribob.MaelstromMod.util.*;
 import com.barribob.MaelstromMod.util.handlers.ParticleManager;
 import com.barribob.MaelstromMod.util.handlers.SoundsHandler;
 import com.barribob.MaelstromMod.world.dimension.crimson_kingdom.WorldGenGauntletSpike;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockFence;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.BossEvent;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.MoverType;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.FenceBlock;
 import net.minecraft.block.BlockFenceGate;
 import net.minecraft.block.BlockWall;
-import net.minecraft.block.material.Material;
-import net.minecraft.block.state.IBlockState;
+import net.minecraft.world.level.material.Material;
+import net.minecraft.core.BlockPos;
+import net.minecraft.util.Mth;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.client.renderer.entity.RenderDragon;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.crash.CrashReportCategory;
 import net.minecraft.entity.*;
 import net.minecraft.entity.ai.EntitySenses;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.init.SoundEvents;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.network.datasync.DataParameter;
-import net.minecraft.network.datasync.DataSerializers;
-import net.minecraft.network.datasync.EntityDataManager;
+import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.pathfinding.PathNavigateFlying;
-import net.minecraft.util.DamageSource;
 import net.minecraft.util.ReportedException;
 import net.minecraft.util.SoundEvent;
-import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.BossInfo;
-import net.minecraft.world.BossInfoServer;
-import net.minecraft.world.World;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.server.level.ServerBossEvent;
+import net.minecraft.world.level.Level;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -49,8 +53,8 @@ import java.util.function.Consumer;
 
 public abstract class EntityAbstractMaelstromGauntlet extends EntityMaelstromMob implements IEntityMultiPart, DirectionalRender, ITarget, IPitch {
     // We keep track of the look ourselves because minecraft's look is clamped
-    protected static final DataParameter<Float> LOOK = EntityDataManager.createKey(EntityLeveledMob.class, DataSerializers.FLOAT);
-    private final BossInfoServer bossInfo = (new BossInfoServer(this.getDisplayName(), BossInfo.Color.RED, BossInfo.Overlay.NOTCHED_6));
+    protected static final EntityDataAccessor<Float> LOOK = SynchedEntityData.createKey(EntityLeveledMob.class, EntityDataSerializers.FLOAT);
+    private final ServerBossEvent bossInfo = (new ServerBossEvent(this.getDisplayName(), BossEvent.Color.RED, BossEvent.Overlay.NOTCHED_6));
     private final MultiPartEntityPart[] hitboxParts;
     private final float boxSize = 0.8f;
     private final MultiPartEntityPart eye = new MultiPartEntityPart(this, "eye", 1.2f, 1.2f);
@@ -69,8 +73,8 @@ public abstract class EntityAbstractMaelstromGauntlet extends EntityMaelstromMob
     IGauntletAction defendAction = new DefendAction(this);
 
     // Lazer state variables
-    private Vec3d renderLazerPos;
-    private Vec3d prevRenderLazerPos;
+    private Vec3 renderLazerPos;
+    private Vec3 prevRenderLazerPos;
 
     // Used to filter damage from parts
     private boolean damageFromEye;
@@ -78,7 +82,7 @@ public abstract class EntityAbstractMaelstromGauntlet extends EntityMaelstromMob
     // Custom entity see ai
     private final EntitySenses senses = new GauntletEntitySenses(this);
 
-    public final Consumer<Vec3d> punchAtPos = (target) -> {
+    public final Consumer<Vec3> punchAtPos = (target) -> {
         currentAction = new PunchAction("gauntlet.punch", () -> target, () -> {}, this, fist);
         currentAction.doAction();
         for (int i = 0; i < 12; i++) {
@@ -86,7 +90,7 @@ public abstract class EntityAbstractMaelstromGauntlet extends EntityMaelstromMob
         }
     };
 
-    public EntityAbstractMaelstromGauntlet(World worldIn) {
+    public EntityAbstractMaelstromGauntlet(Level worldIn) {
         super(worldIn);
         this.moveHelper = new FlyingMoveHelper(this);
         this.navigator = new PathNavigateFlying(this, worldIn);
@@ -103,8 +107,8 @@ public abstract class EntityAbstractMaelstromGauntlet extends EntityMaelstromMob
     @Override
     protected void applyEntityAttributes() {
         super.applyEntityAttributes();
-        this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.26f);
-        this.getEntityAttribute(SharedMonsterAttributes.KNOCKBACK_RESISTANCE).setBaseValue(1);
+        this.getEntityAttribute(Attributes.MOVEMENT_SPEED).setBaseValue(0.26f);
+        this.getEntityAttribute(Attributes.KNOCKBACK_RESISTANCE).setBaseValue(1);
     }
 
     @Override
@@ -113,28 +117,28 @@ public abstract class EntityAbstractMaelstromGauntlet extends EntityMaelstromMob
         ModUtils.removeTaskOfType(this.tasks, EntityAIWanderWithGroup.class);
     }
 
-    protected AxisAlignedBB getTargetableArea(double targetDistance) {
+    protected AABB getTargetableArea(double targetDistance) {
         return this.getEntityBoundingBox().grow(targetDistance);
     }
 
     private void initGauntletAI() {
-        float attackDistance = (float) this.getEntityAttribute(SharedMonsterAttributes.FOLLOW_RANGE).getAttributeValue();
+        float attackDistance = (float) this.getEntityAttribute(Attributes.FOLLOW_RANGE).getAttributeValue();
         this.tasks.addTask(4, new
                 AIAerialTimedAttack(this, attackDistance, 20, 20,
                 new GauntletAttackInitiator( 60, this::startAttack, this::defendAttack)));
         this.tasks.addTask(7, new AiFistWander(this, punchAtPos, 120, 10));
     }
 
-    public final IGauntletAction startAttack(EntityLivingBase target) {
+    public final IGauntletAction startAttack(LivingEntity target) {
         float distanceSq = (float) getDistanceSq(target);
         this.currentAction = getNextAttack(target, distanceSq, currentAction);
         this.currentAction.doAction();
         return currentAction;
     }
 
-    protected abstract IGauntletAction getNextAttack(EntityLivingBase target, float distanceSq, IGauntletAction previousAction);
+    protected abstract IGauntletAction getNextAttack(LivingEntity target, float distanceSq, IGauntletAction previousAction);
 
-    public final @Nullable IGauntletAction defendAttack(EntityLivingBase target) {
+    public final @Nullable IGauntletAction defendAttack(LivingEntity target) {
         if (seesDanger(movement, target)) {
             currentAction = defendAction;
             defendAction.doAction();
@@ -144,7 +148,7 @@ public abstract class EntityAbstractMaelstromGauntlet extends EntityMaelstromMob
     }
 
     @Override
-    public void setAttackTarget(@Nullable EntityLivingBase entity) {
+    public void setAttackTarget(@Nullable LivingEntity entity) {
         if(entity != null && (movement == null || movement.entity != entity)) {
             movement = new MovementTracker(entity, 5);
         } else if (entity == null) {
@@ -159,9 +163,9 @@ public abstract class EntityAbstractMaelstromGauntlet extends EntityMaelstromMob
         super.onEntityUpdate();
     }
 
-    private boolean seesDanger(@Nullable MovementTracker movementTracker, EntityLivingBase target) {
+    private boolean seesDanger(@Nullable MovementTracker movementTracker, LivingEntity target) {
         if(movementTracker == null) return false;
-        Vec3d targetMovement = movementTracker.getMovementOverTicks(5);
+        Vec3 targetMovement = movementTracker.getMovementOverTicks(5);
         double velocityTowardsThis = ModUtils.direction(target.getPositionVector(), getPositionVector())
                 .dotProduct(targetMovement);
         return velocityTowardsThis > 3;
@@ -193,8 +197,8 @@ public abstract class EntityAbstractMaelstromGauntlet extends EntityMaelstromMob
             if (!source.isProjectile()) {
                 Entity entity = source.getImmediateSource();
 
-                if (entity instanceof EntityLivingBase) {
-                    this.blockUsingShield((EntityLivingBase) entity);
+                if (entity instanceof LivingEntity) {
+                    this.blockUsingShield((LivingEntity) entity);
                 }
             }
             this.playSound(SoundEvents.ENTITY_BLAZE_HURT, 1.0f, 0.6f + ModRandom.getFloat(0.2f));
@@ -210,25 +214,25 @@ public abstract class EntityAbstractMaelstromGauntlet extends EntityMaelstromMob
         bossInfo.setPercent(this.getHealth() / this.getMaxHealth());
 
         super.onLivingUpdate();
-        Vec3d[] avec3d = new Vec3d[this.hitboxParts.length];
+        Vec3[] avec3d = new Vec3[this.hitboxParts.length];
         for (int j = 0; j < this.hitboxParts.length; ++j) {
-            avec3d[j] = new Vec3d(this.hitboxParts[j].posX, this.hitboxParts[j].posY, this.hitboxParts[j].posZ);
+            avec3d[j] = new Vec3(this.hitboxParts[j].posX, this.hitboxParts[j].posY, this.hitboxParts[j].posZ);
         }
 
         /*
          * Set the hitbox pieces based on the entity's rotation so that even large pitch rotations don't mess up the hitboxes
          */
 
-        setHitboxPosition(fingers, new Vec3d(0, -1.5, 0));
-        setHitboxPosition(behindEye, new Vec3d(-0.5, -0.3, 0));
-        setHitboxPosition(eye, new Vec3d(0.5, -0.3, 0));
-        setHitboxPosition(bottomPalm, new Vec3d(-0.4, 0.7, 0));
-        setHitboxPosition(rightPalm, new Vec3d(0, 0, -0.7));
-        setHitboxPosition(leftPalm, new Vec3d(0, 0, 0.7));
-        setHitboxPosition(upRightPalm, new Vec3d(0, -1, -0.7));
-        setHitboxPosition(upLeftPalm, new Vec3d(0, -1, 0.7));
+        setHitboxPosition(fingers, new Vec3(0, -1.5, 0));
+        setHitboxPosition(behindEye, new Vec3(-0.5, -0.3, 0));
+        setHitboxPosition(eye, new Vec3(0.5, -0.3, 0));
+        setHitboxPosition(bottomPalm, new Vec3(-0.4, 0.7, 0));
+        setHitboxPosition(rightPalm, new Vec3(0, 0, -0.7));
+        setHitboxPosition(leftPalm, new Vec3(0, 0, 0.7));
+        setHitboxPosition(upRightPalm, new Vec3(0, -1, -0.7));
+        setHitboxPosition(upLeftPalm, new Vec3(0, -1, 0.7));
 
-        Vec3d fistPos = this.getPositionVector().subtract(ModUtils.yVec(0.5));
+        Vec3 fistPos = this.getPositionVector().subtract(ModUtils.yVec(0.5));
         ModUtils.setEntityPosition(fist, fistPos);
 
         for (int l = 0; l < this.hitboxParts.length; ++l) {
@@ -242,11 +246,11 @@ public abstract class EntityAbstractMaelstromGauntlet extends EntityMaelstromMob
         }
     }
 
-    private void setHitboxPosition(Entity entity, Vec3d offset) {
-        Vec3d lookVec = ModUtils.getLookVec(this.getPitch(), this.renderYawOffset);
-        Vec3d center = this.getPositionVector().add(ModUtils.yVec(1.3));
+    private void setHitboxPosition(Entity entity, Vec3 offset) {
+        Vec3 lookVec = ModUtils.getLookVec(this.getPitch(), this.renderYawOffset);
+        Vec3 center = this.getPositionVector().add(ModUtils.yVec(1.3));
 
-        Vec3d position = center.subtract(ModUtils.Y_AXIS
+        Vec3 position = center.subtract(ModUtils.Y_AXIS
                 .scale(this.fingers.getEntityBoundingBox().getAverageEdgeLength() * 0.5))
                 .add(ModUtils.getAxisOffset(lookVec, offset));
         ModUtils.setEntityPosition(entity, position);
@@ -254,7 +258,7 @@ public abstract class EntityAbstractMaelstromGauntlet extends EntityMaelstromMob
 
     @Override
     public final void onUpdate() {
-        Vec3d vel = ModUtils.getEntityVelocity(this);
+        Vec3 vel = ModUtils.getEntityVelocity(this);
         double speed = vel.lengthVector();
 
         super.onUpdate();
@@ -271,7 +275,7 @@ public abstract class EntityAbstractMaelstromGauntlet extends EntityMaelstromMob
     }
 
     private void onBlockPhysicalImpact(double velocity) {
-        Vec3d pos = getPositionEyes(1);
+        Vec3 pos = getPositionEyes(1);
         DamageSource source = ModDamageSource.builder()
                 .directEntity(this)
                 .element(getElement())
@@ -304,8 +308,8 @@ public abstract class EntityAbstractMaelstromGauntlet extends EntityMaelstromMob
             // This sort of jenky way of binding the wrong texture to the original guardian beam creates quite a nice particle beam visual
             renderManager.renderEngine.bindTexture(RenderDragon.ENDERCRYSTAL_BEAM_TEXTURES);
             // We must interpolate between positions to make the move smoothly
-            Vec3d interpolatedPos = renderLazerPos.subtract(this.prevRenderLazerPos).scale(partialTicks).add(prevRenderLazerPos);
-            RenderUtils.drawBeam(renderManager, this.getPositionEyes(1), interpolatedPos, new Vec3d(x, y, z), ModColors.RED, this, partialTicks);
+            Vec3 interpolatedPos = renderLazerPos.subtract(this.prevRenderLazerPos).scale(partialTicks).add(prevRenderLazerPos);
+            RenderUtils.drawBeam(renderManager, this.getPositionEyes(1), interpolatedPos, new Vec3(x, y, z), ModColors.RED, this, partialTicks);
         }
         super.doRender(renderManager, x, y, z, entityYaw, partialTicks);
     }
@@ -316,11 +320,11 @@ public abstract class EntityAbstractMaelstromGauntlet extends EntityMaelstromMob
     }
 
     @Override
-    public final void setPitch(Vec3d look) {
+    public final void setPitch(Vec3 look) {
         float prevLook = this.getPitch();
         float newLook = (float) ModUtils.toPitch(look);
         float deltaLook = 5;
-        float clampedLook = MathHelper.clamp(newLook, prevLook - deltaLook, prevLook + deltaLook);
+        float clampedLook = Mth.clamp(newLook, prevLook - deltaLook, prevLook + deltaLook);
         this.dataManager.set(LOOK, clampedLook);
     }
 
@@ -336,17 +340,17 @@ public abstract class EntityAbstractMaelstromGauntlet extends EntityMaelstromMob
         } else if (id == ModUtils.PARTICLE_BYTE) {
             // Render particles in a sucking in motion
             for (int i = 0; i < 5; i++) {
-                Vec3d lookVec = ModUtils.getLookVec(this.getPitch(), this.renderYawOffset);
-                Vec3d randOffset = ModUtils.rotateVector2(lookVec, lookVec.crossProduct(ModUtils.Y_AXIS), ModRandom.range(-70, 70));
+                Vec3 lookVec = ModUtils.getLookVec(this.getPitch(), this.renderYawOffset);
+                Vec3 randOffset = ModUtils.rotateVector2(lookVec, lookVec.crossProduct(ModUtils.Y_AXIS), ModRandom.range(-70, 70));
                 randOffset = ModUtils.rotateVector2(randOffset, lookVec, ModRandom.range(0, 360)).scale(1.5f);
-                Vec3d velocity = Vec3d.ZERO.subtract(randOffset).normalize().scale(0.15f).add(new Vec3d(this.motionX, this.motionY, this.motionZ));
-                Vec3d particlePos = this.getPositionEyes(1).add(ModUtils.getAxisOffset(lookVec, new Vec3d(1, 0, 0))).add(randOffset);
+                Vec3 velocity = Vec3.ZERO.subtract(randOffset).normalize().scale(0.15f).add(new Vec3(this.motionX, this.motionY, this.motionZ));
+                Vec3 particlePos = this.getPositionEyes(1).add(ModUtils.getAxisOffset(lookVec, new Vec3(1, 0, 0))).add(randOffset);
                 ParticleManager.spawnDust(world, particlePos, ModColors.RED, velocity, ModRandom.range(5, 7));
             }
         } else if (id == ModUtils.SECOND_PARTICLE_BYTE) {
             // Render particles in some weird circular trig fashion
             ModUtils.circleCallback(2, 16, (pos) -> {
-                pos = new Vec3d(pos.x, 0, pos.y).add(this.getPositionVector());
+                pos = new Vec3(pos.x, 0, pos.y).add(this.getPositionVector());
                 double y = Math.cos(pos.x + pos.z);
                 ParticleManager.spawnSplit(world, pos.add(ModUtils.yVec(y)), ModColors.PURPLE, ModUtils.yVec(-y * 0.1));
             });
@@ -394,7 +398,7 @@ public abstract class EntityAbstractMaelstromGauntlet extends EntityMaelstromMob
 
     @Override
     @Nonnull
-    public World getWorld() {
+    public Level getWorld() {
         return world;
     }
 
@@ -413,7 +417,7 @@ public abstract class EntityAbstractMaelstromGauntlet extends EntityMaelstromMob
     }
 
     @Override
-    protected void updateFallState(double y, boolean onGroundIn, @Nonnull IBlockState state, @Nonnull BlockPos pos) {
+    protected void updateFallState(double y, boolean onGroundIn, @Nonnull BlockState state, @Nonnull BlockPos pos) {
     }
 
     @Override
@@ -422,7 +426,7 @@ public abstract class EntityAbstractMaelstromGauntlet extends EntityMaelstromMob
     }
 
     @Override
-    public void attackEntityWithRangedAttack(@Nullable EntityLivingBase target, float distanceFactor) {
+    public void attackEntityWithRangedAttack(@Nullable LivingEntity target, float distanceFactor) {
     }
 
     @Override
@@ -451,8 +455,8 @@ public abstract class EntityAbstractMaelstromGauntlet extends EntityMaelstromMob
         double d3 = y;
         double d4 = z;
 
-        List<AxisAlignedBB> list1 = this.world.getCollisionBoxes(this, this.getEntityBoundingBox().expand(x, y, z));
-        AxisAlignedBB axisalignedbb = this.getEntityBoundingBox();
+        List<AABB> list1 = this.world.getCollisionBoxes(this, this.getEntityBoundingBox().expand(x, y, z));
+        AABB axisalignedbb = this.getEntityBoundingBox();
 
         if (y != 0.0D) {
             int k = 0;
@@ -494,12 +498,12 @@ public abstract class EntityAbstractMaelstromGauntlet extends EntityMaelstromMob
             double d14 = x;
             double d6 = y;
             double d7 = z;
-            AxisAlignedBB axisalignedbb1 = this.getEntityBoundingBox();
+            AABB axisalignedbb1 = this.getEntityBoundingBox();
             this.setEntityBoundingBox(axisalignedbb);
             y = this.stepHeight;
-            List<AxisAlignedBB> list = this.world.getCollisionBoxes(this, this.getEntityBoundingBox().expand(d2, y, d4));
-            AxisAlignedBB axisalignedbb2 = this.getEntityBoundingBox();
-            AxisAlignedBB axisalignedbb3 = axisalignedbb2.expand(d2, 0.0D, d4);
+            List<AABB> list = this.world.getCollisionBoxes(this, this.getEntityBoundingBox().expand(d2, y, d4));
+            AABB axisalignedbb2 = this.getEntityBoundingBox();
+            AABB axisalignedbb3 = axisalignedbb2.expand(d2, 0.0D, d4);
             double d8 = y;
             int j1 = 0;
 
@@ -524,7 +528,7 @@ public abstract class EntityAbstractMaelstromGauntlet extends EntityMaelstromMob
             }
 
             axisalignedbb2 = axisalignedbb2.offset(0.0D, 0.0D, d19);
-            AxisAlignedBB axisalignedbb4 = this.getEntityBoundingBox();
+            AABB axisalignedbb4 = this.getEntityBoundingBox();
             double d20 = y;
             int l2 = 0;
 
@@ -587,18 +591,18 @@ public abstract class EntityAbstractMaelstromGauntlet extends EntityMaelstromMob
         this.collidedVertically = d3 != y;
         this.onGround = this.collidedVertically && d3 < 0.0D;
         this.collided = this.collidedHorizontally || this.collidedVertically;
-        int j6 = MathHelper.floor(this.posX);
-        int i1 = MathHelper.floor(this.posY - 0.20000000298023224D);
-        int k6 = MathHelper.floor(this.posZ);
+        int j6 = Mth.floor(this.posX);
+        int i1 = Mth.floor(this.posY - 0.20000000298023224D);
+        int k6 = Mth.floor(this.posZ);
         BlockPos blockpos = new BlockPos(j6, i1, k6);
-        IBlockState iblockstate = this.world.getBlockState(blockpos);
+        BlockState iblockstate = this.world.getBlockState(blockpos);
 
         if (iblockstate.getMaterial() == Material.AIR) {
             BlockPos blockpos1 = blockpos.down();
-            IBlockState iblockstate1 = this.world.getBlockState(blockpos1);
+            BlockState iblockstate1 = this.world.getBlockState(blockpos1);
             Block block1 = iblockstate1.getBlock();
 
-            if (block1 instanceof BlockFence || block1 instanceof BlockWall || block1 instanceof BlockFenceGate) {
+            if (block1 instanceof FenceBlock || block1 instanceof BlockWall || block1 instanceof BlockFenceGate) {
                 iblockstate = iblockstate1;
                 blockpos = blockpos1;
             }
@@ -633,7 +637,7 @@ public abstract class EntityAbstractMaelstromGauntlet extends EntityMaelstromMob
     }
 
     @Override
-    public final void setRenderDirection(Vec3d dir) {
+    public final void setRenderDirection(Vec3 dir) {
         if (this.renderLazerPos != null) {
             this.prevRenderLazerPos = this.renderLazerPos;
         } else {
@@ -643,7 +647,7 @@ public abstract class EntityAbstractMaelstromGauntlet extends EntityMaelstromMob
     }
 
     @Override
-    public void readEntityFromNBT(@Nonnull NBTTagCompound compound) {
+    public void readEntityFromNBT(@Nonnull CompoundTag compound) {
         if (this.hasCustomName()) {
             this.bossInfo.setName(this.getDisplayName());
         }
@@ -658,13 +662,13 @@ public abstract class EntityAbstractMaelstromGauntlet extends EntityMaelstromMob
     }
 
     @Override
-    public void addTrackingPlayer(@Nonnull EntityPlayerMP player) {
+    public void addTrackingPlayer(@Nonnull ServerPlayer player) {
         super.addTrackingPlayer(player);
         this.bossInfo.addPlayer(player);
     }
 
     @Override
-    public void removeTrackingPlayer(@Nonnull EntityPlayerMP player) {
+    public void removeTrackingPlayer(@Nonnull ServerPlayer player) {
         super.removeTrackingPlayer(player);
         this.bossInfo.removePlayer(player);
     }
@@ -685,7 +689,7 @@ public abstract class EntityAbstractMaelstromGauntlet extends EntityMaelstromMob
     }
 
     @Override
-    public Optional<Vec3d> getTarget() {
+    public Optional<Vec3> getTarget() {
         return Optional.ofNullable(renderLazerPos);
     }
 }

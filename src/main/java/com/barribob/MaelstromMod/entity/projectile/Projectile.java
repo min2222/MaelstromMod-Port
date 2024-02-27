@@ -3,16 +3,16 @@ package com.barribob.MaelstromMod.entity.projectile;
 import com.barribob.MaelstromMod.init.ModItems;
 import com.barribob.MaelstromMod.util.Element;
 import com.barribob.MaelstromMod.util.IElement;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.item.Item;
-import net.minecraft.network.datasync.DataParameter;
-import net.minecraft.network.datasync.DataSerializers;
-import net.minecraft.network.datasync.EntityDataManager;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.Item;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.util.math.RayTraceResult;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.level.Level;
+import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.api.distmarker.Dist;
 
 /**
  * The base projectile class for most projectiles in the mod
@@ -23,32 +23,32 @@ import net.minecraftforge.fml.relauncher.SideOnly;
  */
 public class Projectile extends EntityModThrowable implements IElement {
     protected float travelRange;
-    private final Vec3d startPos;
+    private final Vec3 startPos;
     protected static final byte IMPACT_PARTICLE_BYTE = 3;
     private static final byte PARTICLE_BYTE = 4;
     private float damage = 0;
-    protected static final DataParameter<Integer> ELEMENT = EntityDataManager.<Integer>createKey(Projectile.class, DataSerializers.VARINT);
+    protected static final EntityDataAccessor<Integer> ELEMENT = SynchedEntityData.<Integer>createKey(Projectile.class, EntityDataSerializers.VARINT);
     protected float maxAge = 20 * 20;
     private Item itemToRender = ModItems.INVISIBLE;
 
-    public Projectile(World worldIn, EntityLivingBase throwerIn, float damage) {
+    public Projectile(Level worldIn, LivingEntity throwerIn, float damage) {
         super(worldIn, throwerIn);
         this.travelRange = 20.0f;
         this.setDamage(damage);
-        this.startPos = new Vec3d(this.posX, this.posY, this.posZ);
+        this.startPos = new Vec3(this.posX, this.posY, this.posZ);
         if (throwerIn instanceof IElement) {
             this.setElement(((IElement) throwerIn).getElement());
         }
     }
 
-    public Projectile(World worldIn) {
+    public Projectile(Level worldIn) {
         super(worldIn);
-        this.startPos = new Vec3d(this.posX, this.posY, this.posZ);
+        this.startPos = new Vec3(this.posX, this.posY, this.posZ);
     }
 
-    public Projectile(World worldIn, double x, double y, double z) {
+    public Projectile(Level worldIn, double x, double y, double z) {
         super(worldIn, x, y, z);
-        this.startPos = new Vec3d(this.posX, this.posY, this.posZ);
+        this.startPos = new Vec3(this.posX, this.posY, this.posZ);
     }
 
     protected double getDistanceTraveled() {
@@ -105,11 +105,11 @@ public class Projectile extends EntityModThrowable implements IElement {
     }
 
     /**
-     * Handler for {@link World#setEntityState} Connected through setEntityState to
+     * Handler for {@link Level#setEntityState} Connected through setEntityState to
      * spawn particles
      */
     @Override
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public void handleStatusUpdate(byte id) {
         if (id == this.IMPACT_PARTICLE_BYTE) {
             spawnImpactParticles();

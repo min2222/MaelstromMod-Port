@@ -8,15 +8,15 @@ import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLiving;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.Vec3d;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 
-@SideOnly(Side.CLIENT)
+@OnlyIn(Dist.CLIENT)
 public class RenderUtils {
     private static final ResourceLocation GUARDIAN_BEAM_TEXTURE = new ResourceLocation("textures/entity/guardian_beam.png");
 
@@ -44,7 +44,7 @@ public class RenderUtils {
         GlStateManager.popMatrix();
     }
 
-    public static void drawLazer(RenderManager renderManager, Vec3d startPos, Vec3d endPos, Vec3d offset, Vec3d color, EntityLiving entity, float partialTicks) {
+    public static void drawLazer(RenderManager renderManager, Vec3 startPos, Vec3 endPos, Vec3 offset, Vec3 color, Mob entity, float partialTicks) {
         renderManager.renderEngine.bindTexture(GUARDIAN_BEAM_TEXTURE);
         drawBeam(renderManager, startPos, endPos, offset, color, entity, partialTicks);
     }
@@ -60,11 +60,11 @@ public class RenderUtils {
      * @param entity
      * @param partialTicks
      */
-    public static void drawBeam(RenderManager renderManager, Vec3d startPos, Vec3d endPos, Vec3d offset, Vec3d color, Entity entity, float partialTicks) {
-        drawBeam(renderManager, startPos, endPos, offset, color, entity, partialTicks, new Vec3d(1, 1, 1));
+    public static void drawBeam(RenderManager renderManager, Vec3 startPos, Vec3 endPos, Vec3 offset, Vec3 color, Entity entity, float partialTicks) {
+        drawBeam(renderManager, startPos, endPos, offset, color, entity, partialTicks, new Vec3(1, 1, 1));
     }
 
-    public static void drawBeam(RenderManager renderManager, Vec3d startPos, Vec3d endPos, Vec3d offset, Vec3d color, Entity entity, float partialTicks, Vec3d scale) {
+    public static void drawBeam(RenderManager renderManager, Vec3 startPos, Vec3 endPos, Vec3 offset, Vec3 color, Entity entity, float partialTicks, Vec3 scale) {
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder bufferbuilder = tessellator.getBuffer();
         GlStateManager.glTexParameteri(3553, 10242, 10497);
@@ -83,9 +83,9 @@ public class RenderUtils {
         GlStateManager.pushMatrix();
         GlStateManager.translate((float) offset.x, (float) offset.y + entity.getEyeHeight(), (float) offset.z);
 
-        Vec3d line = endPos.subtract(startPos);
+        Vec3 line = endPos.subtract(startPos);
         double lineLength = line.lengthVector();
-        Vec3d lineDir = line.normalize();
+        Vec3 lineDir = line.normalize();
 
         float angle1 = (float) Math.acos(lineDir.y);
         float angle2 = (float) Math.atan2(lineDir.z, lineDir.x);
@@ -143,7 +143,7 @@ public class RenderUtils {
     /**
      * Allows for a common way to generate the creeper charge effect without copying tons of gl code everywhere
      */
-    public static void renderAura(EntityLivingBase entity, Runnable translationCallback, Runnable renderCallback) {
+    public static void renderAura(LivingEntity entity, Runnable translationCallback, Runnable renderCallback) {
         GlStateManager.matrixMode(5890);
         GlStateManager.loadIdentity();
 

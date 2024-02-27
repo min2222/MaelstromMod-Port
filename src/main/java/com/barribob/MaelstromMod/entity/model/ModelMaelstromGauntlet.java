@@ -3,7 +3,7 @@ package com.barribob.MaelstromMod.entity.model;
 import com.barribob.MaelstromMod.entity.util.IPitch;
 import net.minecraft.client.model.ModelBox;
 import net.minecraft.client.model.ModelRenderer;
-import net.minecraft.entity.Entity;
+import net.minecraft.world.entity.Entity;
 
 // Made with Blockbench
 // Paste this code into your mod.

@@ -6,7 +6,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.renderer.entity.RenderManager;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.phys.Vec3;
 
 public class RenderCrimsonCrystal extends RenderNonLivingEntity<EntityCrimsonCrystal> {
     public RenderCrimsonCrystal(RenderManager renderManagerIn, String texture, float yRenderOffset) {
@@ -16,7 +16,7 @@ public class RenderCrimsonCrystal extends RenderNonLivingEntity<EntityCrimsonCry
     @Override
     protected void renderModel(EntityCrimsonCrystal entity, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch, float scaleFactor) {
         OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, 200, 0);
-        Vec3d particleColor = entity.getParticleColor();
+        Vec3 particleColor = entity.getParticleColor();
         GlStateManager.color((float) particleColor.x, (float) particleColor.y, (float) particleColor.z, 1.0F);
         Minecraft.getMinecraft().entityRenderer.setupFogColor(true);
         GlStateManager.scale(0.05, 0.05, 0.05);

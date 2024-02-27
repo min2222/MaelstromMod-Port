@@ -3,10 +3,10 @@ package com.barribob.MaelstromMod.entity.ai;
 import com.barribob.MaelstromMod.entity.util.IAttackInitiator;
 import com.barribob.MaelstromMod.entity.util.IPitch;
 import com.barribob.MaelstromMod.util.ModUtils;
-import net.minecraft.entity.EntityLiving;
-import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.entity.ai.EntityAIBase;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.phys.Vec3;
 
 /**
  * A version of the timed attack that attempts to work for flying mobs a bit better.
@@ -14,16 +14,16 @@ import net.minecraft.util.math.Vec3d;
  * @author micha
  */
 public class AIAerialTimedAttack extends EntityAIBase {
-    private final EntityLiving entity;
+    private final Mob entity;
     private final float maxAttackDistSq;
     private final float lookSpeed;
     private final IAttackInitiator attackInitiator;
     private int unseeTime;
-    private final AIPassiveCircle<EntityLiving> circleAI;
+    private final AIPassiveCircle<Mob> circleAI;
 
     private static final int MEMORY = 100;
 
-    public AIAerialTimedAttack(EntityLiving entity, float maxAttackDistance, float idealAttackDistance, float lookSpeed, IAttackInitiator attackInitiator) {
+    public AIAerialTimedAttack(Mob entity, float maxAttackDistance, float idealAttackDistance, float lookSpeed, IAttackInitiator attackInitiator) {
         this.entity = entity;
         this.maxAttackDistSq = maxAttackDistance * maxAttackDistance;
         this.lookSpeed = lookSpeed;
@@ -50,7 +50,7 @@ public class AIAerialTimedAttack extends EntityAIBase {
 
     @Override
     public void updateTask() {
-        EntityLivingBase target = this.entity.getAttackTarget();
+        LivingEntity target = this.entity.getAttackTarget();
 
         if (target == null) {
             return;
@@ -75,15 +75,15 @@ public class AIAerialTimedAttack extends EntityAIBase {
         }
     }
 
-    public void move(EntityLivingBase target, double distSq, boolean canSee) {
+    public void move(LivingEntity target, double distSq, boolean canSee) {
         circleAI.updateTask();
 
         this.entity.getLookHelper().setLookPositionWithEntity(target, this.lookSpeed, this.lookSpeed);
         this.entity.faceEntity(target, this.lookSpeed, this.lookSpeed);
         if (this.entity instanceof IPitch) {
-            Vec3d targetPos = target.getPositionEyes(1);
-            Vec3d entityPos = this.entity.getPositionEyes(1);
-            Vec3d forwardVec = ModUtils.direction(entityPos, targetPos);
+            Vec3 targetPos = target.getPositionEyes(1);
+            Vec3 entityPos = this.entity.getPositionEyes(1);
+            Vec3 forwardVec = ModUtils.direction(entityPos, targetPos);
             ((IPitch) this.entity).setPitch(forwardVec);
         }
     }

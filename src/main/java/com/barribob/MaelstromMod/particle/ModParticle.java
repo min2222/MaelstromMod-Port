@@ -8,10 +8,10 @@ import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
-import net.minecraft.entity.Entity;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.util.Mth;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.level.Level;
 
 import javax.annotation.Nonnull;
 
@@ -21,7 +21,7 @@ public class ModParticle extends Particle {
     public float animationSpeed;
     public boolean isLit;
 
-    public ModParticle(World worldIn, Vec3d pos, Vec3d motion, float scale, int age, boolean isLit) {
+    public ModParticle(Level worldIn, Vec3 pos, Vec3 motion, float scale, int age, boolean isLit) {
         super(worldIn, pos.x, pos.y, pos.z, motion.x, motion.y, motion.z);
         this.particleScale = scale;
         this.particleMaxAge = age;
@@ -56,16 +56,16 @@ public class ModParticle extends Particle {
         int i = this.getBrightnessForRender(partialTicks);
         int j = i >> 16 & 65535;
         int k = i & 65535;
-        Vec3d[] avec3d = new Vec3d[] {new Vec3d(-rotationX * f4 - rotationXY * f4, -rotationZ * f4, -rotationYZ * f4 - rotationXZ * f4), new Vec3d((-rotationX * f4 + rotationXY * f4), (rotationZ * f4), (-rotationYZ * f4 + rotationXZ * f4)), new Vec3d((rotationX * f4 + rotationXY * f4), (rotationZ * f4), (rotationYZ * f4 + rotationXZ * f4)), new Vec3d((rotationX * f4 - rotationXY * f4), (-rotationZ * f4), (rotationYZ * f4 - rotationXZ * f4))};
+        Vec3[] avec3d = new Vec3[] {new Vec3(-rotationX * f4 - rotationXY * f4, -rotationZ * f4, -rotationYZ * f4 - rotationXZ * f4), new Vec3((-rotationX * f4 + rotationXY * f4), (rotationZ * f4), (-rotationYZ * f4 + rotationXZ * f4)), new Vec3((rotationX * f4 + rotationXY * f4), (rotationZ * f4), (rotationYZ * f4 + rotationXZ * f4)), new Vec3((rotationX * f4 - rotationXY * f4), (-rotationZ * f4), (rotationYZ * f4 - rotationXZ * f4))};
 
         if (this.particleAngle != 0.0F)
         {
             float f8 = this.particleAngle + (this.particleAngle - this.prevParticleAngle) * partialTicks;
-            float f9 = MathHelper.cos(f8 * 0.5F);
-            float f10 = MathHelper.sin(f8 * 0.5F) * (float)cameraViewDir.x;
-            float f11 = MathHelper.sin(f8 * 0.5F) * (float)cameraViewDir.y;
-            float f12 = MathHelper.sin(f8 * 0.5F) * (float)cameraViewDir.z;
-            Vec3d vec3d = new Vec3d(f10, f11, f12);
+            float f9 = Mth.cos(f8 * 0.5F);
+            float f10 = Mth.sin(f8 * 0.5F) * (float)cameraViewDir.x;
+            float f11 = Mth.sin(f8 * 0.5F) * (float)cameraViewDir.y;
+            float f12 = Mth.sin(f8 * 0.5F) * (float)cameraViewDir.z;
+            Vec3 vec3d = new Vec3(f10, f11, f12);
 
             for (int l = 0; l < 4; ++l)
             {
@@ -127,7 +127,7 @@ public class ModParticle extends Particle {
         // Light like the firework particle
         if (isLit) {
             float f = (this.particleAge + p_189214_1_) / this.particleMaxAge;
-            f = MathHelper.clamp(f, 0.0F, 1.0F);
+            f = Mth.clamp(f, 0.0F, 1.0F);
             int i = super.getBrightnessForRender(p_189214_1_);
             int j = i & 255;
             int k = i >> 16 & 255;

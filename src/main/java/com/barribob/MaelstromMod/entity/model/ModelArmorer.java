@@ -2,8 +2,8 @@ package com.barribob.MaelstromMod.entity.model;
 
 import net.minecraft.client.model.ModelBase;
 import net.minecraft.client.model.ModelRenderer;
-import net.minecraft.entity.Entity;
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.util.Mth;
 
 /**
  * Created using Tabula 7.0.0
@@ -81,14 +81,14 @@ public class ModelArmorer extends ModelBase {
         this.head.rotateAngleY = netHeadYaw * 0.017453292F;
         this.head.rotateAngleX = headPitch * 0.017453292F;
 
-        this.leftLeg.rotateAngleX = MathHelper.cos(limbSwing * 0.6662F) * 2.0F * limbSwingAmount * 0.5F;
+        this.leftLeg.rotateAngleX = Mth.cos(limbSwing * 0.6662F) * 2.0F * limbSwingAmount * 0.5F;
         this.leftLeg.rotateAngleZ = 0.0F;
-        this.leftLeg.rotateAngleZ -= MathHelper.cos(ageInTicks * 0.09F) * 0.05F + 0.05F;
-        this.leftLeg.rotateAngleX -= MathHelper.sin(ageInTicks * 0.067F) * 0.05F;
-        this.rightLeg.rotateAngleX = MathHelper.cos(limbSwing * 0.6662F) * 2.0F * limbSwingAmount * 0.5F;
+        this.leftLeg.rotateAngleZ -= Mth.cos(ageInTicks * 0.09F) * 0.05F + 0.05F;
+        this.leftLeg.rotateAngleX -= Mth.sin(ageInTicks * 0.067F) * 0.05F;
+        this.rightLeg.rotateAngleX = Mth.cos(limbSwing * 0.6662F) * 2.0F * limbSwingAmount * 0.5F;
         this.rightLeg.rotateAngleZ = 0.0F;
-        this.rightLeg.rotateAngleZ -= MathHelper.cos(ageInTicks * 0.09F) * 0.05F + 0.05F;
-        this.rightLeg.rotateAngleX -= MathHelper.sin(ageInTicks * 0.067F) * 0.05F;
+        this.rightLeg.rotateAngleZ -= Mth.cos(ageInTicks * 0.09F) * 0.05F + 0.05F;
+        this.rightLeg.rotateAngleX -= Mth.sin(ageInTicks * 0.067F) * 0.05F;
     }
 
     /**

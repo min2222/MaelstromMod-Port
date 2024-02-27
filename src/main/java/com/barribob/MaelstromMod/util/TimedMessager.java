@@ -1,6 +1,6 @@
 package com.barribob.MaelstromMod.util;
 
-import net.minecraft.world.World;
+import net.minecraft.world.level.Level;
 
 import java.util.function.Consumer;
 
@@ -24,7 +24,7 @@ public class TimedMessager {
         }
     }
 
-    public void Update(World world, Consumer<String> message_func) {
+    public void Update(Level world, Consumer<String> message_func) {
         if (this.message < this.messages.length && this.ticksExisted == this.message_times[this.message]) {
             message_func.accept(this.messages[this.message]);
             this.message++;

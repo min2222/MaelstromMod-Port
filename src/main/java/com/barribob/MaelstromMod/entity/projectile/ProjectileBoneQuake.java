@@ -2,20 +2,20 @@ package com.barribob.MaelstromMod.entity.projectile;
 
 import com.barribob.MaelstromMod.entity.entities.EntityLeveledMob;
 import com.barribob.MaelstromMod.entity.entities.EntityMaelstromBeast;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.world.World;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.level.Level;
 
 public class ProjectileBoneQuake extends ProjectileBeastQuake {
 
-    public ProjectileBoneQuake(World worldIn, EntityLivingBase throwerIn, float baseDamage) {
+    public ProjectileBoneQuake(Level worldIn, LivingEntity throwerIn, float baseDamage) {
         super(worldIn, throwerIn, baseDamage);
     }
 
-    public ProjectileBoneQuake(World worldIn) {
+    public ProjectileBoneQuake(Level worldIn) {
         super(worldIn);
     }
 
-    public ProjectileBoneQuake(World worldIn, double x, double y, double z) {
+    public ProjectileBoneQuake(Level worldIn, double x, double y, double z) {
         super(worldIn, x, y, z);
     }
 

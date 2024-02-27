@@ -5,20 +5,19 @@ import com.barribob.MaelstromMod.entity.animation.AnimationFloatingSkull;
 import com.barribob.MaelstromMod.entity.projectile.ProjectileSkullAttack;
 import com.barribob.MaelstromMod.util.ModRandom;
 import com.barribob.MaelstromMod.util.handlers.ParticleManager;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.SharedMonsterAttributes;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.SoundEvents;
-import net.minecraft.util.DamageSource;
-import net.minecraft.util.SoundCategory;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.SoundEvent;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.level.Level;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 
 public class EntityFloatingSkull extends EntityMaelstromMob {
-    public EntityFloatingSkull(World worldIn) {
+    public EntityFloatingSkull(Level worldIn) {
         super(worldIn);
     }
 
@@ -33,7 +32,7 @@ public class EntityFloatingSkull extends EntityMaelstromMob {
         super.onUpdate();
         if (world.isRemote) {
             ParticleManager.spawnDarkFlames(world, rand,
-                    new Vec3d(this.posX + ModRandom.getFloat(0.5f), this.posY + 0.1f + ModRandom.getFloat(0.1f), this.posZ + ModRandom.getFloat(0.5f)));
+                    new Vec3(this.posX + ModRandom.getFloat(0.5f), this.posY + 0.1f + ModRandom.getFloat(0.1f), this.posZ + ModRandom.getFloat(0.5f)));
         }
     }
 
@@ -65,10 +64,10 @@ public class EntityFloatingSkull extends EntityMaelstromMob {
     }
 
     /**
-     * Handler for {@link World#setEntityState}
+     * Handler for {@link Level#setEntityState}
      */
     @Override
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public void handleStatusUpdate(byte id) {
         if (id == 4) {
             this.currentAnimation = new AnimationFloatingSkull();
@@ -83,9 +82,9 @@ public class EntityFloatingSkull extends EntityMaelstromMob {
      * EntitySnowman)
      */
     @Override
-    public void attackEntityWithRangedAttack(EntityLivingBase target, float distanceFactor) {
+    public void attackEntityWithRangedAttack(LivingEntity target, float distanceFactor) {
         if (!world.isRemote) {
-            world.playSound((EntityPlayer) null, this.posX, this.posY, this.posZ, SoundEvents.ENTITY_BLAZE_AMBIENT, SoundCategory.NEUTRAL, 0.5F,
+            world.playSound((Player) null, this.posX, this.posY, this.posZ, SoundEvents.ENTITY_BLAZE_AMBIENT, SoundSource.NEUTRAL, 0.5F,
                     0.4F / (world.rand.nextFloat() * 0.4F + 0.8F));
 
             float inaccuracy = 0.0f;

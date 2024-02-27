@@ -4,24 +4,24 @@ import com.barribob.MaelstromMod.blocks.BlockBase;
 import com.barribob.MaelstromMod.config.ModConfig;
 import com.barribob.MaelstromMod.util.ModUtils;
 import com.barribob.MaelstromMod.util.teleporter.Teleport;
-import net.minecraft.block.SoundType;
-import net.minecraft.block.material.Material;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.client.util.ITooltipFlag;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.item.ItemStack;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.material.Material;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.util.BlockRenderLayer;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.TextFormatting;
-import net.minecraft.world.IBlockAccess;
+import net.minecraft.core.Direction;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.Teleporter;
-import net.minecraft.world.World;
+import net.minecraft.world.level.Level;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.DimensionManager;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -34,7 +34,7 @@ public abstract class BlockPortal extends BlockBase {
     private int entranceDimension;
     private int exitDimension;
 
-    protected static final AxisAlignedBB QUARTER_AABB = new AxisAlignedBB(0.0D, 0.0D, 0.0D, 1.0D, 0.75D, 1.0D);
+    protected static final AABB QUARTER_AABB = new AABB(0.0D, 0.0D, 0.0D, 1.0D, 0.75D, 1.0D);
 
     public BlockPortal(String name, int entranceDimension, int exitDimension) {
         super(name, Material.ROCK, 1000, 1000, SoundType.STONE);
@@ -49,8 +49,8 @@ public abstract class BlockPortal extends BlockBase {
      * Teleport the player to the correct dimension on collision
      */
     @Override
-    public void onEntityCollidedWithBlock(World worldIn, BlockPos pos, IBlockState state, Entity entityIn) {
-        if (entityIn instanceof EntityPlayerMP && !entityIn.isRiding() && !entityIn.isBeingRidden() && !ModConfig.world.disableDimensions) {
+    public void onEntityCollidedWithBlock(Level worldIn, BlockPos pos, BlockState state, Entity entityIn) {
+        if (entityIn instanceof ServerPlayer && !entityIn.isRiding() && !entityIn.isBeingRidden() && !ModConfig.world.disableDimensions) {
             /**
              * Find the corner of the portal, so that the entire portal is treated as one
              * position.
@@ -67,7 +67,7 @@ public abstract class BlockPortal extends BlockBase {
                 }
             }
 
-            EntityPlayerMP player = (EntityPlayerMP) entityIn;
+            ServerPlayer player = (ServerPlayer) entityIn;
             player.connection.setPlayerLocation(portalCorner.getX(), portalCorner.getY(), portalCorner.getZ(), player.rotationYaw, player.rotationPitch);
 
             if (player.dimension == entranceDimension) {
@@ -78,32 +78,32 @@ public abstract class BlockPortal extends BlockBase {
         }
     }
 
-    protected abstract Teleporter getEntranceTeleporter(World world);
+    protected abstract Teleporter getEntranceTeleporter(Level world);
 
-    protected abstract Teleporter getExitTeleporter(World world);
+    protected abstract Teleporter getExitTeleporter(Level world);
 
     @Override
-    public AxisAlignedBB getCollisionBoundingBox(IBlockState blockState, IBlockAccess worldIn, BlockPos pos) {
+    public AABB getCollisionBoundingBox(BlockState blockState, BlockGetter worldIn, BlockPos pos) {
         return NULL_AABB;
     }
 
     @Override
-    public AxisAlignedBB getBoundingBox(IBlockState state, IBlockAccess source, BlockPos pos) {
+    public AABB getBoundingBox(BlockState state, BlockGetter source, BlockPos pos) {
         return QUARTER_AABB;
     }
 
     @Override
-    public boolean isFullCube(IBlockState state) {
+    public boolean isFullCube(BlockState state) {
         return false;
     }
 
     @Override
-    public boolean isOpaqueCube(IBlockState state) {
+    public boolean isOpaqueCube(BlockState state) {
         return false;
     }
 
     @Override
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public BlockRenderLayer getBlockLayer() {
         return BlockRenderLayer.TRANSLUCENT;
     }
@@ -112,21 +112,21 @@ public abstract class BlockPortal extends BlockBase {
      * If the block is connected with itself, don't render the sides
      */
     @Override
-    @SideOnly(Side.CLIENT)
-    public boolean shouldSideBeRendered(IBlockState blockState, IBlockAccess blockAccess, BlockPos pos, EnumFacing side) {
-        if (side == EnumFacing.NORTH && blockAccess.getBlockState(pos.north()).getBlock() == this) {
+    @OnlyIn(Dist.CLIENT)
+    public boolean shouldSideBeRendered(BlockState blockState, BlockGetter blockAccess, BlockPos pos, Direction side) {
+        if (side == Direction.NORTH && blockAccess.getBlockState(pos.north()).getBlock() == this) {
             return false;
         }
 
-        if (side == EnumFacing.SOUTH && blockAccess.getBlockState(pos.south()).getBlock() == this) {
+        if (side == Direction.SOUTH && blockAccess.getBlockState(pos.south()).getBlock() == this) {
             return false;
         }
 
-        if (side == EnumFacing.WEST && blockAccess.getBlockState(pos.west()).getBlock() == this) {
+        if (side == Direction.WEST && blockAccess.getBlockState(pos.west()).getBlock() == this) {
             return false;
         }
 
-        if (side == EnumFacing.EAST && blockAccess.getBlockState(pos.east()).getBlock() == this) {
+        if (side == Direction.EAST && blockAccess.getBlockState(pos.east()).getBlock() == this) {
             return false;
         }
 
@@ -142,9 +142,9 @@ public abstract class BlockPortal extends BlockBase {
     }
 
     @Override
-    public void addInformation(ItemStack stack, @Nullable World player, List<String> tooltip, ITooltipFlag advanced) {
+    public void addInformation(ItemStack stack, @Nullable Level player, List<String> tooltip, TooltipFlag advanced) {
         if(ModConfig.world.disableDimensions) {
-            tooltip.add(TextFormatting.RED + ModUtils.translateDesc("disabled"));
+            tooltip.add(ChatFormatting.RED + ModUtils.translateDesc("disabled"));
         }
     }
 }

@@ -18,23 +18,23 @@ import com.barribob.MaelstromMod.util.ModUtils;
 import com.barribob.MaelstromMod.util.handlers.LootTableHandler;
 import com.barribob.MaelstromMod.util.handlers.ParticleManager;
 import com.barribob.MaelstromMod.util.handlers.SoundsHandler;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.init.SoundEvents;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.DamageSource;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.ChatFormatting;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.BossEvent;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.util.Mth;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.SoundEvent;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextComponentTranslation;
-import net.minecraft.util.text.TextFormatting;
-import net.minecraft.world.BossInfo;
-import net.minecraft.world.BossInfoServer;
-import net.minecraft.world.World;
+import net.minecraft.server.level.ServerBossEvent;
+import net.minecraft.world.level.Level;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -52,7 +52,7 @@ public class EntityMaelstromIllager extends EntityMaelstromMob {
 
     private final IAction spawnEnemy = new IAction() {
         @Override
-        public void performAction(EntityLeveledMob actor, EntityLivingBase target) {
+        public void performAction(EntityLeveledMob actor, LivingEntity target) {
             int mobCount = phase2() ? getMobConfig().getInt("summoning_algorithm.second_phase_mobs_per_spawn") :
                     getMobConfig().getInt("summoning_algorithm.first_phase_mobs_per_spawn");
             for (int i = 0; i < mobCount; i++) {
@@ -63,16 +63,16 @@ public class EntityMaelstromIllager extends EntityMaelstromMob {
     };
 
     // Responsible for the boss bar
-    private final BossInfoServer bossInfo = (new BossInfoServer(this.getDisplayName(), BossInfo.Color.PURPLE, BossInfo.Overlay.NOTCHED_20));
+    private final ServerBossEvent bossInfo = (new ServerBossEvent(this.getDisplayName(), BossEvent.Color.PURPLE, BossEvent.Overlay.NOTCHED_20));
 
-    public EntityMaelstromIllager(World worldIn) {
+    public EntityMaelstromIllager(Level worldIn) {
         super(worldIn);
         this.setSize(0.9f, 2.5f);
         this.healthScaledAttackFactor = 0.2;
         if (!world.isRemote) {
             attackHandler.setAttack(magicMissile, (IAction) (actor, target) -> {
                 ModUtils.throwProjectile(actor, target, new ProjectileHorrorAttack(world, actor, getAttack() * getConfigFloat("maelstrom_missile_damage")), 6.0f, 1.2f,
-                        ModUtils.getRelativeOffset(actor, new Vec3d(0, 0, 1)));
+                        ModUtils.getRelativeOffset(actor, new Vec3(0, 0, 1)));
                 actor.playSound(SoundEvents.ENTITY_BLAZE_SHOOT, 1.0F, 1.0F / (getRNG().nextFloat() * 0.4F + 0.8F));
             });
             attackHandler.setAttack(wisp, (IAction) (actor, target) -> {
@@ -225,8 +225,8 @@ public class EntityMaelstromIllager extends EntityMaelstromMob {
             if (!source.isProjectile()) {
                 Entity entity = source.getImmediateSource();
 
-                if (entity instanceof EntityLivingBase) {
-                    this.blockUsingShield((EntityLivingBase) entity);
+                if (entity instanceof LivingEntity) {
+                    this.blockUsingShield((LivingEntity) entity);
                 }
             }
             this.playSound(SoundsHandler.ENTITY_CHAOS_KNIGHT_BLOCK, 1.0f, 0.9f + ModRandom.getFloat(0.2f));
@@ -254,8 +254,8 @@ public class EntityMaelstromIllager extends EntityMaelstromMob {
         }
 
         if (message != "") {
-            for (EntityPlayer player : this.bossInfo.getPlayers()) {
-                player.sendMessage(new TextComponentString(TextFormatting.DARK_PURPLE + "Maelstrom Illager: " + TextFormatting.WHITE)
+            for (Player player : this.bossInfo.getPlayers()) {
+                player.sendMessage(new TextComponentString(ChatFormatting.DARK_PURPLE + "Maelstrom Illager: " + ChatFormatting.WHITE)
                         .appendSibling(new TextComponentTranslation(ModUtils.LANG_CHAT + message)));
             }
         }
@@ -264,7 +264,7 @@ public class EntityMaelstromIllager extends EntityMaelstromMob {
     }
 
     @Override
-    public void attackEntityWithRangedAttack(EntityLivingBase target, float distanceFactor) {
+    public void attackEntityWithRangedAttack(LivingEntity target, float distanceFactor) {
         this.phase1AttackAI.setAttackCooldowns(
                 phase2() ? 50 : 360,
                 phase2() ? 20 : 60
@@ -322,21 +322,21 @@ public class EntityMaelstromIllager extends EntityMaelstromMob {
             getCurrentAnimation().startAnimation();
         } else if (id == ModUtils.THIRD_PARTICLE_BYTE) {
             for (int i = 0; i < 1000; i++) {
-                Vec3d unit = new Vec3d(0, 1, 0);
+                Vec3 unit = new Vec3(0, 1, 0);
                 unit = unit.rotatePitch((float) (Math.PI * ModRandom.getFloat(1)));
                 unit = unit.rotateYaw((float) (Math.PI * ModRandom.getFloat(1)));
                 unit = unit.normalize().scale(shieldSize);
                 ParticleManager.spawnEffect(world, unit.add(getPositionVector()), ModColors.PURPLE);
             }
         } else if (id == ModUtils.SECOND_PARTICLE_BYTE) {
-            ParticleManager.spawnMaelstromPotionParticle(world, rand, ModUtils.getRelativeOffset(this, new Vec3d(0, this.getEyeHeight(), 1)).add(getPositionVector()), true);
+            ParticleManager.spawnMaelstromPotionParticle(world, rand, ModUtils.getRelativeOffset(this, new Vec3(0, this.getEyeHeight(), 1)).add(getPositionVector()), true);
         } else if (id == ModUtils.PARTICLE_BYTE) {
             if (this.isSwingingArms()) {
-                float f = this.renderYawOffset * 0.017453292F + MathHelper.cos(this.ticksExisted * 0.6662F) * 0.25F;
-                float f1 = MathHelper.cos(f);
-                float f2 = MathHelper.sin(f);
-                ParticleManager.spawnMaelstromPotionParticle(world, rand, new Vec3d(this.posX + f1 * 0.6D, this.posY + 1.8D, this.posZ + f2 * 0.6D), true);
-                ParticleManager.spawnMaelstromPotionParticle(world, rand, new Vec3d(this.posX - f1 * 0.6D, this.posY + 1.8D, this.posZ - f2 * 0.6D), true);
+                float f = this.renderYawOffset * 0.017453292F + Mth.cos(this.ticksExisted * 0.6662F) * 0.25F;
+                float f1 = Mth.cos(f);
+                float f2 = Mth.sin(f);
+                ParticleManager.spawnMaelstromPotionParticle(world, rand, new Vec3(this.posX + f1 * 0.6D, this.posY + 1.8D, this.posZ + f2 * 0.6D), true);
+                ParticleManager.spawnMaelstromPotionParticle(world, rand, new Vec3(this.posX - f1 * 0.6D, this.posY + 1.8D, this.posZ - f2 * 0.6D), true);
             }
         }
         super.handleStatusUpdate(id);
@@ -347,7 +347,7 @@ public class EntityMaelstromIllager extends EntityMaelstromMob {
     }
 
     @Override
-    public void readEntityFromNBT(NBTTagCompound compound) {
+    public void readEntityFromNBT(CompoundTag compound) {
         if (this.hasCustomName()) {
             this.bossInfo.setName(this.getDisplayName());
         }
@@ -368,13 +368,13 @@ public class EntityMaelstromIllager extends EntityMaelstromMob {
     }
 
     @Override
-    public void addTrackingPlayer(EntityPlayerMP player) {
+    public void addTrackingPlayer(ServerPlayer player) {
         super.addTrackingPlayer(player);
         this.bossInfo.addPlayer(player);
     }
 
     @Override
-    public void removeTrackingPlayer(EntityPlayerMP player) {
+    public void removeTrackingPlayer(ServerPlayer player) {
         super.removeTrackingPlayer(player);
         this.bossInfo.removePlayer(player);
     }

@@ -2,23 +2,23 @@ package com.barribob.MaelstromMod.packets;
 
 import com.barribob.MaelstromMod.entity.util.DirectionalRender;
 import io.netty.buffer.ByteBuf;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.fml.common.network.ByteBufUtils;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 
 public class MessageDirectionForRender implements IMessage {
-    private NBTTagCompound data;
+    private CompoundTag data;
 
     public MessageDirectionForRender() {
     }
 
-    public MessageDirectionForRender(Entity entity, Vec3d vec) {
-        NBTTagCompound data = new NBTTagCompound();
+    public MessageDirectionForRender(Entity entity, Vec3 vec) {
+        CompoundTag data = new CompoundTag();
         data.setInteger("entityId", entity.getEntityId());
         data.setFloat("posX", (float) vec.x);
         data.setFloat("posY", (float) vec.y);
@@ -40,11 +40,11 @@ public class MessageDirectionForRender implements IMessage {
         @Override
         public IMessage onMessage(MessageDirectionForRender message, MessageContext ctx) {
             if (PacketUtils.getPlayer() != null) {
-                EntityPlayer player = PacketUtils.getPlayer();
+                Player player = PacketUtils.getPlayer();
                 if (message.data.hasKey("entityId") && message.data.hasKey("posX") && message.data.hasKey("posY") && message.data.hasKey("posZ")) {
                     Entity entity = player.world.getEntityByID(message.data.getInteger("entityId"));
                     if (entity instanceof DirectionalRender) {
-                        ((DirectionalRender) entity).setRenderDirection(new Vec3d(message.data.getFloat("posX"), message.data.getFloat("posY"), message.data.getFloat("posZ")));
+                        ((DirectionalRender) entity).setRenderDirection(new Vec3(message.data.getFloat("posX"), message.data.getFloat("posY"), message.data.getFloat("posZ")));
                     }
                 }
             }

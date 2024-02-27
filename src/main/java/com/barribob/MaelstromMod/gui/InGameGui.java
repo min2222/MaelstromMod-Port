@@ -14,19 +14,19 @@ import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.ItemStack;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.util.EnumHandSide;
-import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.GuiIngameForge;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
 
 /**
  * Handles armor bar rendering, and gun reload rendering
  */
-@SideOnly(Side.CLIENT)
+@OnlyIn(Dist.CLIENT)
 public class InGameGui {
     public static final ResourceLocation ICONS = new ResourceLocation(Reference.MOD_ID + ":textures/gui/armor_icons.png");
     private static int manaFlashCounter;
@@ -39,8 +39,8 @@ public class InGameGui {
     /*
      * Sourced from the render hotbar method in GuiIngame to display a cooldown bar
      */
-    @SideOnly(Side.CLIENT)
-    public static void renderGunReload(RenderGameOverlayEvent.Post event, EntityPlayer player) {
+    @OnlyIn(Dist.CLIENT)
+    public static void renderGunReload(RenderGameOverlayEvent.Post event, Player player) {
         if (event.getType().equals(RenderGameOverlayEvent.ElementType.ALL)) {
 
             GlStateManager.enableRescaleNormal();
@@ -81,7 +81,7 @@ public class InGameGui {
      * Renders the gun reload bar for a single item stack if it is an instanceof
      * ItemGun
      */
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     private static void renderItemAmmo(ItemStack stack, int xPosition, int yPosition) {
         if (!stack.isEmpty()) {
             if (stack.getItem() instanceof Reloadable) {
@@ -118,7 +118,7 @@ public class InGameGui {
     /**
      * Draw with the WorldRenderer Sourced from some vanilla rendering class
      */
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     private static void draw(BufferBuilder renderer, int x, int y, int width, int height, int red, int green, int blue, int alpha) {
         renderer.begin(7, DefaultVertexFormats.POSITION_COLOR);
         renderer.pos(x, y, 0.0D).color(red, green, blue, alpha).endVertex();
@@ -131,8 +131,8 @@ public class InGameGui {
     /**
      * Renders the maelstrom armor bar
      */
-    @SideOnly(Side.CLIENT)
-    public static void renderArmorBar(Minecraft mc, RenderGameOverlayEvent.Post event, EntityPlayer player) {
+    @OnlyIn(Dist.CLIENT)
+    public static void renderArmorBar(Minecraft mc, RenderGameOverlayEvent.Post event, Player player) {
         if (event.getType().equals(RenderGameOverlayEvent.ElementType.ALL) && mc.playerController.shouldDrawHUD()) {
             mc.getTextureManager().bindTexture(ICONS);
 
@@ -177,8 +177,8 @@ public class InGameGui {
         }
     }
 
-    @SideOnly(Side.CLIENT)
-    public static void renderManaBar(Minecraft mc, RenderGameOverlayEvent.Post event, EntityPlayer player) {
+    @OnlyIn(Dist.CLIENT)
+    public static void renderManaBar(Minecraft mc, RenderGameOverlayEvent.Post event, Player player) {
         if (event.getType().equals(RenderGameOverlayEvent.ElementType.ALL) && mc.playerController.shouldDrawHUD()) {
             mc.getTextureManager().bindTexture(ICONS);
             int width = event.getResolution().getScaledWidth();

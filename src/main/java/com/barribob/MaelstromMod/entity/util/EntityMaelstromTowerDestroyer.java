@@ -4,26 +4,26 @@ import com.barribob.MaelstromMod.Main;
 import com.barribob.MaelstromMod.init.ModBlocks;
 import com.barribob.MaelstromMod.util.ModUtils;
 import com.barribob.MaelstromMod.world.gen.WorldGenCustomStructures;
-import net.minecraft.entity.Entity;
-import net.minecraft.init.Blocks;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.level.Level;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class EntityMaelstromTowerDestroyer extends Entity {
-    List<Vec3d> blocksToDestroy = new ArrayList<>();
+    List<Vec3> blocksToDestroy = new ArrayList<>();
 
-    public EntityMaelstromTowerDestroyer(World worldIn) {
+    public EntityMaelstromTowerDestroyer(Level worldIn) {
         super(worldIn);
         this.setNoGravity(true);
     }
 
-    public EntityMaelstromTowerDestroyer(World worldIn, Vec3d pos) {
+    public EntityMaelstromTowerDestroyer(Level worldIn, Vec3 pos) {
         this(worldIn);
         ModUtils.setEntityPosition(this, pos);
         BlockPos towerSize = WorldGenCustomStructures.invasionTower.getSize(world);
@@ -76,10 +76,10 @@ public class EntityMaelstromTowerDestroyer extends Entity {
     }
 
     @Override
-    protected void readEntityFromNBT(NBTTagCompound compound) {
+    protected void readEntityFromNBT(CompoundTag compound) {
     }
 
     @Override
-    protected void writeEntityToNBT(NBTTagCompound compound) {
+    protected void writeEntityToNBT(CompoundTag compound) {
     }
 }

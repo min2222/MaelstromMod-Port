@@ -1,19 +1,19 @@
 package com.barribob.MaelstromMod.util.teleporter;
 
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Teleporter;
-import net.minecraft.world.WorldServer;
+import net.minecraft.server.level.ServerLevel;
 
 /**
  * Responsible for teleporting the player between dimensions
  */
 public class Teleport extends Teleporter {
-    private final WorldServer world;
+    private final ServerLevel world;
     private double x, y, z;
 
-    public Teleport(WorldServer world, double x, double y, double z) {
+    public Teleport(ServerLevel world, double x, double y, double z) {
         super(world);
         this.world = world;
         this.x = x;
@@ -30,7 +30,7 @@ public class Teleport extends Teleporter {
         entityIn.motionZ = 0;
     }
 
-    public static void teleportToDimension(EntityPlayerMP player, int dimension, Teleporter teleporter) {
+    public static void teleportToDimension(ServerPlayer player, int dimension, Teleporter teleporter) {
         player.changeDimension(dimension, teleporter);
     }
 }

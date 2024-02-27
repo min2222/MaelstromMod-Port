@@ -12,22 +12,21 @@ import com.barribob.MaelstromMod.util.ModRandom;
 import com.barribob.MaelstromMod.util.ModUtils;
 import com.barribob.MaelstromMod.util.handlers.ParticleManager;
 import com.barribob.MaelstromMod.util.handlers.SoundsHandler;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.SharedMonsterAttributes;
-import net.minecraft.init.SoundEvents;
-import net.minecraft.util.DamageSource;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.util.SoundEvent;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.level.Level;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;
 
 public class EntityMaelstromLancer extends EntityMaelstromMob implements IAttack {
-    public EntityMaelstromLancer(World worldIn) {
+    public EntityMaelstromLancer(Level worldIn) {
         super(worldIn);
         this.setSize(0.9f, 1.8f);
     }
@@ -131,7 +130,7 @@ public class EntityMaelstromLancer extends EntityMaelstromMob implements IAttack
     }
 
     @Override
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public void handleStatusUpdate(byte id) {
         if (id == 4) {
             getCurrentAnimation().startAnimation();
@@ -149,15 +148,15 @@ public class EntityMaelstromLancer extends EntityMaelstromMob implements IAttack
     @Override
     public void onLivingUpdate() {
         if (!world.isRemote && this.isLeaping()) {
-            Vec3d dir = this.getLookVec().scale(2.2);
-            Vec3d pos = this.getPositionVector().add(ModUtils.yVec(0.8f)).add(dir);
+            Vec3 dir = this.getLookVec().scale(2.2);
+            Vec3 pos = this.getPositionVector().add(ModUtils.yVec(0.8f)).add(dir);
             ModUtils.handleAreaImpact(0.2f, (e) -> this.getAttack(), this, pos, ModDamageSource.causeElementalMeleeDamage(this, getElement()), 0.20f, 0, false);
         }
         super.onLivingUpdate();
     }
 
     @Override
-    public int startAttack(EntityLivingBase target, float distanceSq, boolean strafingBackwards) {
+    public int startAttack(LivingEntity target, float distanceSq, boolean strafingBackwards) {
         this.world.setEntityState(this, (byte) 4);
 
         addEvent(() -> {
@@ -170,6 +169,6 @@ public class EntityMaelstromLancer extends EntityMaelstromMob implements IAttack
     }
 
     @Override
-    public void attackEntityWithRangedAttack(EntityLivingBase target, float distanceFactor) {
+    public void attackEntityWithRangedAttack(LivingEntity target, float distanceFactor) {
     }
 }

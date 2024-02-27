@@ -1,8 +1,8 @@
 package com.barribob.MaelstromMod.world.gen.cliff;
 
 import com.barribob.MaelstromMod.init.ModBlocks;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
 
 import java.util.Random;
 
@@ -12,7 +12,7 @@ public class WorldGenSmallLedge extends WorldGenCliffLedge {
     }
 
     @Override
-    protected void handleDataMarker(String function, BlockPos pos, World worldIn, Random rand) {
+    protected void handleDataMarker(String function, BlockPos pos, Level worldIn, Random rand) {
         if (rand.nextInt(5) == 0) {
             worldIn.setBlockToAir(pos);
         } else if (rand.nextInt(5) == 0) {

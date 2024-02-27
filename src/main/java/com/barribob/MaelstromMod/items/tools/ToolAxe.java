@@ -3,7 +3,7 @@ package com.barribob.MaelstromMod.items.tools;
 import com.barribob.MaelstromMod.Main;
 import com.barribob.MaelstromMod.init.ModItems;
 import com.barribob.MaelstromMod.util.IHasModel;
-import net.minecraft.creativetab.CreativeTabs;
+import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.item.ItemAxe;
 
 public class ToolAxe extends ItemAxe implements IHasModel {
@@ -11,7 +11,7 @@ public class ToolAxe extends ItemAxe implements IHasModel {
         super(material, 5.0f, -3.0f);
         setUnlocalizedName(name);
         setRegistryName(name);
-        setCreativeTab(CreativeTabs.COMBAT);
+        setCreativeTab(CreativeModeTab.COMBAT);
 
         ModItems.ITEMS.add(this);
     }

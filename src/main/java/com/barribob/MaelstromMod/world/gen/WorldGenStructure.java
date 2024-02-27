@@ -4,12 +4,12 @@ import com.barribob.MaelstromMod.util.IStructure;
 import com.barribob.MaelstromMod.util.ModRandom;
 import com.barribob.MaelstromMod.util.ModUtils;
 import com.barribob.MaelstromMod.util.Reference;
-import net.minecraft.init.Blocks;
+import net.minecraft.core.BlockPos;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Rotation;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.gen.feature.WorldGenerator;
 import net.minecraft.world.gen.structure.template.PlacementSettings;
 import net.minecraft.world.gen.structure.template.Template;
@@ -49,12 +49,12 @@ public class WorldGenStructure extends WorldGenerator implements IStructure {
     }
 
     @Override
-    public boolean generate(World worldIn, Random rand, BlockPos position) {
+    public boolean generate(Level worldIn, Random rand, BlockPos position) {
         this.generateStructure(worldIn, position, ModRandom.choice(Rotation.values()));
         return true;
     }
 
-    private Template getTemplate(World world) {
+    private Template getTemplate(Level world) {
         if (template != null) {
             return template;
         }
@@ -70,7 +70,7 @@ public class WorldGenStructure extends WorldGenerator implements IStructure {
         return template;
     }
 
-    public BlockPos getSize(World world) {
+    public BlockPos getSize(Level world) {
         if (getTemplate(world) == null) {
             return BlockPos.ORIGIN;
         }
@@ -78,7 +78,7 @@ public class WorldGenStructure extends WorldGenerator implements IStructure {
         return template.getSize();
     }
 
-    public BlockPos getCenter(World world) {
+    public BlockPos getCenter(Level world) {
         if (getTemplate(world) == null) {
             return BlockPos.ORIGIN;
         }
@@ -90,7 +90,7 @@ public class WorldGenStructure extends WorldGenerator implements IStructure {
         this.maxVariation = maxVariation;
     }
 
-    public int getMaxVariation(World world) {
+    public int getMaxVariation(Level world) {
         if (maxVariation != 0) {
             return maxVariation;
         }
@@ -102,7 +102,7 @@ public class WorldGenStructure extends WorldGenerator implements IStructure {
         return (int) Math.floor(template.getSize().getY() * 0.25);
     }
 
-    public int getYGenHeight(World world, int x, int z) {
+    public int getYGenHeight(Level world, int x, int z) {
         BlockPos templateSize = this.getSize(world);
         return ModUtils.getAverageGroundHeight(world, x, z, templateSize.getX(), templateSize.getZ(), this.getMaxVariation(world));
     }
@@ -113,7 +113,7 @@ public class WorldGenStructure extends WorldGenerator implements IStructure {
      * @param world
      * @param pos
      */
-    public void generateStructure(World world, BlockPos pos, Rotation rotation) {
+    public void generateStructure(Level world, BlockPos pos, Rotation rotation) {
         if (getTemplate(world) != null) {
             Map<Rotation, BlockPos> rotations = new HashMap<Rotation, BlockPos>();
             rotations.put(Rotation.NONE, new BlockPos(0, 0, 0));
@@ -143,6 +143,6 @@ public class WorldGenStructure extends WorldGenerator implements IStructure {
      * @param worldIn
      * @param rand
      */
-    protected void handleDataMarker(String function, BlockPos pos, World worldIn, Random rand) {
+    protected void handleDataMarker(String function, BlockPos pos, Level worldIn, Random rand) {
     }
 }

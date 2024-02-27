@@ -4,31 +4,30 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import io.netty.buffer.ByteBuf;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockStructure;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.Blocks;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.StructureBlock;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.network.play.server.SPacketUpdateTileEntity;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.tileentity.TileEntity;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.tileentity.TileEntityStructure;
-import net.minecraft.util.*;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkPos;
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.Mth;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentTranslation;
-import net.minecraft.world.WorldServer;
 import net.minecraft.world.gen.structure.StructureBoundingBox;
 import net.minecraft.world.gen.structure.template.PlacementSettings;
 import net.minecraft.world.gen.structure.template.Template;
 import net.minecraft.world.gen.structure.template.TemplateManager;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -53,7 +52,7 @@ public class TileEntityMegaStructure extends TileEntityStructure {
     private long seed;
 
     @Override
-    public NBTTagCompound writeToNBT(NBTTagCompound compound) {
+    public CompoundTag writeToNBT(CompoundTag compound) {
         super.writeToNBT(compound);
         compound.setString("name", this.name);
         compound.setString("author", this.author);
@@ -77,18 +76,18 @@ public class TileEntityMegaStructure extends TileEntityStructure {
     }
 
     @Override
-    public void readFromNBT(NBTTagCompound compound) {
+    public void readFromNBT(CompoundTag compound) {
         super.readFromNBT(compound);
         this.setName(compound.getString("name"));
         this.author = compound.getString("author");
         this.metadata = compound.getString("metadata");
-        int i = MathHelper.clamp(compound.getInteger("posX"), -1000, 1000);
-        int j = MathHelper.clamp(compound.getInteger("posY"), -1000, 1000);
-        int k = MathHelper.clamp(compound.getInteger("posZ"), -1000, 1000);
+        int i = Mth.clamp(compound.getInteger("posX"), -1000, 1000);
+        int j = Mth.clamp(compound.getInteger("posY"), -1000, 1000);
+        int k = Mth.clamp(compound.getInteger("posZ"), -1000, 1000);
         this.position = new BlockPos(i, j, k);
-        int l = MathHelper.clamp(compound.getInteger("sizeX"), 0, 1000);
-        int i1 = MathHelper.clamp(compound.getInteger("sizeY"), 0, 1000);
-        int j1 = MathHelper.clamp(compound.getInteger("sizeZ"), 0, 1000);
+        int l = Mth.clamp(compound.getInteger("sizeX"), 0, 1000);
+        int i1 = Mth.clamp(compound.getInteger("sizeY"), 0, 1000);
+        int j1 = Mth.clamp(compound.getInteger("sizeZ"), 0, 1000);
         this.size = new BlockPos(l, i1, j1);
 
         try {
@@ -127,10 +126,10 @@ public class TileEntityMegaStructure extends TileEntityStructure {
     private void updateBlockState() {
         if (this.world != null) {
             BlockPos blockpos = this.getPos();
-            IBlockState iblockstate = this.world.getBlockState(blockpos);
+            BlockState iblockstate = this.world.getBlockState(blockpos);
 
             if (iblockstate.getBlock() == Blocks.STRUCTURE_BLOCK) {
-                this.world.setBlockState(blockpos, iblockstate.withProperty(BlockStructure.MODE, this.mode), 2);
+                this.world.setBlockState(blockpos, iblockstate.withProperty(StructureBlock.MODE, this.mode), 2);
             }
         }
     }
@@ -142,12 +141,12 @@ public class TileEntityMegaStructure extends TileEntityStructure {
     }
 
     @Override
-    public NBTTagCompound getUpdateTag() {
-        return this.writeToNBT(new NBTTagCompound());
+    public CompoundTag getUpdateTag() {
+        return this.writeToNBT(new CompoundTag());
     }
 
     @Override
-    public boolean usedBy(EntityPlayer player) {
+    public boolean usedBy(Player player) {
         if (!player.canUseCommandBlock()) {
             return false;
         } else {
@@ -176,14 +175,14 @@ public class TileEntityMegaStructure extends TileEntityStructure {
     }
 
     @Override
-    public void createdBy(EntityLivingBase p_189720_1_) {
+    public void createdBy(LivingEntity p_189720_1_) {
         if (!StringUtils.isNullOrEmpty(p_189720_1_.getName())) {
             this.author = p_189720_1_.getName();
         }
     }
 
     @Override
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public BlockPos getPosition() {
         return this.position;
     }
@@ -194,7 +193,7 @@ public class TileEntityMegaStructure extends TileEntityStructure {
     }
 
     @Override
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public BlockPos getStructureSize() {
         return this.size;
     }
@@ -205,7 +204,7 @@ public class TileEntityMegaStructure extends TileEntityStructure {
     }
 
     @Override
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public Mirror getMirror() {
         return this.mirror;
     }
@@ -226,13 +225,13 @@ public class TileEntityMegaStructure extends TileEntityStructure {
     }
 
     @Override
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public Rotation getRotation() {
         return this.rotation;
     }
 
     @Override
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public String getMetadata() {
         return this.metadata;
     }
@@ -245,10 +244,10 @@ public class TileEntityMegaStructure extends TileEntityStructure {
     @Override
     public void setMode(TileEntityStructure.Mode modeIn) {
         this.mode = modeIn;
-        IBlockState iblockstate = this.world.getBlockState(this.getPos());
+        BlockState iblockstate = this.world.getBlockState(this.getPos());
 
         if (iblockstate.getBlock() == Blocks.STRUCTURE_BLOCK) {
-            this.world.setBlockState(this.getPos(), iblockstate.withProperty(BlockStructure.MODE, modeIn), 2);
+            this.world.setBlockState(this.getPos(), iblockstate.withProperty(StructureBlock.MODE, modeIn), 2);
         }
     }
 
@@ -268,7 +267,7 @@ public class TileEntityMegaStructure extends TileEntityStructure {
     }
 
     @Override
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public void nextMode() {
         switch (this.getMode()) {
             case SAVE:
@@ -286,19 +285,19 @@ public class TileEntityMegaStructure extends TileEntityStructure {
     }
 
     @Override
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public boolean ignoresEntities() {
         return this.ignoreEntities;
     }
 
     @Override
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public float getIntegrity() {
         return this.integrity;
     }
 
     @Override
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public long getSeed() {
         return this.seed;
     }
@@ -327,7 +326,7 @@ public class TileEntityMegaStructure extends TileEntityStructure {
                     this.size = new BlockPos(structureboundingbox.maxX - structureboundingbox.minX - 1, structureboundingbox.maxY - structureboundingbox.minY - 1,
                             structureboundingbox.maxZ - structureboundingbox.minZ - 1);
                     this.markDirty();
-                    IBlockState iblockstate = this.world.getBlockState(blockpos);
+                    BlockState iblockstate = this.world.getBlockState(blockpos);
                     this.world.notifyBlockUpdate(blockpos, iblockstate, iblockstate, 3);
                     return true;
                 } else {
@@ -354,10 +353,10 @@ public class TileEntityMegaStructure extends TileEntityStructure {
         List<TileEntityStructure> list = Lists.<TileEntityStructure>newArrayList();
 
         for (BlockPos.MutableBlockPos blockpos$mutableblockpos : BlockPos.getAllInBoxMutable(p_184418_1_, p_184418_2_)) {
-            IBlockState iblockstate = this.world.getBlockState(blockpos$mutableblockpos);
+            BlockState iblockstate = this.world.getBlockState(blockpos$mutableblockpos);
 
             if (iblockstate.getBlock() == Blocks.STRUCTURE_BLOCK) {
-                TileEntity tileentity = this.world.getTileEntity(blockpos$mutableblockpos);
+                BlockEntity tileentity = this.world.getTileEntity(blockpos$mutableblockpos);
 
                 if (tileentity != null && tileentity instanceof TileEntityStructure) {
                     list.add((TileEntityStructure) tileentity);
@@ -404,7 +403,7 @@ public class TileEntityMegaStructure extends TileEntityStructure {
     }
 
     @Override
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public void writeCoordinates(ByteBuf buf) {
         buf.writeInt(this.pos.getX());
         buf.writeInt(this.pos.getY());
@@ -449,12 +448,12 @@ public class TileEntityMegaStructure extends TileEntityStructure {
     }
 
     private boolean saveStructure(boolean writeToDisk, BlockPos startPos, BlockPos size, String structureName) {
-        WorldServer worldserver = (WorldServer) this.world;
+        ServerLevel worldserver = (ServerLevel) this.world;
         MinecraftServer minecraftserver = this.world.getMinecraftServer();
         TemplateManager templatemanager = worldserver.getStructureTemplateManager();
         Template template = templatemanager.getTemplate(minecraftserver, new ResourceLocation(structureName));
         template.takeBlocksFromWorld(this.world, startPos, size, !this.ignoreEntities, Blocks.AIR);
-        NBTTagCompound nbt = new NBTTagCompound();
+        CompoundTag nbt = new CompoundTag();
         template.writeToNBT(nbt);
         NBTTagList blocks = nbt.getTagList("blocks", nbt.getId());
         if (blocks.hasNoTags()) {
@@ -487,7 +486,7 @@ public class TileEntityMegaStructure extends TileEntityStructure {
         if (this.mode == TileEntityStructure.Mode.LOAD && !this.world.isRemote && !StringUtils.isNullOrEmpty(this.name)) {
             BlockPos blockpos = this.getPos();
             BlockPos blockpos1 = blockpos.add(this.position);
-            WorldServer worldserver = (WorldServer) this.world;
+            ServerLevel worldserver = (ServerLevel) this.world;
             MinecraftServer minecraftserver = this.world.getMinecraftServer();
             TemplateManager templatemanager = worldserver.getStructureTemplateManager();
             Template template = templatemanager.get(minecraftserver, new ResourceLocation(this.name));
@@ -505,7 +504,7 @@ public class TileEntityMegaStructure extends TileEntityStructure {
                 if (!flag) {
                     this.size = blockpos2;
                     this.markDirty();
-                    IBlockState iblockstate = this.world.getBlockState(blockpos);
+                    BlockState iblockstate = this.world.getBlockState(blockpos);
                     this.world.notifyBlockUpdate(blockpos, iblockstate, iblockstate, 3);
                 }
 
@@ -516,7 +515,7 @@ public class TileEntityMegaStructure extends TileEntityStructure {
                             .setChunk((ChunkPos) null).setReplacedBlock((Block) null).setIgnoreStructureBlock(false);
 
                     if (this.integrity < 1.0F) {
-                        placementsettings.setIntegrity(MathHelper.clamp(this.integrity, 0.0F, 1.0F)).setSeed(Long.valueOf(this.seed));
+                        placementsettings.setIntegrity(Mth.clamp(this.integrity, 0.0F, 1.0F)).setSeed(Long.valueOf(this.seed));
                     }
 
                     template.addBlocksToWorldChunk(this.world, blockpos1, placementsettings);
@@ -530,7 +529,7 @@ public class TileEntityMegaStructure extends TileEntityStructure {
 
     @Override
     public void unloadStructure() {
-        WorldServer worldserver = (WorldServer) this.world;
+        ServerLevel worldserver = (ServerLevel) this.world;
         TemplateManager templatemanager = worldserver.getStructureTemplateManager();
         templatemanager.remove(new ResourceLocation(this.name));
     }
@@ -538,7 +537,7 @@ public class TileEntityMegaStructure extends TileEntityStructure {
     @Override
     public boolean isStructureLoadable() {
         if (this.mode == TileEntityStructure.Mode.LOAD && !this.world.isRemote) {
-            WorldServer worldserver = (WorldServer) this.world;
+            ServerLevel worldserver = (ServerLevel) this.world;
             MinecraftServer minecraftserver = this.world.getMinecraftServer();
             TemplateManager templatemanager = worldserver.getStructureTemplateManager();
             return templatemanager.get(minecraftserver, new ResourceLocation(this.name)) != null;
@@ -558,7 +557,7 @@ public class TileEntityMegaStructure extends TileEntityStructure {
     }
 
     @Override
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public boolean showsAir() {
         return this.showAir;
     }
@@ -569,7 +568,7 @@ public class TileEntityMegaStructure extends TileEntityStructure {
     }
 
     @Override
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public boolean showsBoundingBox() {
         return this.showBoundingBox;
     }

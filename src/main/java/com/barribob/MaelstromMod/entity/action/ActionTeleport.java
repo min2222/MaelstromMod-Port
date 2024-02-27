@@ -2,14 +2,14 @@ package com.barribob.MaelstromMod.entity.action;
 
 import com.barribob.MaelstromMod.entity.entities.EntityLeveledMob;
 import com.barribob.MaelstromMod.util.ModRandom;
-import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.world.entity.LivingEntity;
 
 /*
  * Attempt to teleport around the target
  */
 public class ActionTeleport implements IAction {
     @Override
-    public void performAction(EntityLeveledMob actor, EntityLivingBase target) {
+    public void performAction(EntityLeveledMob actor, LivingEntity target) {
         int attempts = 100;
         int minRange = 5;
         int maxRange = 11;

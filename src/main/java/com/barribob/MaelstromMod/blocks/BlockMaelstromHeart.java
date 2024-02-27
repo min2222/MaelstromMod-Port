@@ -1,13 +1,13 @@
 package com.barribob.MaelstromMod.blocks;
 
 import com.barribob.MaelstromMod.entity.util.EntityMaelstromTowerDestroyer;
-import net.minecraft.block.SoundType;
-import net.minecraft.block.material.Material;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.item.Item;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.material.Material;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.level.Level;
 
 import java.util.Random;
 
@@ -17,14 +17,14 @@ public class BlockMaelstromHeart extends BlockBase {
     }
 
     @Override
-    public void breakBlock(World worldIn, BlockPos pos, IBlockState state) {
-        EntityMaelstromTowerDestroyer entity = new EntityMaelstromTowerDestroyer(worldIn, new Vec3d(pos).subtract(new Vec3d(21, 48, 13)));
+    public void breakBlock(Level worldIn, BlockPos pos, BlockState state) {
+        EntityMaelstromTowerDestroyer entity = new EntityMaelstromTowerDestroyer(worldIn, new Vec3(pos).subtract(new Vec3(21, 48, 13)));
         worldIn.spawnEntity(entity);
         super.breakBlock(worldIn, pos, state);
     }
 
     @Override
-    public Item getItemDropped(IBlockState state, Random rand, int fortune) {
+    public Item getItemDropped(BlockState state, Random rand, int fortune) {
         return null;
     }
 }

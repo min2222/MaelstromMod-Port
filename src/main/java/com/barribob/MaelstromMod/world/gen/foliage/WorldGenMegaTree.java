@@ -1,23 +1,23 @@
 package com.barribob.MaelstromMod.world.gen.foliage;
 
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.util.Mth;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.gen.feature.WorldGenHugeTrees;
 
 import java.util.Random;
 
 public class WorldGenMegaTree extends WorldGenHugeTrees {
-    IBlockState fruitBlock;
+    BlockState fruitBlock;
 
-    public WorldGenMegaTree(boolean notify, int baseHeightIn, int extraRandomHeightIn, IBlockState woodMetadataIn, IBlockState leavesBlock, IBlockState fruitBlock) {
+    public WorldGenMegaTree(boolean notify, int baseHeightIn, int extraRandomHeightIn, BlockState woodMetadataIn, BlockState leavesBlock, BlockState fruitBlock) {
         super(notify, baseHeightIn, extraRandomHeightIn, woodMetadataIn, leavesBlock);
         this.fruitBlock = fruitBlock;
     }
 
     @Override
-    public boolean generate(World worldIn, Random rand, BlockPos position) {
+    public boolean generate(Level worldIn, Random rand, BlockPos position) {
         int i = this.getHeight(rand);
 
         if (!this.ensureGrowable(worldIn, rand, position, i)) {
@@ -35,12 +35,12 @@ public class WorldGenMegaTree extends WorldGenHugeTrees {
 
             for (int j = position.getY() + i - 2 - rand.nextInt(4); j > position.getY() + i / 3; j -= 3 + rand.nextInt(3)) {
                 float f = rand.nextFloat() * ((float) Math.PI * 2F);
-                int k = position.getX() + (int) (0.5F + MathHelper.cos(f) * 4.0F);
-                int l = position.getZ() + (int) (0.5F + MathHelper.sin(f) * 4.0F);
+                int k = position.getX() + (int) (0.5F + Mth.cos(f) * 4.0F);
+                int l = position.getZ() + (int) (0.5F + Mth.sin(f) * 4.0F);
 
                 for (int i1 = 0; i1 < 5; ++i1) {
-                    k = position.getX() + (int) (1.5F + MathHelper.cos(f) * i1);
-                    l = position.getZ() + (int) (1.5F + MathHelper.sin(f) * i1);
+                    k = position.getX() + (int) (1.5F + Mth.cos(f) * i1);
+                    l = position.getZ() + (int) (1.5F + Mth.sin(f) * i1);
                     this.setBlockAndNotifyAdequately(worldIn, new BlockPos(k, j - 3 + i1 / 2, l), this.woodMetadata);
                 }
 
@@ -86,14 +86,14 @@ public class WorldGenMegaTree extends WorldGenHugeTrees {
     }
 
     @Override
-    protected void growLeavesLayer(World worldIn, BlockPos layerCenter, int width) {
+    protected void growLeavesLayer(Level worldIn, BlockPos layerCenter, int width) {
         int i = width * width;
 
         for (int j = -width; j <= width; ++j) {
             for (int k = -width; k <= width; ++k) {
                 if (j * j + k * k <= i) {
                     BlockPos blockpos = layerCenter.add(j, 0, k);
-                    IBlockState state = worldIn.getBlockState(blockpos);
+                    BlockState state = worldIn.getBlockState(blockpos);
 
                     if (state.getBlock().isAir(state, worldIn, blockpos) || state.getBlock().isLeaves(state, worldIn, blockpos)) {
                         this.setBlockAndNotifyAdequately(worldIn, blockpos, worldIn.rand.nextInt(20) == 0 ? this.fruitBlock : this.leavesMetadata);
@@ -103,15 +103,15 @@ public class WorldGenMegaTree extends WorldGenHugeTrees {
         }
     }
 
-    private void createCrown(World worldIn, BlockPos p_175930_2_, int p_175930_3_) {
+    private void createCrown(Level worldIn, BlockPos p_175930_2_, int p_175930_3_) {
         for (int j = -3; j <= 0; ++j) {
             this.growLeavesLayerStrict(worldIn, p_175930_2_.up(j), p_175930_3_ - j);
         }
     }
 
     // Helper macro
-    private boolean isAirLeaves(World world, BlockPos pos) {
-        IBlockState state = world.getBlockState(pos);
+    private boolean isAirLeaves(Level world, BlockPos pos) {
+        BlockState state = world.getBlockState(pos);
         return state.getBlock().isAir(state, world, pos) || state.getBlock().isLeaves(state, world, pos);
     }
 }

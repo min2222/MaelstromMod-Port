@@ -1,9 +1,9 @@
 package com.barribob.MaelstromMod.entity.tileentity;
 
-import net.minecraft.block.Block;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
 
 import java.util.function.Supplier;
 
@@ -15,7 +15,7 @@ public class MaelstromMobSpawnerLogic extends MobSpawnerLogic {
     private int minSpawnDelay = 600;
     private int maxSpawnDelay = 800;
 
-    public MaelstromMobSpawnerLogic(Supplier<World> world, Supplier<BlockPos> pos, Block block) {
+    public MaelstromMobSpawnerLogic(Supplier<Level> world, Supplier<BlockPos> pos, Block block) {
         super(world, pos, block);
     }
 
@@ -78,7 +78,7 @@ public class MaelstromMobSpawnerLogic extends MobSpawnerLogic {
     }
 
     @Override
-    public void readFromNBT(NBTTagCompound nbt) {
+    public void readFromNBT(CompoundTag nbt) {
         if (nbt.hasKey("MinSpawnDelay", 99)) {
             this.minSpawnDelay = nbt.getShort("MinSpawnDelay");
             this.maxSpawnDelay = nbt.getShort("MaxSpawnDelay");
@@ -87,7 +87,7 @@ public class MaelstromMobSpawnerLogic extends MobSpawnerLogic {
     }
 
     @Override
-    public NBTTagCompound writeToNBT(NBTTagCompound compound) {
+    public CompoundTag writeToNBT(CompoundTag compound) {
         if (this.getEntityData() != null) {
             compound.setShort("MinSpawnDelay", (short) this.minSpawnDelay);
             compound.setShort("MaxSpawnDelay", (short) this.maxSpawnDelay);

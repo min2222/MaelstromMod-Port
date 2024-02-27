@@ -4,36 +4,36 @@ import com.barribob.MaelstromMod.util.ModColors;
 import com.barribob.MaelstromMod.util.ModDamageSource;
 import com.barribob.MaelstromMod.util.ModUtils;
 import com.barribob.MaelstromMod.util.handlers.ParticleManager;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.init.MobEffects;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.potion.PotionEffect;
-import net.minecraft.util.DamageSource;
 import net.minecraft.util.math.RayTraceResult;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.level.Level;
 
 public class ProjectileStatueMaelstromMissile extends Projectile {
-    public ProjectileStatueMaelstromMissile(World worldIn, EntityLivingBase throwerIn, float damage) {
+    public ProjectileStatueMaelstromMissile(Level worldIn, LivingEntity throwerIn, float damage) {
         super(worldIn, throwerIn, damage);
     }
 
-    public ProjectileStatueMaelstromMissile(World worldIn) {
+    public ProjectileStatueMaelstromMissile(Level worldIn) {
         super(worldIn);
     }
 
-    public ProjectileStatueMaelstromMissile(World worldIn, double x, double y, double z) {
+    public ProjectileStatueMaelstromMissile(Level worldIn, double x, double y, double z) {
         super(worldIn, x, y, z);
     }
 
     @Override
     protected void spawnParticles() {
-        ParticleManager.spawnSwirl2(world, this.getPositionVector(), ModColors.PURPLE, Vec3d.ZERO);
+        ParticleManager.spawnSwirl2(world, this.getPositionVector(), ModColors.PURPLE, Vec3.ZERO);
     }
 
     @Override
     protected void onHit(RayTraceResult result) {
-        if(!world.isRemote && result.entityHit instanceof EntityLivingBase) {
-            ((EntityLivingBase)result.entityHit).addPotionEffect(new PotionEffect(MobEffects.BLINDNESS, 40, 0));
+        if(!world.isRemote && result.entityHit instanceof LivingEntity) {
+            ((LivingEntity)result.entityHit).addPotionEffect(new PotionEffect(MobEffects.BLINDNESS, 40, 0));
         }
         DamageSource source = ModDamageSource.builder()
                 .type(ModDamageSource.PROJECTILE)

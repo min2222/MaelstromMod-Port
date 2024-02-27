@@ -2,8 +2,8 @@ package com.barribob.MaelstromMod.packets;
 
 import com.barribob.MaelstromMod.items.tools.ToolSword;
 import io.netty.buffer.ByteBuf;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.item.Item;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.Item;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
@@ -28,7 +28,7 @@ public class MessageEmptySwing implements IMessage {
     public static class Handler implements IMessageHandler<MessageEmptySwing, IMessage> {
         @Override
         public IMessage onMessage(MessageEmptySwing message, MessageContext ctx) {
-            final EntityPlayerMP player = ctx.getServerHandler().player;
+            final ServerPlayer player = ctx.getServerHandler().player;
 
             player.getServer().addScheduledTask(new Runnable() {
                 @Override

@@ -1,11 +1,11 @@
 package com.barribob.MaelstromMod.entity.util;
 
 import com.barribob.MaelstromMod.util.ModUtils;
-import net.minecraft.entity.Entity;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.world.World;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.Level;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 
 /**
  * A class that exists to spawn particles. It is to circumvent the less flexible
@@ -14,7 +14,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 public abstract class EntityParticleSpawner extends Entity {
     private boolean spawnedParticles = false;
 
-    public EntityParticleSpawner(World worldIn) {
+    public EntityParticleSpawner(Level worldIn) {
         super(worldIn);
     }
 
@@ -26,7 +26,7 @@ public abstract class EntityParticleSpawner extends Entity {
     }
 
     @Override
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public void handleStatusUpdate(byte id) {
         if (id == ModUtils.PARTICLE_BYTE) {
             spawnParticles();
@@ -34,7 +34,7 @@ public abstract class EntityParticleSpawner extends Entity {
         super.handleStatusUpdate(id);
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     protected abstract void spawnParticles();
 
     @Override
@@ -42,10 +42,10 @@ public abstract class EntityParticleSpawner extends Entity {
     }
 
     @Override
-    protected void readEntityFromNBT(NBTTagCompound compound) {
+    protected void readEntityFromNBT(CompoundTag compound) {
     }
 
     @Override
-    protected void writeEntityToNBT(NBTTagCompound compound) {
+    protected void writeEntityToNBT(CompoundTag compound) {
     }
 }

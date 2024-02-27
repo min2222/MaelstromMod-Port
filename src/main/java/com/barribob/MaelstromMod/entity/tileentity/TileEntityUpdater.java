@@ -1,14 +1,14 @@
 package com.barribob.MaelstromMod.entity.tileentity;
 
 import com.barribob.MaelstromMod.util.IBlockUpdater;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.play.server.SPacketUpdateTileEntity;
-import net.minecraft.tileentity.TileEntity;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.util.ITickable;
 
 import javax.annotation.Nullable;
 
-public class TileEntityUpdater extends TileEntity implements ITickable {
+public class TileEntityUpdater extends BlockEntity implements ITickable {
 
     @Override
     public void update() {
@@ -24,8 +24,8 @@ public class TileEntityUpdater extends TileEntity implements ITickable {
     }
 
     @Override
-    public NBTTagCompound getUpdateTag() {
-        NBTTagCompound nbttagcompound = this.writeToNBT(new NBTTagCompound());
+    public CompoundTag getUpdateTag() {
+        CompoundTag nbttagcompound = this.writeToNBT(new CompoundTag());
         return nbttagcompound;
     }
 }

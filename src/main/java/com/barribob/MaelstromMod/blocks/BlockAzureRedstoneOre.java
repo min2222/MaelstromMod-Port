@@ -5,19 +5,19 @@ import com.barribob.MaelstromMod.init.ModBlocks;
 import com.barribob.MaelstromMod.init.ModItems;
 import com.barribob.MaelstromMod.util.IHasModel;
 import net.minecraft.block.BlockRedstoneOre;
-import net.minecraft.block.SoundType;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.Blocks;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemBlock;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.EnumHand;
-import net.minecraft.util.EnumParticleTypes;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.core.Direction;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.world.level.Level;
 
 import java.util.Random;
 
@@ -32,7 +32,7 @@ public class BlockAzureRedstoneOre extends BlockRedstoneOre implements IHasModel
 
         // Add both an item as a block and the block itself
         ModBlocks.BLOCKS.add(this);
-        ModItems.ITEMS.add(new ItemBlock(this).setRegistryName(this.getRegistryName()));
+        ModItems.ITEMS.add(new BlockItem(this).setRegistryName(this.getRegistryName()));
     }
 
     public BlockAzureRedstoneOre(String name, float hardness, float resistance, SoundType soundType) {
@@ -45,7 +45,7 @@ public class BlockAzureRedstoneOre extends BlockRedstoneOre implements IHasModel
     /**
      * Called when the block is right clicked by a player.
      */
-    public boolean onBlockActivated(World worldIn, BlockPos pos, IBlockState state, EntityPlayer playerIn, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
+    public boolean onBlockActivated(Level worldIn, BlockPos pos, BlockState state, Player playerIn, InteractionHand hand, Direction facing, float hitX, float hitY, float hitZ) {
         this.activate(worldIn, pos);
         return super.onBlockActivated(worldIn, pos, state, playerIn, hand, facing, hitX, hitY, hitZ);
     }
@@ -53,24 +53,24 @@ public class BlockAzureRedstoneOre extends BlockRedstoneOre implements IHasModel
     /**
      * Called when the given entity walks on this Block
      */
-    public void onEntityWalk(World worldIn, BlockPos pos, Entity entityIn) {
+    public void onEntityWalk(Level worldIn, BlockPos pos, Entity entityIn) {
         this.activate(worldIn, pos);
         super.onEntityWalk(worldIn, pos, entityIn);
     }
 
-    private void activate(World worldIn, BlockPos pos) {
+    private void activate(Level worldIn, BlockPos pos) {
         if (this == ModBlocks.AZURE_REDSTONE_ORE) {
             worldIn.setBlockState(pos, ModBlocks.AZURE_LIT_REDSTONE_ORE.getDefaultState());
         }
     }
 
-    public void updateTick(World worldIn, BlockPos pos, IBlockState state, Random rand) {
+    public void updateTick(Level worldIn, BlockPos pos, BlockState state, Random rand) {
         if (this == Blocks.LIT_REDSTONE_ORE) {
             worldIn.setBlockState(pos, ModBlocks.AZURE_REDSTONE_ORE.getDefaultState());
         }
     }
 
-    private void spawnParticles(World worldIn, BlockPos pos) {
+    private void spawnParticles(Level worldIn, BlockPos pos) {
         Random random = worldIn.rand;
         double d0 = 0.0625D;
 
@@ -104,16 +104,16 @@ public class BlockAzureRedstoneOre extends BlockRedstoneOre implements IHasModel
             }
 
             if (d1 < (double) pos.getX() || d1 > (double) (pos.getX() + 1) || d2 < 0.0D || d2 > (double) (pos.getY() + 1) || d3 < (double) pos.getZ() || d3 > (double) (pos.getZ() + 1)) {
-                worldIn.spawnParticle(EnumParticleTypes.REDSTONE, d1, d2, d3, 0.0D, 0.0D, 0.0D);
+                worldIn.spawnParticle(ParticleTypes.REDSTONE, d1, d2, d3, 0.0D, 0.0D, 0.0D);
             }
         }
     }
 
-    protected ItemStack getSilkTouchDrop(IBlockState state) {
+    protected ItemStack getSilkTouchDrop(BlockState state) {
         return new ItemStack(ModBlocks.AZURE_REDSTONE_ORE);
     }
 
-    public ItemStack getItem(World worldIn, BlockPos pos, IBlockState state) {
+    public ItemStack getItem(Level worldIn, BlockPos pos, BlockState state) {
         return new ItemStack(Item.getItemFromBlock(ModBlocks.AZURE_REDSTONE_ORE), 1, this.damageDropped(state));
     }
 

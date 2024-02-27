@@ -7,19 +7,19 @@ import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.entity.RenderLivingBase;
 import net.minecraft.client.renderer.entity.layers.LayerArmorBase;
 import net.minecraft.client.renderer.entity.layers.LayerRenderer;
-import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.entity.player.EnumPlayerModelParts;
-import net.minecraft.inventory.EntityEquipmentSlot;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraft.world.item.ItemStack;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 
 /**
  * Taken from {@code LayerElytra}
  */
-@SideOnly(Side.CLIENT)
-public class LayerModElytra implements LayerRenderer<EntityLivingBase> {
+@OnlyIn(Dist.CLIENT)
+public class LayerModElytra implements LayerRenderer<LivingEntity> {
     /**
      * Instance of the player renderer.
      */
@@ -34,11 +34,11 @@ public class LayerModElytra implements LayerRenderer<EntityLivingBase> {
     }
 
     @Override
-    public void doRenderLayer(EntityLivingBase entitylivingbaseIn, float limbSwing, float limbSwingAmount, float partialTicks, float ageInTicks, float netHeadYaw, float headPitch, float scale) {
-        ItemStack itemstack = entitylivingbaseIn.getItemStackFromSlot(EntityEquipmentSlot.CHEST);
+    public void doRenderLayer(LivingEntity entitylivingbaseIn, float limbSwing, float limbSwingAmount, float partialTicks, float ageInTicks, float netHeadYaw, float headPitch, float scale) {
+        ItemStack itemstack = entitylivingbaseIn.getItemStackFromSlot(EquipmentSlot.CHEST);
 
         if (itemstack.getItem() instanceof ItemModElytra) {
-            ResourceLocation elytraTexture = new ResourceLocation(itemstack.getItem().getArmorTexture(itemstack, entitylivingbaseIn, EntityEquipmentSlot.CHEST, ""));
+            ResourceLocation elytraTexture = new ResourceLocation(itemstack.getItem().getArmorTexture(itemstack, entitylivingbaseIn, EquipmentSlot.CHEST, ""));
 
             GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
             GlStateManager.enableBlend();

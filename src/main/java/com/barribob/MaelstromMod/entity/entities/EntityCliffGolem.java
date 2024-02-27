@@ -7,37 +7,34 @@ import com.barribob.MaelstromMod.entity.animation.AnimationAzureGolem;
 import com.barribob.MaelstromMod.entity.animation.AnimationGroundFistBump;
 import com.barribob.MaelstromMod.entity.render.RenderAzureGolem;
 import com.barribob.MaelstromMod.entity.util.ComboAttack;
-import com.barribob.MaelstromMod.init.ModEntities;
 import com.barribob.MaelstromMod.util.ModRandom;
-import com.barribob.MaelstromMod.util.handlers.LevelHandler;
 import com.barribob.MaelstromMod.util.handlers.LootTableHandler;
-import net.minecraft.block.Block;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.IRangedAttackMob;
-import net.minecraft.entity.SharedMonsterAttributes;
-import net.minecraft.entity.ai.EntityAIHurtByTarget;
-import net.minecraft.entity.ai.EntityAILookIdle;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.monster.RangedAttackMob;
+import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.entity.ai.EntityAIWanderAvoidWater;
 import net.minecraft.entity.ai.EntityAIWatchClosest;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.SoundEvents;
-import net.minecraft.util.DamageSource;
-import net.minecraft.util.EnumHand;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.SoundEvent;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 
 import javax.annotation.Nullable;
 
-public class EntityCliffGolem extends EntityLeveledMob implements IRangedAttackMob {
+public class EntityCliffGolem extends EntityLeveledMob implements RangedAttackMob {
     private ComboAttack attackHandler = new ComboAttack();
     private byte groundPoundByte = 4;
     private byte geyserByte = 5;
 
-    public EntityCliffGolem(World worldIn) {
+    public EntityCliffGolem(Level worldIn) {
         super(worldIn);
         this.setSize(1.4F * RenderAzureGolem.AZURE_GOLEM_SIZE, 2.7F * RenderAzureGolem.AZURE_GOLEM_SIZE);
         if (!worldIn.isRemote) {
@@ -48,7 +45,7 @@ public class EntityCliffGolem extends EntityLeveledMob implements IRangedAttackM
     }
 
     @Override
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     protected void initAnimation() {
         this.currentAnimation = new AnimationAzureGolem();
         attackHandler.setAttack(groundPoundByte, new ActionGolemSlam(), () -> new AnimationAzureGolem());
@@ -65,9 +62,9 @@ public class EntityCliffGolem extends EntityLeveledMob implements IRangedAttackM
         super.initEntityAI();
         this.tasks.addTask(4, new EntityAIRangedAttack<EntityCliffGolem>(this, 1f, 60, 15, 20.0f, 0.1f));
         this.tasks.addTask(5, new EntityAIWanderAvoidWater(this, 0.6D));
-        this.tasks.addTask(6, new EntityAILookIdle(this));
-        this.tasks.addTask(7, new EntityAIWatchClosest(this, EntityPlayer.class, 6.0F));
-        this.targetTasks.addTask(1, new EntityAIHurtByTarget(this, false, new Class[0]));
+        this.tasks.addTask(6, new RandomLookAroundGoal(this));
+        this.tasks.addTask(7, new EntityAIWatchClosest(this, Player.class, 6.0F));
+        this.targetTasks.addTask(1, new HurtByTargetGoal(this, false, new Class[0]));
     }
 
     @Override
@@ -97,12 +94,12 @@ public class EntityCliffGolem extends EntityLeveledMob implements IRangedAttackM
     }
 
     @Override
-    public void attackEntityWithRangedAttack(EntityLivingBase target, float distanceFactor) {
+    public void attackEntityWithRangedAttack(LivingEntity target, float distanceFactor) {
         this.attackHandler.getCurrentAttackAction().performAction(this, target);
     }
 
     @Override
-    public void swingArm(EnumHand hand) {
+    public void swingArm(InteractionHand hand) {
     }
 
     @Override
@@ -122,7 +119,7 @@ public class EntityCliffGolem extends EntityLeveledMob implements IRangedAttackM
     }
 
     @Override
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public void handleStatusUpdate(byte id) {
         if (id == this.groundPoundByte || id == this.geyserByte) {
             this.currentAnimation = attackHandler.getAnimation(id);

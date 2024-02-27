@@ -6,31 +6,31 @@ import com.barribob.MaelstromMod.items.ItemModElytra;
 import com.barribob.MaelstromMod.packets.MessageStartElytraFlying;
 import com.barribob.MaelstromMod.util.Reference;
 import net.minecraft.client.entity.AbstractClientPlayer;
-import net.minecraft.client.entity.EntityPlayerSP;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.inventory.EntityEquipmentSlot;
-import net.minecraft.item.ItemStack;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.client.event.InputUpdateEvent;
 import net.minecraftforge.client.event.RenderLivingEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.api.distmarker.Dist;
 
 import java.util.Collections;
 import java.util.Set;
 import java.util.WeakHashMap;
 
-@Mod.EventBusSubscriber(modid = Reference.MOD_ID, value = Side.CLIENT)
+@Mod.EventBusSubscriber(modid = Reference.MOD_ID, value = Dist.CLIENT)
 public class ClientElytraEventHandler {
     static boolean prevJumpTick;
-    private static Set<EntityPlayer> layeredPlayers = Collections.newSetFromMap(new WeakHashMap<EntityPlayer, Boolean>());
+    private static Set<Player> layeredPlayers = Collections.newSetFromMap(new WeakHashMap<Player, Boolean>());
 
     @SubscribeEvent
     public static void onPressKey(InputUpdateEvent event) {
-        if (event.getEntityPlayer() instanceof EntityPlayerSP) {
-            EntityPlayerSP player = (EntityPlayerSP) event.getEntityPlayer();
+        if (event.getEntityPlayer() instanceof LocalPlayer) {
+            LocalPlayer player = (LocalPlayer) event.getEntityPlayer();
             if (!prevJumpTick && player.movementInput.jump && !player.onGround && player.motionY < 0.0D && !player.isElytraFlying() && !player.capabilities.isFlying) {
-                ItemStack itemstack = player.getItemStackFromSlot(EntityEquipmentSlot.CHEST);
+                ItemStack itemstack = player.getItemStackFromSlot(EquipmentSlot.CHEST);
 
                 if (itemstack.getItem() instanceof ItemModElytra) {
                     Main.network.sendToServer(new MessageStartElytraFlying());
@@ -43,9 +43,9 @@ public class ClientElytraEventHandler {
     // Jenky way of registering layers for player
     @SubscribeEvent
     public static void onRenderLiving(RenderLivingEvent.Pre<AbstractClientPlayer> event) {
-        if (event.getEntity() instanceof EntityPlayer && !layeredPlayers.contains(event.getEntity())) {
+        if (event.getEntity() instanceof Player && !layeredPlayers.contains(event.getEntity())) {
             event.getRenderer().addLayer(new LayerModElytra(event.getRenderer()));
-            layeredPlayers.add((EntityPlayer) event.getEntity());
+            layeredPlayers.add((Player) event.getEntity());
         }
     }
 }

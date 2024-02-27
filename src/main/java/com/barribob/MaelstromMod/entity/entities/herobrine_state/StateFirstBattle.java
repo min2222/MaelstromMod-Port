@@ -3,9 +3,9 @@ package com.barribob.MaelstromMod.entity.entities.herobrine_state;
 import com.barribob.MaelstromMod.entity.entities.EntityHerobrineOne;
 import com.barribob.MaelstromMod.entity.entities.Herobrine;
 import com.barribob.MaelstromMod.util.TimedMessager;
+import net.minecraft.core.BlockPos;
 import net.minecraft.entity.IEntityLivingData;
-import net.minecraft.init.SoundEvents;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.sounds.SoundEvents;
 
 public class StateFirstBattle extends HerobrineState {
     private static final String[] EXIT_MESSAGES = {"herobrine_battle_2", "herobrine_battle_3", "herobrine_battle_4", "herobrine_battle_5", "herobrine_battle_6", ""};

@@ -15,9 +15,9 @@ import com.barribob.MaelstromMod.entity.projectile.*;
 import com.barribob.MaelstromMod.entity.tileentity.*;
 import com.barribob.MaelstromMod.entity.util.*;
 import com.barribob.MaelstromMod.util.Reference;
-import net.minecraft.entity.Entity;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.util.math.Vec3i;
 import net.minecraftforge.fml.common.registry.EntityRegistry;
 import net.minecraftforge.fml.common.registry.GameRegistry;
@@ -214,7 +214,7 @@ public class ModEntities {
         EntityRegistry.registerModEntity(new ResourceLocation(Reference.MOD_ID + ":" + name), entity, name, id, Main.instance, range, 1, false);
     }
 
-    private static void registerTileEntity(Class<? extends TileEntity> entity, String name) {
+    private static void registerTileEntity(Class<? extends BlockEntity> entity, String name) {
         GameRegistry.registerTileEntity(entity, new ResourceLocation(Reference.MOD_ID + ":" + name));
     }
 }

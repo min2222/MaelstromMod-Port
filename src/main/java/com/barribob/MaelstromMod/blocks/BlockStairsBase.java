@@ -4,28 +4,28 @@ import com.barribob.MaelstromMod.Main;
 import com.barribob.MaelstromMod.init.ModBlocks;
 import com.barribob.MaelstromMod.init.ModItems;
 import com.barribob.MaelstromMod.util.IHasModel;
-import net.minecraft.block.BlockStairs;
-import net.minecraft.block.SoundType;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemBlock;
+import net.minecraft.world.level.block.StairBlock;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.level.block.state.BlockState;
 
-public class BlockStairsBase extends BlockStairs implements IHasModel {
-    protected BlockStairsBase(IBlockState modelState) {
+public class BlockStairsBase extends StairBlock implements IHasModel {
+    protected BlockStairsBase(BlockState modelState) {
         super(modelState);
     }
 
-    public BlockStairsBase(String name, IBlockState modelState) {
+    public BlockStairsBase(String name, BlockState modelState) {
         super(modelState);
         setUnlocalizedName(name);
         setRegistryName(name);
 
         // Add both an item as a block and the block itself
         ModBlocks.BLOCKS.add(this);
-        ModItems.ITEMS.add(new ItemBlock(this).setRegistryName(this.getRegistryName()));
+        ModItems.ITEMS.add(new BlockItem(this).setRegistryName(this.getRegistryName()));
     }
 
-    public BlockStairsBase(String name, IBlockState modelState, float hardness, float resistance, SoundType soundType) {
+    public BlockStairsBase(String name, BlockState modelState, float hardness, float resistance, SoundType soundType) {
         this(name, modelState);
         setHardness(hardness);
         setResistance(resistance);

@@ -4,21 +4,21 @@ import com.barribob.MaelstromMod.util.ModColors;
 import com.barribob.MaelstromMod.util.ModRandom;
 import com.barribob.MaelstromMod.util.ModUtils;
 import com.barribob.MaelstromMod.util.handlers.ParticleManager;
-import net.minecraft.entity.Entity;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.level.Level;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 
 public class EntityNexusParticleSpawner extends Entity {
-    public EntityNexusParticleSpawner(World worldIn) {
+    public EntityNexusParticleSpawner(Level worldIn) {
         super(worldIn);
         this.setNoGravity(true);
         this.setSize(0.1f, 0.1f);
     }
 
-    public EntityNexusParticleSpawner(World worldIn, float x, float y, float z) {
+    public EntityNexusParticleSpawner(Level worldIn, float x, float y, float z) {
         this(worldIn);
         this.setPosition(x, y, z);
     }
@@ -35,13 +35,13 @@ public class EntityNexusParticleSpawner extends Entity {
     }
 
     @Override
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public void handleStatusUpdate(byte id) {
         if (id == ModUtils.PARTICLE_BYTE) {
             ModUtils.performNTimes(20, (i) -> {
                 ModUtils.circleCallback(i * 2, 600 - this.ticksExisted, (pos) -> {
                     pos = pos.scale(1.0f + ModRandom.getFloat(0.03f));
-                    ParticleManager.spawnEffect(world, new Vec3d(pos.x, i * 5, pos.y).add(getPositionVector()), ModColors.WHITE);
+                    ParticleManager.spawnEffect(world, new Vec3(pos.x, i * 5, pos.y).add(getPositionVector()), ModColors.WHITE);
                 });
             });
         }
@@ -49,11 +49,11 @@ public class EntityNexusParticleSpawner extends Entity {
     }
 
     @Override
-    protected void readEntityFromNBT(NBTTagCompound compound) {
+    protected void readEntityFromNBT(CompoundTag compound) {
     }
 
     @Override
-    protected void writeEntityToNBT(NBTTagCompound compound) {
+    protected void writeEntityToNBT(CompoundTag compound) {
     }
 
     @Override

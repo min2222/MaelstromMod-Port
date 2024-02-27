@@ -1,9 +1,9 @@
 package com.barribob.MaelstromMod.util;
 
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.util.DamageSource;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
 
 import javax.annotation.Nullable;
 
@@ -20,11 +20,11 @@ public class ModDamageSource {
 
     public static final DamageSource MAELSTROM_DAMAGE = (new DamageSource(MAELSTROM));
 
-    public static DamageSource causeElementalMeleeDamage(EntityLivingBase mob, Element element) {
+    public static DamageSource causeElementalMeleeDamage(LivingEntity mob, Element element) {
         return new EntityElementalDamageSource(MOB, mob, element);
     }
 
-    public static DamageSource causeElementalPlayerDamage(EntityPlayer player, Element element) {
+    public static DamageSource causeElementalPlayerDamage(Player player, Element element) {
         return new EntityElementalDamageSource(PLAYER, player, element);
     }
 
@@ -36,7 +36,7 @@ public class ModDamageSource {
         return (new EntityElementalDamageSourceIndirect(MAGIC, source, indirectEntityIn, element)).setDamageBypassesArmor();
     }
 
-    public static DamageSource causeElementalExplosionDamage(@Nullable EntityLivingBase entityLivingBaseIn, Element element) {
+    public static DamageSource causeElementalExplosionDamage(@Nullable LivingEntity entityLivingBaseIn, Element element) {
         return new EntityElementalDamageSource(EXPLOSION, entityLivingBaseIn, element).setExplosion();
     }
 

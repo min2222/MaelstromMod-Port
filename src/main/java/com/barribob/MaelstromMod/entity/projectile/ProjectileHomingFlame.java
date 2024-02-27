@@ -5,34 +5,34 @@ import com.barribob.MaelstromMod.util.ModDamageSource;
 import com.barribob.MaelstromMod.util.ModRandom;
 import com.barribob.MaelstromMod.util.ModUtils;
 import com.barribob.MaelstromMod.util.handlers.ParticleManager;
-import net.minecraft.entity.EntityLiving;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.init.SoundEvents;
-import net.minecraft.util.DamageSource;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.math.RayTraceResult;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.level.Level;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 public class ProjectileHomingFlame extends Projectile {
     private static final int AGE = 20 * 8;
-    public ProjectileHomingFlame(World worldIn, EntityLivingBase throwerIn, float baseDamage) {
+    public ProjectileHomingFlame(Level worldIn, LivingEntity throwerIn, float baseDamage) {
         super(worldIn, throwerIn, baseDamage);
     }
 
-    public ProjectileHomingFlame(World worldIn) {
+    public ProjectileHomingFlame(Level worldIn) {
         super(worldIn);
     }
 
-    public ProjectileHomingFlame(World worldIn, double x, double y, double z) {
+    public ProjectileHomingFlame(Level worldIn, double x, double y, double z) {
         super(worldIn, x, y, z);
     }
 
     @Override
     public void onUpdate() {
-        Vec3d prevVel = ModUtils.getEntityVelocity(this);
+        Vec3 prevVel = ModUtils.getEntityVelocity(this);
         super.onUpdate();
         ModUtils.setEntityVelocity(this, prevVel);
 
@@ -40,9 +40,9 @@ public class ProjectileHomingFlame extends Projectile {
 
         if (!this.world.isRemote &&
                 this.shootingEntity != null &&
-                this.shootingEntity instanceof EntityLiving &&
-                ((EntityLiving) this.shootingEntity).getAttackTarget() != null) {
-            ModUtils.homeToPosition(this, speed, ((EntityLiving) this.shootingEntity).getAttackTarget().getPositionEyes(1));
+                this.shootingEntity instanceof Mob &&
+                ((Mob) this.shootingEntity).getAttackTarget() != null) {
+            ModUtils.homeToPosition(this, speed, ((Mob) this.shootingEntity).getAttackTarget().getPositionEyes(1));
         }
 
         if(!world.isRemote) {
@@ -64,7 +64,7 @@ public class ProjectileHomingFlame extends Projectile {
 
     @Override
     protected void spawnImpactParticles() {
-        ParticleManager.spawnColoredExplosion(world, getPositionVector(), Vec3d.ZERO);
+        ParticleManager.spawnColoredExplosion(world, getPositionVector(), Vec3.ZERO);
         super.spawnImpactParticles();
     }
 
@@ -74,7 +74,7 @@ public class ProjectileHomingFlame extends Projectile {
             float colorAge = ModUtils.clamp((AGE - ticksExisted) / (float)AGE, 0.1, 1);
             ParticleManager.spawnColoredFire(world, rand,
                     getPositionVector().add(ModRandom.randVec().scale(0.25)),
-                    new Vec3d(0.8, 1.0, rand.nextFloat()).scale(colorAge));
+                    new Vec3(0.8, 1.0, rand.nextFloat()).scale(colorAge));
         }
     }
 

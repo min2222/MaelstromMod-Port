@@ -5,20 +5,20 @@ import com.barribob.MaelstromMod.packets.MessageDirectionForRender;
 import com.barribob.MaelstromMod.util.ModColors;
 import com.barribob.MaelstromMod.util.ModUtils;
 import com.barribob.MaelstromMod.util.handlers.ParticleManager;
-import net.minecraft.entity.Entity;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.level.Level;
 
 public class EntityTuningForkLazer extends Entity implements DirectionalRender {
-    private Vec3d renderLazerPos;
+    private Vec3 renderLazerPos;
     public static final int TICK_LIFE = 20;
 
-    public EntityTuningForkLazer(World worldIn) {
+    public EntityTuningForkLazer(Level worldIn) {
         super(worldIn);
     }
 
-    public EntityTuningForkLazer(World worldIn, Vec3d renderLazerPos) {
+    public EntityTuningForkLazer(Level worldIn, Vec3 renderLazerPos) {
         super(worldIn);
         this.renderLazerPos = renderLazerPos;
     }
@@ -39,7 +39,7 @@ public class EntityTuningForkLazer extends Entity implements DirectionalRender {
     public void handleStatusUpdate(byte id) {
         if (id == ModUtils.PARTICLE_BYTE && this.getRenderDirection() != null) {
             ModUtils.lineCallback(this.getPositionVector(), this.getRenderDirection(), 10, (pos, i) -> {
-                ParticleManager.spawnSwirl2(world, pos, ModColors.RED, Vec3d.ZERO);
+                ParticleManager.spawnSwirl2(world, pos, ModColors.RED, Vec3.ZERO);
             });
         }
         super.handleStatusUpdate(id);
@@ -55,19 +55,19 @@ public class EntityTuningForkLazer extends Entity implements DirectionalRender {
     }
 
     @Override
-    protected void readEntityFromNBT(NBTTagCompound compound) {
+    protected void readEntityFromNBT(CompoundTag compound) {
     }
 
     @Override
-    protected void writeEntityToNBT(NBTTagCompound compound) {
+    protected void writeEntityToNBT(CompoundTag compound) {
     }
 
     @Override
-    public void setRenderDirection(Vec3d dir) {
+    public void setRenderDirection(Vec3 dir) {
         this.renderLazerPos = dir;
     }
 
-    public Vec3d getRenderDirection() {
+    public Vec3 getRenderDirection() {
         return this.renderLazerPos;
     }
 }

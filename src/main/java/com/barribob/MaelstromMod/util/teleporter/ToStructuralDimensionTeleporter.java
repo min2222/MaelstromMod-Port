@@ -3,14 +3,14 @@ package com.barribob.MaelstromMod.util.teleporter;
 import com.barribob.MaelstromMod.init.ModBlocks;
 import com.barribob.MaelstromMod.init.ModDimensions;
 import com.barribob.MaelstromMod.world.dimension.nexus.DimensionNexus;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.util.Mth;
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.Teleporter;
-import net.minecraft.world.World;
-import net.minecraft.world.WorldServer;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.gen.feature.WorldGenerator;
 
 import javax.annotation.Nullable;
@@ -21,7 +21,7 @@ public class ToStructuralDimensionTeleporter extends Teleporter {
     private WorldGenerator structure;
     private static BlockPos oldDarkNexusSpawnOffset = new BlockPos(24, 64, 24);
 
-    public ToStructuralDimensionTeleporter(WorldServer worldIn, BlockPos portalOffset, @Nullable WorldGenerator structure) {
+    public ToStructuralDimensionTeleporter(ServerLevel worldIn, BlockPos portalOffset, @Nullable WorldGenerator structure) {
         super(worldIn);
         this.portalOffset = portalOffset;
         spacing = DimensionNexus.NexusStructureSpacing * 16;
@@ -38,12 +38,12 @@ public class ToStructuralDimensionTeleporter extends Teleporter {
      */
     @Override
     public boolean placeInExistingPortal(Entity entityIn, float rotationYaw) {
-        int x = MathHelper.floor(entityIn.posX / spacing) * spacing + portalOffset.getX();
-        int z = MathHelper.floor(entityIn.posZ / spacing) * spacing + portalOffset.getZ();
+        int x = Mth.floor(entityIn.posX / spacing) * spacing + portalOffset.getX();
+        int z = Mth.floor(entityIn.posZ / spacing) * spacing + portalOffset.getZ();
         int y = portalOffset.getY();
-        Vec3d entityOffset = new Vec3d(0.5, 1, -1.5);
+        Vec3 entityOffset = new Vec3(0.5, 1, -1.5);
 
-        if (entityIn instanceof EntityPlayerMP) {
+        if (entityIn instanceof ServerPlayer) {
             if (structure != null && !this.world.isChunkGeneratedAt(x >> 4, z >> 4)) {
                 // Round the position to the nearest 64th chunk square
                 int chunkX = Math.floorDiv((x >> 4), DimensionNexus.NexusStructureSpacing) * DimensionNexus.NexusStructureSpacing;
@@ -53,17 +53,17 @@ public class ToStructuralDimensionTeleporter extends Teleporter {
 
             // Check if the player probably generated the structure before it was changed to contain black sky blocks around it
             if (entityIn.dimension == ModDimensions.DARK_NEXUS.getId() && world.getBlockState(new BlockPos(x, y, z)).getBlock() != ModBlocks.DARK_NEXUS_PORTAL) {
-                x = MathHelper.floor(entityIn.posX / spacing) * spacing + oldDarkNexusSpawnOffset.getX();
-                z = MathHelper.floor(entityIn.posZ / spacing) * spacing + oldDarkNexusSpawnOffset.getZ();
+                x = Mth.floor(entityIn.posX / spacing) * spacing + oldDarkNexusSpawnOffset.getX();
+                z = Mth.floor(entityIn.posZ / spacing) * spacing + oldDarkNexusSpawnOffset.getZ();
                 y = oldDarkNexusSpawnOffset.getY();
             }
 
-            ((EntityPlayerMP) entityIn).connection.setPlayerLocation(x + entityOffset.x, y + entityOffset.y, z + entityOffset.z, entityIn.rotationYaw, entityIn.rotationPitch);
+            ((ServerPlayer) entityIn).connection.setPlayerLocation(x + entityOffset.x, y + entityOffset.y, z + entityOffset.z, entityIn.rotationYaw, entityIn.rotationPitch);
         } else {
             // Check if the player probably generated the structure before it was changed to contain black sky blocks around it
             if (entityIn.dimension == ModDimensions.DARK_NEXUS.getId() && world.getBlockState(new BlockPos(x, y, z)) != ModBlocks.DARK_NEXUS_PORTAL) {
-                x = MathHelper.floor(entityIn.posX / spacing) * spacing + oldDarkNexusSpawnOffset.getX();
-                z = MathHelper.floor(entityIn.posZ / spacing) * spacing + oldDarkNexusSpawnOffset.getZ();
+                x = Mth.floor(entityIn.posX / spacing) * spacing + oldDarkNexusSpawnOffset.getX();
+                z = Mth.floor(entityIn.posZ / spacing) * spacing + oldDarkNexusSpawnOffset.getZ();
                 y = oldDarkNexusSpawnOffset.getY();
             }
 
@@ -73,8 +73,8 @@ public class ToStructuralDimensionTeleporter extends Teleporter {
     }
 
     @Override
-    public void placeEntity(World world, Entity entity, float yaw) {
-        if (entity instanceof EntityPlayerMP)
+    public void placeEntity(Level world, Entity entity, float yaw) {
+        if (entity instanceof ServerPlayer)
             placeInPortal(entity, yaw);
         else
             placeInExistingPortal(entity, yaw);

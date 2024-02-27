@@ -2,21 +2,21 @@ package com.barribob.MaelstromMod.entity.projectile;
 
 import com.barribob.MaelstromMod.util.ModDamageSource;
 import com.barribob.MaelstromMod.util.ModUtils;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.item.ItemStack;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.util.math.RayTraceResult;
-import net.minecraft.world.World;
+import net.minecraft.world.level.Level;
 
 public class ProjectilePiercingBullet extends ProjectileBullet {
-    public ProjectilePiercingBullet(World worldIn, EntityLivingBase throwerIn, float damage, ItemStack stack) {
+    public ProjectilePiercingBullet(Level worldIn, LivingEntity throwerIn, float damage, ItemStack stack) {
         super(worldIn, throwerIn, damage, stack);
     }
 
-    public ProjectilePiercingBullet(World worldIn) {
+    public ProjectilePiercingBullet(Level worldIn) {
         super(worldIn);
     }
 
-    public ProjectilePiercingBullet(World worldIn, double x, double y, double z) {
+    public ProjectilePiercingBullet(Level worldIn, double x, double y, double z) {
         super(worldIn, x, y, z);
     }
 

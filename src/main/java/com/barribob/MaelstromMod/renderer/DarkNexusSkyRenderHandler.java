@@ -1,21 +1,21 @@
 package com.barribob.MaelstromMod.renderer;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.multiplayer.WorldClient;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.client.IRenderHandler;
 
 public class DarkNexusSkyRenderHandler extends IRenderHandler {
     private static final ResourceLocation END_SKY_TEXTURES = new ResourceLocation("textures/environment/end_sky.png");
 
     @Override
-    public void render(float partialTicks, WorldClient world, Minecraft mc) {
+    public void render(float partialTicks, ClientLevel world, Minecraft mc) {
         TextureManager renderEngine = mc.getTextureManager();
         GlStateManager.disableFog();
         GlStateManager.disableAlpha();

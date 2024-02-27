@@ -5,32 +5,32 @@ import com.barribob.MaelstromMod.util.ModDamageSource;
 import com.barribob.MaelstromMod.util.ModRandom;
 import com.barribob.MaelstromMod.util.ModUtils;
 import com.barribob.MaelstromMod.util.handlers.ParticleManager;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.init.SoundEvents;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.math.RayTraceResult;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.level.Level;
 
 public class ProjectileBone extends Projectile {
     private static final int IMPACT_PARTICLE_AMOUNT = 10;
     private static final int EXPOSION_AREA_FACTOR = 1;
 
-    public ProjectileBone(World worldIn, EntityLivingBase throwerIn, float damage) {
+    public ProjectileBone(Level worldIn, LivingEntity throwerIn, float damage) {
         super(worldIn, throwerIn, damage);
     }
 
-    public ProjectileBone(World worldIn) {
+    public ProjectileBone(Level worldIn) {
         super(worldIn);
     }
 
-    public ProjectileBone(World worldIn, double x, double y, double z) {
+    public ProjectileBone(Level worldIn, double x, double y, double z) {
         super(worldIn, x, y, z);
     }
 
     @Override
     protected void spawnImpactParticles() {
         for (int i = 0; i < IMPACT_PARTICLE_AMOUNT; i++) {
-            Vec3d vec1 = ModRandom.randVec()
+            Vec3 vec1 = ModRandom.randVec()
                     .scale(EXPOSION_AREA_FACTOR * 2)
                     .add(getPositionVector())
                     .add(ModUtils.yVec(0.8f));

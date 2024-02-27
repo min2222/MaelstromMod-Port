@@ -7,11 +7,11 @@ import com.barribob.MaelstromMod.entity.projectile.ProjectileCrimsonWanderer;
 import com.barribob.MaelstromMod.entity.projectile.ProjectileMegaFireball;
 import com.barribob.MaelstromMod.util.ModRandom;
 import com.barribob.MaelstromMod.util.ModUtils;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.util.DamageSource;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.level.Level;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -28,9 +28,9 @@ public class EntityAlternativeMaelstromGauntletStage1 extends EntityAbstractMael
 
     List<IGauntletAction> attacks;
 
-    public EntityAlternativeMaelstromGauntletStage1(World worldIn) {
+    public EntityAlternativeMaelstromGauntletStage1(Level worldIn) {
         super(worldIn);
-        Supplier<Vec3d> position = () -> getAttackTarget() == null ? null : getAttackTarget().getPositionVector();
+        Supplier<Vec3> position = () -> getAttackTarget() == null ? null : getAttackTarget().getPositionVector();
         IGauntletAction punchAttack = new PunchAction("gauntlet.punch", position, () -> {
         }, this, fist);
         IGauntletAction laserAttack = new LaserAction(this, stopLazerByte, (vec3d) -> {
@@ -55,7 +55,7 @@ public class EntityAlternativeMaelstromGauntletStage1 extends EntityAbstractMael
     }
 
     @Override
-    protected IGauntletAction getNextAttack(EntityLivingBase target, float distanceSq, IGauntletAction previousAction) {
+    protected IGauntletAction getNextAttack(LivingEntity target, float distanceSq, IGauntletAction previousAction) {
         int numMinions = (int) ModUtils.getEntitiesInBox(this, getEntityBoundingBox().grow(50))
                 .stream().filter(EntityMaelstromMob::isMaelstromMob).count();
 
@@ -89,13 +89,13 @@ public class EntityAlternativeMaelstromGauntletStage1 extends EntityAbstractMael
 
     private void summonCrimsonWanderer() {
         ProjectileCrimsonWanderer shrapnel = new ProjectileCrimsonWanderer(world, this, getAttack() * 0.5f);
-        Vec3d shrapnelPos = this.getPositionVector()
+        Vec3 shrapnelPos = this.getPositionVector()
                 .add(ModRandom.randVec().normalize().scale(4));
         ModUtils.setEntityPosition(shrapnel, shrapnelPos);
         shrapnel.setNoGravity(false);
         shrapnel.setTravelRange(30);
         world.spawnEntity(shrapnel);
-        Vec3d vel = ModUtils.direction(getPositionEyes(1), shrapnelPos).scale(0.1);
+        Vec3 vel = ModUtils.direction(getPositionEyes(1), shrapnelPos).scale(0.1);
         ModUtils.setEntityVelocity(shrapnel, vel);
     }
 }

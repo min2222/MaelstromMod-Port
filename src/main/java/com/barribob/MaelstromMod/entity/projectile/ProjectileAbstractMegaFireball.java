@@ -1,13 +1,13 @@
 package com.barribob.MaelstromMod.entity.projectile;
 
 import com.barribob.MaelstromMod.util.ModUtils;
-import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.entity.MultiPartEntityPart;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.DamageSource;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.util.math.RayTraceResult;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.level.Level;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -16,20 +16,20 @@ public abstract class ProjectileAbstractMegaFireball extends ProjectileGun {
     private boolean canBeHit;
     private boolean isExploded;
 
-    public ProjectileAbstractMegaFireball(World worldIn, EntityLivingBase throwerIn, float baseDamage, ItemStack stack, boolean canBeHit) {
+    public ProjectileAbstractMegaFireball(Level worldIn, LivingEntity throwerIn, float baseDamage, ItemStack stack, boolean canBeHit) {
         super(worldIn, throwerIn, baseDamage, stack);
         this.setNoGravity(true);
         this.setSize(1, 1);
         this.canBeHit = canBeHit;
     }
 
-    public ProjectileAbstractMegaFireball(World worldIn) {
+    public ProjectileAbstractMegaFireball(Level worldIn) {
         super(worldIn);
         this.setNoGravity(true);
         this.setSize(1, 1);
     }
 
-    public ProjectileAbstractMegaFireball(World worldIn, double x, double y, double z) {
+    public ProjectileAbstractMegaFireball(Level worldIn, double x, double y, double z) {
         super(worldIn, x, y, z);
         this.setNoGravity(true);
         this.setSize(1, 1);
@@ -51,7 +51,7 @@ public abstract class ProjectileAbstractMegaFireball extends ProjectileGun {
     @Override
     public void onUpdate() {
 
-        Vec3d vel = ModUtils.getEntityVelocity(this);
+        Vec3 vel = ModUtils.getEntityVelocity(this);
         super.onUpdate();
         // Maintain the velocity the entity has
         ModUtils.setEntityVelocity(this, vel);

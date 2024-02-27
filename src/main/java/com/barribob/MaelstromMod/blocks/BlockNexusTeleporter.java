@@ -3,17 +3,17 @@ package com.barribob.MaelstromMod.blocks;
 import com.barribob.MaelstromMod.entity.tileentity.TileEntityTeleporter;
 import com.barribob.MaelstromMod.init.ModBlocks;
 import com.barribob.MaelstromMod.util.ModRandom;
-import net.minecraft.block.ITileEntityProvider;
-import net.minecraft.block.SoundType;
-import net.minecraft.block.material.Material;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.world.level.block.EntityBlock;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.material.Material;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.Level;
 
 import java.util.Random;
 
-public class BlockNexusTeleporter extends BlockLamp implements ITileEntityProvider {
+public class BlockNexusTeleporter extends Block implements EntityBlock {
     public BlockNexusTeleporter(String name, Material material, SoundType soundType) {
         super(name, material, 50, 2000, soundType);
         this.hasTileEntity = true;
@@ -21,7 +21,7 @@ public class BlockNexusTeleporter extends BlockLamp implements ITileEntityProvid
     }
 
     @Override
-    public TileEntity createNewTileEntity(World worldIn, int meta) {
+    public BlockEntity createNewTileEntity(Level worldIn, int meta) {
         return new TileEntityTeleporter();
     }
 
@@ -29,19 +29,19 @@ public class BlockNexusTeleporter extends BlockLamp implements ITileEntityProvid
      * Called serverside after this block is replaced with another in Chunk, but before the Tile Entity is updatedmod
      */
     @Override
-    public void breakBlock(World worldIn, BlockPos pos, IBlockState state) {
+    public void breakBlock(Level worldIn, BlockPos pos, BlockState state) {
         super.breakBlock(worldIn, pos, state);
         worldIn.removeTileEntity(pos);
     }
 
     @Override
-    public void onBlockAdded(World worldIn, BlockPos pos, IBlockState state) {
+    public void onBlockAdded(Level worldIn, BlockPos pos, BlockState state) {
         super.onBlockAdded(worldIn, pos, state);
         worldIn.scheduleBlockUpdate(pos, this, 100 + ModRandom.range(0, 100), 0); // All blocks in initial range get updated
     }
 
     @Override
-    public void updateTick(World worldIn, BlockPos pos, IBlockState state, Random rand) {
+    public void updateTick(Level worldIn, BlockPos pos, BlockState state, Random rand) {
         super.updateTick(worldIn, pos, state, rand);
 
         BlockPos[] positions = new BlockPos[]{pos.down(), pos.up(), pos.west(), pos.east(), pos.north(), pos.south()};

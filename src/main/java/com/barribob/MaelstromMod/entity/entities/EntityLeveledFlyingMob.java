@@ -7,30 +7,30 @@ import com.barribob.MaelstromMod.util.IAnimatedMob;
 import com.barribob.MaelstromMod.util.IElement;
 import com.barribob.MaelstromMod.util.ModUtils;
 import net.minecraft.entity.EntityFlying;
-import net.minecraft.entity.IRangedAttackMob;
-import net.minecraft.entity.SharedMonsterAttributes;
+import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.monster.RangedAttackMob;
 import net.minecraft.entity.monster.IMob;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.network.datasync.DataParameter;
-import net.minecraft.network.datasync.DataSerializers;
-import net.minecraft.network.datasync.EntityDataManager;
-import net.minecraft.util.DamageSource;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.EnumDifficulty;
-import net.minecraft.world.World;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraft.world.level.Level;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 
 /*
  * Base class that serves as the flying version of EntityLeveledMob
  */
-public abstract class EntityLeveledFlyingMob extends EntityFlying implements IMob, IRangedAttackMob, IAnimatedMob, IElement {
-    @SideOnly(Side.CLIENT)
+public abstract class EntityLeveledFlyingMob extends EntityFlying implements IMob, RangedAttackMob, IAnimatedMob, IElement {
+    @OnlyIn(Dist.CLIENT)
     protected Animation currentAnimation;
     private float level;
 
-    protected static final DataParameter<Integer> ELEMENT = EntityDataManager.<Integer>createKey(EntityLeveledMob.class, DataSerializers.VARINT);
+    protected static final EntityDataAccessor<Integer> ELEMENT = SynchedEntityData.<Integer>createKey(EntityLeveledMob.class, EntityDataSerializers.VARINT);
 
-    public EntityLeveledFlyingMob(World worldIn) {
+    public EntityLeveledFlyingMob(Level worldIn) {
         super(worldIn);
     }
 
@@ -54,7 +54,7 @@ public abstract class EntityLeveledFlyingMob extends EntityFlying implements IMo
     @Override
     protected void applyEntityAttributes() {
         super.applyEntityAttributes();
-        this.getAttributeMap().registerAttribute(SharedMonsterAttributes.ATTACK_DAMAGE);
+        this.getAttributeMap().registerAttribute(Attributes.ATTACK_DAMAGE);
     }
 
     @Override
@@ -74,7 +74,7 @@ public abstract class EntityLeveledFlyingMob extends EntityFlying implements IMo
     }
 
     @Override
-    public void readFromNBT(NBTTagCompound compound) {
+    public void readFromNBT(CompoundTag compound) {
         world.setEntityState(this, animationByte);
         if (compound.hasKey("element")) {
             this.setElement(Element.getElementFromId(compound.getInteger("element")));
@@ -84,7 +84,7 @@ public abstract class EntityLeveledFlyingMob extends EntityFlying implements IMo
     }
 
     public float getAttack() {
-        return ModUtils.getMobDamage(this.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).getAttributeValue(), 0.0, this.getMaxHealth(), this.getHealth(),
+        return ModUtils.getMobDamage(this.getEntityAttribute(Attributes.ATTACK_DAMAGE).getAttributeValue(), 0.0, this.getMaxHealth(), this.getHealth(),
                 this.level, this.getElement());
     }
 
@@ -99,7 +99,7 @@ public abstract class EntityLeveledFlyingMob extends EntityFlying implements IMo
     }
 
     @Override
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public void handleStatusUpdate(byte id) {
         if (id == animationByte && currentAnimation == null) {
             initAnimation();
@@ -108,7 +108,7 @@ public abstract class EntityLeveledFlyingMob extends EntityFlying implements IMo
         }
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     protected void initAnimation() {
     }
 
@@ -128,7 +128,7 @@ public abstract class EntityLeveledFlyingMob extends EntityFlying implements IMo
     }
 
     @Override
-    public void writeEntityToNBT(NBTTagCompound compound) {
+    public void writeEntityToNBT(CompoundTag compound) {
         compound.setInteger("element", getElement().id);
         super.writeEntityToNBT(compound);
     }

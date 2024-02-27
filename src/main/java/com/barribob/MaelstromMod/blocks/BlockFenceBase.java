@@ -4,27 +4,27 @@ import com.barribob.MaelstromMod.Main;
 import com.barribob.MaelstromMod.init.ModBlocks;
 import com.barribob.MaelstromMod.init.ModItems;
 import com.barribob.MaelstromMod.util.IHasModel;
-import net.minecraft.block.BlockFence;
-import net.minecraft.block.SoundType;
-import net.minecraft.block.material.MapColor;
-import net.minecraft.block.material.Material;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemBlock;
+import net.minecraft.world.level.block.FenceBlock;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.material.MaterialColor;
+import net.minecraft.world.level.material.Material;
+import net.minecraft.world.item.Item;
 
-public class BlockFenceBase extends BlockFence implements IHasModel {
+public class BlockFenceBase extends FenceBlock implements IHasModel {
 
-    public BlockFenceBase(Material materialIn, MapColor mapColorIn) {
+    public BlockFenceBase(Material materialIn, MaterialColor mapColorIn) {
         super(materialIn, mapColorIn);
     }
 
     public BlockFenceBase(String name, Material material) {
-        super(material, MapColor.WOOD);
+        super(material, MaterialColor.WOOD);
         setUnlocalizedName(name);
         setRegistryName(name);
 
         // Add both an item as a block and the block itself
         ModBlocks.BLOCKS.add(this);
-        ModItems.ITEMS.add(new ItemBlock(this).setRegistryName(this.getRegistryName()));
+        ModItems.ITEMS.add(new BlockItem(this).setRegistryName(this.getRegistryName()));
     }
 
     public BlockFenceBase(String name, Material material, float hardness, float resistance, SoundType soundType) {

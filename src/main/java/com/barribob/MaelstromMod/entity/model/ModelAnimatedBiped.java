@@ -3,16 +3,16 @@ package com.barribob.MaelstromMod.entity.model;
 import com.barribob.MaelstromMod.entity.entities.EntityLeveledMob;
 import net.minecraft.client.model.ModelBiped;
 import net.minecraft.client.model.ModelRenderer;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.util.EnumHandSide;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 
 /*
  * Adds built in animation manipulation via the Animation class
  */
-@SideOnly(Side.CLIENT)
+@OnlyIn(Dist.CLIENT)
 public class ModelAnimatedBiped extends ModelBiped {
     protected static int textureWidth = 64;
     protected static int textureHeight = 64;
@@ -65,7 +65,7 @@ public class ModelAnimatedBiped extends ModelBiped {
     }
 
     @Override
-    public void setLivingAnimations(EntityLivingBase entity, float limbSwing, float limbSwingAmount, float partialTickTime) {
+    public void setLivingAnimations(LivingEntity entity, float limbSwing, float limbSwingAmount, float partialTickTime) {
         // This function gets called right before setRotationAngles, so to keep the animations from being overwritten by
         // the super.setRotationAngles, save partial tick time.
         this.partialTicks = partialTickTime;

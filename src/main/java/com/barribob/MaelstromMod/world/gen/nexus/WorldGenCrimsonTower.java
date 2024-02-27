@@ -10,11 +10,11 @@ import com.barribob.MaelstromMod.init.ModEntities;
 import com.barribob.MaelstromMod.util.Element;
 import com.barribob.MaelstromMod.util.handlers.LevelHandler;
 import com.barribob.MaelstromMod.world.gen.WorldGenStructure;
-import net.minecraft.tileentity.TileEntity;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.tileentity.TileEntityChest;
 import net.minecraft.util.Rotation;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.storage.loot.LootTableList;
 
 import java.util.Random;
@@ -25,26 +25,26 @@ public class WorldGenCrimsonTower extends WorldGenStructure {
     }
 
     @Override
-    public boolean generate(World worldIn, Random rand, BlockPos position) {
+    public boolean generate(Level worldIn, Random rand, BlockPos position) {
         this.generateStructure(worldIn, position, Rotation.CLOCKWISE_180);
         return true;
     }
 
     @Override
-    protected void handleDataMarker(String function, BlockPos pos, World worldIn, Random rand) {
+    protected void handleDataMarker(String function, BlockPos pos, Level worldIn, Random rand) {
         worldIn.setBlockToAir(pos);
         if (function.startsWith("chest")) {
             worldIn.setBlockToAir(pos);
             BlockPos blockpos = pos.down();
 
-            TileEntity tileentity = worldIn.getTileEntity(blockpos);
+            BlockEntity tileentity = worldIn.getTileEntity(blockpos);
 
             if (tileentity instanceof TileEntityChest) {
                 ((TileEntityChest) tileentity).setLootTable(LootTableList.CHESTS_STRONGHOLD_LIBRARY, rand.nextLong());
             }
         } else if (function.startsWith("scout")) {
             worldIn.setBlockState(pos, ModBlocks.BOSS_SPAWNER.getDefaultState());
-            TileEntity tileentity = worldIn.getTileEntity(pos);
+            BlockEntity tileentity = worldIn.getTileEntity(pos);
 
             if (tileentity instanceof TileEntityMobSpawner) {
                 ((TileEntityMobSpawner) tileentity).getSpawnerBaseLogic().setData(
@@ -58,7 +58,7 @@ public class WorldGenCrimsonTower extends WorldGenStructure {
             }
         } else if (function.startsWith("exe")) {
             worldIn.setBlockState(pos, ModBlocks.BOSS_SPAWNER.getDefaultState());
-            TileEntity tileentity = worldIn.getTileEntity(pos);
+            BlockEntity tileentity = worldIn.getTileEntity(pos);
 
             if (tileentity instanceof TileEntityMobSpawner) {
                 ((TileEntityMobSpawner) tileentity).getSpawnerBaseLogic().setData(
@@ -72,7 +72,7 @@ public class WorldGenCrimsonTower extends WorldGenStructure {
             }
         } else if (function.startsWith("boss")) {
             worldIn.setBlockState(pos, ModBlocks.BOSS_SPAWNER.getDefaultState());
-            TileEntity tileentity = worldIn.getTileEntity(pos);
+            BlockEntity tileentity = worldIn.getTileEntity(pos);
 
             if (tileentity instanceof TileEntityMobSpawner) {
                 ((TileEntityMobSpawner) tileentity).getSpawnerBaseLogic().setData(

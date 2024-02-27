@@ -3,16 +3,16 @@ package com.barribob.MaelstromMod.items.tools;
 import com.barribob.MaelstromMod.entity.particleSpawners.ParticleSpawnerSwordSwing;
 import com.barribob.MaelstromMod.items.ISweepAttackParticles;
 import com.barribob.MaelstromMod.util.ModUtils;
-import net.minecraft.client.util.ITooltipFlag;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.MobEffects;
-import net.minecraft.item.ItemStack;
+import net.minecraft.ChatFormatting;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.potion.PotionEffect;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.text.TextFormatting;
-import net.minecraft.world.World;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.level.Level;
 
 import java.util.List;
 
@@ -23,7 +23,7 @@ public class ToolVenomDagger extends ToolDagger implements ISweepAttackParticles
 
     // Add a poison effect on a full attack
     @Override
-    public void doSweepAttack(EntityPlayer player, EntityLivingBase target) {
+    public void doSweepAttack(Player player, LivingEntity target) {
         if (target != null) {
             target.addPotionEffect(new PotionEffect(MobEffects.POISON, 100, 1));
             Entity particle = new ParticleSpawnerSwordSwing(player.world);
@@ -33,14 +33,14 @@ public class ToolVenomDagger extends ToolDagger implements ISweepAttackParticles
     }
 
     @Override
-    public void addInformation(ItemStack stack, World worldIn, List<String> tooltip, ITooltipFlag flagIn) {
+    public void addInformation(ItemStack stack, Level worldIn, List<String> tooltip, TooltipFlag flagIn) {
         super.addInformation(stack, worldIn, tooltip, flagIn);
-        tooltip.add(TextFormatting.GRAY + ModUtils.translateDesc("venom_dagger"));
+        tooltip.add(ChatFormatting.GRAY + ModUtils.translateDesc("venom_dagger"));
     }
 
     @Override
-    public Vec3d getColor() {
-        return new Vec3d(0.2, 0.5, 0.2);
+    public Vec3 getColor() {
+        return new Vec3(0.2, 0.5, 0.2);
     }
 
     @Override

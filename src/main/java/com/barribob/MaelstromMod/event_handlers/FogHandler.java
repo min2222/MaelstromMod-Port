@@ -7,20 +7,20 @@ import com.barribob.MaelstromMod.util.ModUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.EntityRenderer;
 import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.entity.Entity;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.util.Mth;
+import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.EntityViewRenderEvent;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.relauncher.ReflectionHelper;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
 
 import java.lang.reflect.Method;
 
-@Mod.EventBusSubscriber(value = Side.CLIENT)
+@Mod.EventBusSubscriber(value = Dist.CLIENT)
 public class FogHandler {
     public static float CLIFF_FOG_HEIGHT = 45.55f;
     public static final int SWAMP_FOG_LAYERS = 8;
@@ -35,7 +35,7 @@ public class FogHandler {
      * Altering the fog density through the render fog event because the fog density
      * event is a pain because you have to override it for some reason
      */
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     @SubscribeEvent()
     public static void onFogDensityRender(EntityViewRenderEvent.RenderFogEvent event) {
         if (event.getEntity().dimension == ModConfig.world.fracture_dimension_id) {
@@ -59,7 +59,7 @@ public class FogHandler {
                 double minFogThickness = 0.005f;
                 double distanceFromMax = posY - CLIFF_FOG_HEIGHT;
                 double closenessToMax = distanceFromMax / (SWAMP_FOG_LAYERS + SWAMP_FOG_FADE_START);
-                double fogThickness = maxFogThickness * MathHelper.clamp(1 - closenessToMax, 0, 1);
+                double fogThickness = maxFogThickness * Mth.clamp(1 - closenessToMax, 0, 1);
                 GlStateManager.setFog(GlStateManager.FogMode.EXP);
                 GlStateManager.setFogDensity((float) Math.max(fogThickness, minFogThickness));
             } else {
@@ -81,19 +81,19 @@ public class FogHandler {
         }
     }
 
-    private static Vec3d interpolateFogColor(Entity renderEntity, Vec3d fog1, Vec3d fog2, float transitionStart, float transitionLength) {
+    private static Vec3 interpolateFogColor(Entity renderEntity, Vec3 fog1, Vec3 fog2, float transitionStart, float transitionLength) {
         float alpha = ModUtils.clamp((renderEntity.posY - transitionStart) / transitionLength, 0, 1);
         return fog1.scale(1 - alpha).add(fog2.scale(alpha));
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     @SubscribeEvent()
     public static void onFogColor(EntityViewRenderEvent.FogColors event) {
         if (event.getEntity().dimension == ModConfig.world.cliff_dimension_id) {
-            Vec3d originalColor = new Vec3d(event.getRed(), event.getGreen(), event.getBlue());
-            Vec3d cloudColor = new Vec3d(0.5, 0.43, 0.5);
-            Vec3d color = interpolateFogColor(event.getEntity(), originalColor, cloudColor.scale(Math.sqrt(originalColor.lengthSquared() / cloudColor.lengthSquared())), CLOUD_FOG_HEIGHT, 2);
-            Vec3d color2 = interpolateFogColor(event.getEntity(), ModColors.SWAMP_FOG.scale(Math.sqrt(color.lengthSquared() / ModColors.SWAMP_FOG.lengthSquared())), color, CLIFF_FOG_HEIGHT, 1);
+            Vec3 originalColor = new Vec3(event.getRed(), event.getGreen(), event.getBlue());
+            Vec3 cloudColor = new Vec3(0.5, 0.43, 0.5);
+            Vec3 color = interpolateFogColor(event.getEntity(), originalColor, cloudColor.scale(Math.sqrt(originalColor.lengthSquared() / cloudColor.lengthSquared())), CLOUD_FOG_HEIGHT, 2);
+            Vec3 color2 = interpolateFogColor(event.getEntity(), ModColors.SWAMP_FOG.scale(Math.sqrt(color.lengthSquared() / ModColors.SWAMP_FOG.lengthSquared())), color, CLIFF_FOG_HEIGHT, 1);
             event.setRed((float) color2.x);
             event.setGreen((float) color2.y);
             event.setBlue((float) color2.z);
@@ -106,7 +106,7 @@ public class FogHandler {
         }
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     @SubscribeEvent()
     public static void onRenderWorldLastEvent(RenderWorldLastEvent event) {
         if (ModConfig.shaders.render_fog) {

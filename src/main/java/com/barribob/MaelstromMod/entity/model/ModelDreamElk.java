@@ -3,9 +3,9 @@ package com.barribob.MaelstromMod.entity.model;
 import com.barribob.MaelstromMod.entity.entities.EntityDreamElk;
 import net.minecraft.client.model.ModelBase;
 import net.minecraft.client.model.ModelRenderer;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.util.Mth;
 
 /**
  * ModelHorse - Either Mojang or a mod author Created using Tabula 7.0.0
@@ -314,7 +314,7 @@ public class ModelDreamElk extends ModelBase {
      * float params here are the same second and third as in the setRotationAngles
      * method.
      */
-    public void setLivingAnimations(EntityLivingBase entitylivingbaseIn, float limbSwing, float limbSwingAmount, float partialTickTime) {
+    public void setLivingAnimations(LivingEntity entitylivingbaseIn, float limbSwing, float limbSwingAmount, float partialTickTime) {
         super.setLivingAnimations(entitylivingbaseIn, limbSwing, limbSwingAmount, partialTickTime);
         this.neckRotationX = ((EntityDreamElk) entitylivingbaseIn).getHeadRotationAngleX(partialTickTime);
     }
@@ -327,10 +327,10 @@ public class ModelDreamElk extends ModelBase {
      */
     public void setRotationAngles(float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch, float scaleFactor,
                                   Entity entityIn) {
-        this.frontLeftThigh.rotateAngleX = MathHelper.cos(limbSwing * 0.6662F) * 1.4F * limbSwingAmount;
-        this.frontRightThigh.rotateAngleX = MathHelper.cos(limbSwing * 0.6662F + (float) Math.PI) * 1.4F * limbSwingAmount;
-        this.backLeftThigh.rotateAngleX = MathHelper.cos(limbSwing * 0.6662F + (float) Math.PI) * 1.4F * limbSwingAmount;
-        this.backRightThigh.rotateAngleX = MathHelper.cos(limbSwing * 0.6662F) * 1.4F * limbSwingAmount;
+        this.frontLeftThigh.rotateAngleX = Mth.cos(limbSwing * 0.6662F) * 1.4F * limbSwingAmount;
+        this.frontRightThigh.rotateAngleX = Mth.cos(limbSwing * 0.6662F + (float) Math.PI) * 1.4F * limbSwingAmount;
+        this.backLeftThigh.rotateAngleX = Mth.cos(limbSwing * 0.6662F + (float) Math.PI) * 1.4F * limbSwingAmount;
+        this.backRightThigh.rotateAngleX = Mth.cos(limbSwing * 0.6662F) * 1.4F * limbSwingAmount;
 
         /**
          * Only rotate the neck when not bucking or eating grass (otherwise it would look weird)

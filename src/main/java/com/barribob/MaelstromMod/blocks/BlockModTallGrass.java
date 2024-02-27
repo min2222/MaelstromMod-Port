@@ -1,13 +1,13 @@
 package com.barribob.MaelstromMod.blocks;
 
-import net.minecraft.block.SoundType;
-import net.minecraft.block.material.Material;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.init.Blocks;
-import net.minecraft.item.Item;
-import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.IBlockAccess;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.material.Material;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.phys.AABB;
 
 import java.util.Random;
 
@@ -19,11 +19,11 @@ public class BlockModTallGrass extends BlockModBush {
         super(name, material, Blocks.GRASS, hardness, resistance, soundType);
     }
 
-    protected static final AxisAlignedBB TALL_GRASS_AABB = new AxisAlignedBB(0.09999999403953552D, 0.0D, 0.09999999403953552D, 0.8999999761581421D, 0.800000011920929D,
+    protected static final AABB TALL_GRASS_AABB = new AABB(0.09999999403953552D, 0.0D, 0.09999999403953552D, 0.8999999761581421D, 0.800000011920929D,
             0.8999999761581421D);
 
     @Override
-    public AxisAlignedBB getBoundingBox(IBlockState state, IBlockAccess source, BlockPos pos) {
+    public AABB getBoundingBox(BlockState state, BlockGetter source, BlockPos pos) {
         return TALL_GRASS_AABB;
     }
 
@@ -32,7 +32,7 @@ public class BlockModTallGrass extends BlockModBush {
      * tall grass)
      */
     @Override
-    public boolean isReplaceable(IBlockAccess worldIn, BlockPos pos) {
+    public boolean isReplaceable(BlockGetter worldIn, BlockPos pos) {
         return true;
     }
 
@@ -40,7 +40,7 @@ public class BlockModTallGrass extends BlockModBush {
      * Get the Item that this Block should drop when harvested.
      */
     @Override
-    public Item getItemDropped(IBlockState state, Random rand, int fortune) {
+    public Item getItemDropped(BlockState state, Random rand, int fortune) {
         return null;
     }
 }

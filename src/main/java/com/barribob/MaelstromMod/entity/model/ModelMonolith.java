@@ -5,8 +5,8 @@ import com.barribob.MaelstromMod.entity.entities.EntityMonolith;
 import net.minecraft.client.model.ModelBox;
 import net.minecraft.client.model.ModelRenderer;
 import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 
 public class ModelMonolith extends ModelAnimated {
     public ModelRenderer shell3;
@@ -71,7 +71,7 @@ public class ModelMonolith extends ModelAnimated {
     }
 
     @Override
-    public void setLivingAnimations(EntityLivingBase entity, float limbSwing, float limbSwingAmount, float partialTickTime) {
+    public void setLivingAnimations(LivingEntity entity, float limbSwing, float limbSwingAmount, float partialTickTime) {
         if (entity instanceof EntityMonolith) {
             if (((EntityMonolith) entity).isTransformed()) {
                 int offset = 35;

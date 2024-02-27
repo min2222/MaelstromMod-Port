@@ -5,17 +5,17 @@ import com.barribob.MaelstromMod.util.ModDamageSource;
 import com.barribob.MaelstromMod.util.ModRandom;
 import com.barribob.MaelstromMod.util.ModUtils;
 import com.barribob.MaelstromMod.util.handlers.ParticleManager;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.DamageSource;
-import net.minecraft.util.SoundCategory;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.core.BlockPos;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.Mth;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.util.math.RayTraceResult;
-import net.minecraft.world.World;
+import net.minecraft.world.level.Level;
 
 import java.util.List;
 
@@ -26,22 +26,22 @@ public class ProjectileQuake extends ProjectileGun {
     protected static final float AREA_FACTOR = 0.5f;
     protected int updates = 5;
 
-    public ProjectileQuake(World worldIn, EntityLivingBase throwerIn, float baseDamage, ItemStack stack) {
+    public ProjectileQuake(Level worldIn, LivingEntity throwerIn, float baseDamage, ItemStack stack) {
         super(worldIn, throwerIn, baseDamage, stack);
         this.setNoGravity(true);
     }
 
-    public ProjectileQuake(World worldIn) {
+    public ProjectileQuake(Level worldIn) {
         super(worldIn);
     }
 
-    public ProjectileQuake(World worldIn, double x, double y, double z) {
+    public ProjectileQuake(Level worldIn, double x, double y, double z) {
         super(worldIn, x, y, z);
     }
 
     @Override
     protected void spawnParticles() {
-        IBlockState block = world.getBlockState(new BlockPos(this.posX, this.posY, this.posZ));
+        BlockState block = world.getBlockState(new BlockPos(this.posX, this.posY, this.posZ));
         if (block.isFullCube()) {
             for (int i = 0; i < 5; i++) {
                 ParticleManager.spawnBreak(world, this.getPositionVector().add(ModRandom.randVec().scale(1.0f).add(ModUtils.yVec(0.75f))), Item.getItemFromBlock(block.getBlock()), ModRandom.randVec().scale(0.1).add(ModUtils.yVec(0.1f)));
@@ -78,7 +78,7 @@ public class ProjectileQuake extends ProjectileGun {
     protected void onQuakeUpdate() {
         List<Entity> list = world.getEntitiesWithinAABBExcludingEntity(this, this.getEntityBoundingBox().grow(AREA_FACTOR).expand(0, 0.25f, 0));
         for (Entity entity : list) {
-            if (entity instanceof EntityLivingBase && this.shootingEntity != null && entity != this.shootingEntity) {
+            if (entity instanceof LivingEntity && this.shootingEntity != null && entity != this.shootingEntity) {
                 int burnTime = this.isBurning() ? 5 : 0;
                 entity.setFire(burnTime);
 
@@ -93,7 +93,7 @@ public class ProjectileQuake extends ProjectileGun {
 
                 // Apply knockback enchantment
                 if (this.getKnockback() > 0) {
-                    float f1 = MathHelper.sqrt(this.motionX * this.motionX + this.motionZ * this.motionZ);
+                    float f1 = Mth.sqrt(this.motionX * this.motionX + this.motionZ * this.motionZ);
 
                     if (f1 > 0.0F) {
                         entity.addVelocity(this.motionX * this.getKnockback() * 0.6000000238418579D / f1, 0.1D,
@@ -107,9 +107,9 @@ public class ProjectileQuake extends ProjectileGun {
     protected void playQuakeSound() {
         // Play the block break sound
         BlockPos pos = new BlockPos(this.posX, this.posY, this.posZ);
-        IBlockState state = world.getBlockState(pos);
+        BlockState state = world.getBlockState(pos);
         if (state.isFullCube()) {
-            world.playSound(this.posX, this.posY, this.posZ, state.getBlock().getSoundType(state, world, pos, this).getStepSound(), SoundCategory.BLOCKS, 1.0F, 1.0F, false);
+            world.playSound(this.posX, this.posY, this.posZ, state.getBlock().getSoundType(state, world, pos, this).getStepSound(), SoundSource.BLOCKS, 1.0F, 1.0F, false);
         }
     }
 

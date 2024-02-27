@@ -10,18 +10,18 @@ import com.barribob.MaelstromMod.util.handlers.LevelHandler;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import net.minecraft.client.model.ModelBiped;
-import net.minecraft.client.util.ITooltipFlag;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.SharedMonsterAttributes;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.entity.ai.attributes.AttributeModifier;
-import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.item.ItemArmor;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.text.TextFormatting;
-import net.minecraft.world.World;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.ChatFormatting;
+import net.minecraft.world.level.Level;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 
 import java.util.List;
 import java.util.UUID;
@@ -47,7 +47,7 @@ public class ModArmorBase extends ItemArmor implements IHasModel, ILeveledItem, 
     private Element element = Element.NONE;
     private String armorBonusDesc = "";
 
-    public ModArmorBase(String name, ArmorMaterial materialIn, int renderIndex, EntityEquipmentSlot equipmentSlotIn, float level, String textureName) {
+    public ModArmorBase(String name, ArmorMaterial materialIn, int renderIndex, EquipmentSlot equipmentSlotIn, float level, String textureName) {
         super(materialIn, renderIndex, equipmentSlotIn);
         setUnlocalizedName(name);
         setRegistryName(name);
@@ -94,14 +94,14 @@ public class ModArmorBase extends ItemArmor implements IHasModel, ILeveledItem, 
     }
 
     @Override
-    public Multimap<String, AttributeModifier> getItemAttributeModifiers(EntityEquipmentSlot equipmentSlot) {
+    public Multimap<String, AttributeModifier> getItemAttributeModifiers(EquipmentSlot equipmentSlot) {
         Multimap<String, AttributeModifier> multimap = HashMultimap.<String, AttributeModifier>create();
 
         if (equipmentSlot == this.armorType) {
-            multimap.put(SharedMonsterAttributes.ARMOR.getName(), new AttributeModifier(ARMOR_MODIFIERS[equipmentSlot.getIndex()], "Armor modifier", this.damageReduceAmount, 0));
+            multimap.put(Attributes.ARMOR.getName(), new AttributeModifier(ARMOR_MODIFIERS[equipmentSlot.getIndex()], "Armor modifier", this.damageReduceAmount, 0));
 
             // Override armor toughness to make is adjustable in game
-            multimap.put(SharedMonsterAttributes.ARMOR_TOUGHNESS.getName(), new AttributeModifier(ARMOR_MODIFIERS[equipmentSlot.getIndex()], "Armor toughness", ModConfig.balance.armor_toughness, 0));
+            multimap.put(Attributes.ARMOR_TOUGHNESS.getName(), new AttributeModifier(ARMOR_MODIFIERS[equipmentSlot.getIndex()], "Armor toughness", ModConfig.balance.armor_toughness, 0));
             multimap.put("maelstrom_armor", new AttributeModifier(ARMOR_MODIFIERS[equipmentSlot.getIndex()], "Maelstrom Armor modifier", Math.round(this.getMaelstromArmorBars() * 10) / 10.0f, 0));
         }
 
@@ -109,13 +109,13 @@ public class ModArmorBase extends ItemArmor implements IHasModel, ILeveledItem, 
     }
 
     @Override
-    public void addInformation(ItemStack stack, World worldIn, List<String> tooltip, ITooltipFlag flagIn) {
+    public void addInformation(ItemStack stack, Level worldIn, List<String> tooltip, TooltipFlag flagIn) {
         if(!ModConfig.gui.disableMaelstromArmorItemTooltips) {
             tooltip.add(ModUtils.getDisplayLevel((this.getLevel())));
         }
 
         if (!element.equals(element.NONE) && !ModConfig.gui.disableElementalVisuals) {
-            tooltip.add(ModUtils.translateDesc("elemental_armor_desc", element.textColor + element.symbol + TextFormatting.GRAY,
+            tooltip.add(ModUtils.translateDesc("elemental_armor_desc", element.textColor + element.symbol + ChatFormatting.GRAY,
                     ModUtils.ROUND.format(100 * getElementalArmor(element)) + "%"));
         }
         if (!this.armorBonusDesc.isEmpty() && Main.itemsConfig.getBoolean("full_set_bonuses." + armorBonusDesc.replace("_full_set", ""))) {
@@ -133,13 +133,13 @@ public class ModArmorBase extends ItemArmor implements IHasModel, ILeveledItem, 
     }
 
     @Override
-    public String getArmorTexture(ItemStack stack, Entity entity, EntityEquipmentSlot slot, String type) {
+    public String getArmorTexture(ItemStack stack, Entity entity, EquipmentSlot slot, String type) {
         if (this.getCustomModel() != null) {
             return Reference.MOD_ID + ":textures/models/armor/" + this.textureName;
         }
 
         // Basically the normal string that is generated by minecraft's default armor
-        int layer = slot == EntityEquipmentSlot.LEGS ? 2 : 1;
+        int layer = slot == EquipmentSlot.LEGS ? 2 : 1;
         String t = type == null ? "" : String.format("_%s", type);
         return String.format("%s:textures/models/armor/%s_layer_%d%s.png", Reference.MOD_ID, this.textureName, layer, t);
     }
@@ -148,16 +148,16 @@ public class ModArmorBase extends ItemArmor implements IHasModel, ILeveledItem, 
      * Sets up a custom armor model
      */
     @Override
-    @SideOnly(Side.CLIENT)
-    public ModelBiped getArmorModel(EntityLivingBase entityLiving, ItemStack itemStack, EntityEquipmentSlot armorSlot, ModelBiped _default) {
+    @OnlyIn(Dist.CLIENT)
+    public ModelBiped getArmorModel(LivingEntity entityLiving, ItemStack itemStack, EquipmentSlot armorSlot, ModelBiped _default) {
         if (this.getCustomModel() != null && !itemStack.isEmpty() && itemStack.getItem() instanceof ModArmorBase) {
             ModelBiped model = getCustomModel();
-            model.bipedHead.showModel = (armorSlot == EntityEquipmentSlot.HEAD);
-            model.bipedBody.showModel = (armorSlot == EntityEquipmentSlot.CHEST);
-            model.bipedLeftArm.showModel = (armorSlot == EntityEquipmentSlot.CHEST);
-            model.bipedRightArm.showModel = (armorSlot == EntityEquipmentSlot.CHEST);
-            model.bipedLeftLeg.showModel = (armorSlot == EntityEquipmentSlot.LEGS || armorSlot == EntityEquipmentSlot.FEET);
-            model.bipedRightLeg.showModel = (armorSlot == EntityEquipmentSlot.LEGS || armorSlot == EntityEquipmentSlot.FEET);
+            model.bipedHead.showModel = (armorSlot == EquipmentSlot.HEAD);
+            model.bipedBody.showModel = (armorSlot == EquipmentSlot.CHEST);
+            model.bipedLeftArm.showModel = (armorSlot == EquipmentSlot.CHEST);
+            model.bipedRightArm.showModel = (armorSlot == EquipmentSlot.CHEST);
+            model.bipedLeftLeg.showModel = (armorSlot == EquipmentSlot.LEGS || armorSlot == EquipmentSlot.FEET);
+            model.bipedRightLeg.showModel = (armorSlot == EquipmentSlot.LEGS || armorSlot == EquipmentSlot.FEET);
 
             model.isChild = _default.isChild;
             model.isRiding = _default.isRiding;

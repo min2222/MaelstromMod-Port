@@ -4,17 +4,17 @@ import com.barribob.MaelstromMod.Main;
 import com.barribob.MaelstromMod.init.ModBlocks;
 import com.barribob.MaelstromMod.init.ModItems;
 import com.barribob.MaelstromMod.util.IHasModel;
-import net.minecraft.block.BlockLeaves;
+import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.block.BlockPlanks.EnumType;
-import net.minecraft.block.SoundType;
+import net.minecraft.world.level.block.SoundType;
 import net.minecraft.block.properties.IProperty;
-import net.minecraft.block.state.BlockStateContainer;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemBlock;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.IBlockAccess;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.BlockGetter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,7 +24,7 @@ import java.util.Random;
  * A lot of these methods come from the BlockOldLeaves class to make the leaf
  * decay functionality work with my leaves
  */
-public class BlockLeavesBase extends BlockLeaves implements IHasModel {
+public class BlockLeavesBase extends LeavesBlock implements IHasModel {
     public BlockLeavesBase(String name) {
         super();
         setUnlocalizedName(name);
@@ -39,7 +39,7 @@ public class BlockLeavesBase extends BlockLeaves implements IHasModel {
 
         // Add both an item as a block and the block itself
         ModBlocks.BLOCKS.add(this);
-        ModItems.ITEMS.add(new ItemBlock(this).setRegistryName(this.getRegistryName()));
+        ModItems.ITEMS.add(new BlockItem(this).setRegistryName(this.getRegistryName()));
     }
 
     public BlockLeavesBase(String name, float hardness, float resistance, SoundType soundType) {
@@ -73,12 +73,12 @@ public class BlockLeavesBase extends BlockLeaves implements IHasModel {
     /**
      * Get the Item that this Block should drop when harvested.
      */
-    public Item getItemDropped(IBlockState state, Random rand, int fortune) {
+    public Item getItemDropped(BlockState state, Random rand, int fortune) {
         return null;
     }
 
     @Override
-    public List<ItemStack> onSheared(ItemStack item, IBlockAccess world, BlockPos pos, int fortune) {
+    public List<ItemStack> onSheared(ItemStack item, BlockGetter world, BlockPos pos, int fortune) {
         return new ArrayList<ItemStack>();
     }
 
@@ -88,12 +88,12 @@ public class BlockLeavesBase extends BlockLeaves implements IHasModel {
     }
 
     @Override
-    protected BlockStateContainer createBlockState() {
-        return new BlockStateContainer(this, new IProperty[]{CHECK_DECAY, DECAYABLE});
+    protected StateDefinition createBlockState() {
+        return new StateDefinition(this, new IProperty[]{CHECK_DECAY, DECAYABLE});
     }
 
     @Override
-    public int getMetaFromState(IBlockState state) {
+    public int getMetaFromState(BlockState state) {
         int i = 0;
 
         if (!((Boolean) state.getValue(DECAYABLE)).booleanValue()) {
@@ -108,7 +108,7 @@ public class BlockLeavesBase extends BlockLeaves implements IHasModel {
     }
 
     @Override
-    public IBlockState getStateFromMeta(int meta) {
+    public BlockState getStateFromMeta(int meta) {
         return this.getDefaultState().withProperty(DECAYABLE, Boolean.valueOf((meta & 4) == 0))
                 .withProperty(CHECK_DECAY, Boolean.valueOf((meta & 8) > 0));
     }

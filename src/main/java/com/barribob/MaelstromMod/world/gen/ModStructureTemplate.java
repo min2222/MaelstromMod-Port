@@ -1,13 +1,13 @@
 package com.barribob.MaelstromMod.world.gen;
 
 import com.barribob.MaelstromMod.util.Reference;
-import net.minecraft.init.Blocks;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Rotation;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.gen.structure.StructureBoundingBox;
 import net.minecraft.world.gen.structure.StructureComponent;
 import net.minecraft.world.gen.structure.StructureComponentTemplate;
@@ -111,7 +111,7 @@ public abstract class ModStructureTemplate extends StructureComponentTemplate {
     /**
      * (abstract) Helper method to write subclass data to NBT
      */
-    protected void writeStructureToNBT(NBTTagCompound tagCompound) {
+    protected void writeStructureToNBT(CompoundTag tagCompound) {
         super.writeStructureToNBT(tagCompound);
         tagCompound.setString("Template", this.pieceName);
         tagCompound.setString("Rot", this.rotation.name());
@@ -121,7 +121,7 @@ public abstract class ModStructureTemplate extends StructureComponentTemplate {
     /**
      * (abstract) Helper method to read subclass data from NBT
      */
-    protected void readStructureFromNBT(NBTTagCompound tagCompound, TemplateManager p_143011_2_) {
+    protected void readStructureFromNBT(CompoundTag tagCompound, TemplateManager p_143011_2_) {
         super.readStructureFromNBT(tagCompound, p_143011_2_);
         this.pieceName = tagCompound.getString("Template");
         this.rotation = Rotation.valueOf(tagCompound.getString("Rot"));
@@ -150,7 +150,7 @@ public abstract class ModStructureTemplate extends StructureComponentTemplate {
     /**
      * Loads structure block data markers and handles them by their name
      */
-    protected void handleDataMarker(String function, BlockPos pos, World worldIn, Random rand, StructureBoundingBox sbb) {
+    protected void handleDataMarker(String function, BlockPos pos, Level worldIn, Random rand, StructureBoundingBox sbb) {
     }
 
     /**

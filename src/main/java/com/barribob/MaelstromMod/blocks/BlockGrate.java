@@ -1,37 +1,37 @@
 package com.barribob.MaelstromMod.blocks;
 
-import net.minecraft.block.BlockTrapDoor;
-import net.minecraft.block.material.Material;
+import net.minecraft.world.level.block.TrapDoorBlock;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
+import net.minecraft.world.level.material.Material;
 import net.minecraft.block.properties.IProperty;
-import net.minecraft.block.properties.PropertyEnum;
 import net.minecraft.block.state.BlockFaceShape;
-import net.minecraft.block.state.BlockStateContainer;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.util.BlockRenderLayer;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.IBlockAccess;
-import net.minecraft.world.World;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.level.Level;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 
 public class BlockGrate extends BlockBase {
-    protected static final AxisAlignedBB BOTTOM_AABB = new AxisAlignedBB(0.0D, 0.0D, 0.0D, 1.0D, 0.1875D, 1.0D);
-    protected static final AxisAlignedBB TOP_AABB = new AxisAlignedBB(0.0D, 0.8125D, 0.0D, 1.0D, 1.0D, 1.0D);
-    public static final PropertyEnum<BlockTrapDoor.DoorHalf> HALF = PropertyEnum.<BlockTrapDoor.DoorHalf>create("half", BlockTrapDoor.DoorHalf.class);
+    protected static final AABB BOTTOM_AABB = new AABB(0.0D, 0.0D, 0.0D, 1.0D, 0.1875D, 1.0D);
+    protected static final AABB TOP_AABB = new AABB(0.0D, 0.8125D, 0.0D, 1.0D, 1.0D, 1.0D);
+    public static final EnumProperty<TrapDoorBlock.DoorHalf> HALF = EnumProperty.<TrapDoorBlock.DoorHalf>create("half", TrapDoorBlock.DoorHalf.class);
 
     public BlockGrate(String name, Material material) {
         super(name, material);
-        this.setDefaultState(this.blockState.getBaseState().withProperty(HALF, BlockTrapDoor.DoorHalf.BOTTOM));
+        this.setDefaultState(this.blockState.getBaseState().withProperty(HALF, TrapDoorBlock.DoorHalf.BOTTOM));
     }
 
     @Override
-    public AxisAlignedBB getBoundingBox(IBlockState state, IBlockAccess source, BlockPos pos) {
-        AxisAlignedBB axisalignedbb;
+    public AABB getBoundingBox(BlockState state, BlockGetter source, BlockPos pos) {
+        AABB axisalignedbb;
 
-        if (state.getValue(HALF) == BlockTrapDoor.DoorHalf.TOP) {
+        if (state.getValue(HALF) == TrapDoorBlock.DoorHalf.TOP) {
             axisalignedbb = TOP_AABB;
         } else {
             axisalignedbb = BOTTOM_AABB;
@@ -41,49 +41,49 @@ public class BlockGrate extends BlockBase {
     }
 
     @Override
-    public boolean isOpaqueCube(IBlockState state) {
+    public boolean isOpaqueCube(BlockState state) {
         return false;
     }
 
     @Override
-    public boolean isFullCube(IBlockState state) {
+    public boolean isFullCube(BlockState state) {
         return false;
     }
 
     @Override
-    public IBlockState getStateForPlacement(World worldIn, BlockPos pos, EnumFacing facing, float hitX, float hitY, float hitZ, int meta, EntityLivingBase placer) {
-        IBlockState iblockstate = this.getDefaultState();
+    public BlockState getStateForPlacement(Level worldIn, BlockPos pos, Direction facing, float hitX, float hitY, float hitZ, int meta, LivingEntity placer) {
+        BlockState iblockstate = this.getDefaultState();
 
         if (facing.getAxis().isHorizontal()) {
-            iblockstate = iblockstate.withProperty(HALF, hitY > 0.5F ? BlockTrapDoor.DoorHalf.TOP : BlockTrapDoor.DoorHalf.BOTTOM);
+            iblockstate = iblockstate.withProperty(HALF, hitY > 0.5F ? TrapDoorBlock.DoorHalf.TOP : TrapDoorBlock.DoorHalf.BOTTOM);
         } else {
-            iblockstate = iblockstate.withProperty(HALF, facing == EnumFacing.UP ? BlockTrapDoor.DoorHalf.BOTTOM : BlockTrapDoor.DoorHalf.TOP);
+            iblockstate = iblockstate.withProperty(HALF, facing == Direction.UP ? TrapDoorBlock.DoorHalf.BOTTOM : TrapDoorBlock.DoorHalf.TOP);
         }
 
         return iblockstate;
     }
 
     @Override
-    public boolean canPlaceBlockOnSide(World worldIn, BlockPos pos, EnumFacing side) {
+    public boolean canPlaceBlockOnSide(Level worldIn, BlockPos pos, Direction side) {
         return true;
     }
 
     @Override
-    public IBlockState getStateFromMeta(int meta) {
-        return this.getDefaultState().withProperty(HALF, (meta & 8) == 0 ? BlockTrapDoor.DoorHalf.BOTTOM : BlockTrapDoor.DoorHalf.TOP);
+    public BlockState getStateFromMeta(int meta) {
+        return this.getDefaultState().withProperty(HALF, (meta & 8) == 0 ? TrapDoorBlock.DoorHalf.BOTTOM : TrapDoorBlock.DoorHalf.TOP);
     }
 
     @Override
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public BlockRenderLayer getBlockLayer() {
         return BlockRenderLayer.CUTOUT;
     }
 
     @Override
-    public int getMetaFromState(IBlockState state) {
+    public int getMetaFromState(BlockState state) {
         int i = 0;
 
-        if (state.getValue(HALF) == BlockTrapDoor.DoorHalf.TOP) {
+        if (state.getValue(HALF) == TrapDoorBlock.DoorHalf.TOP) {
             i |= 8;
         }
 
@@ -91,14 +91,14 @@ public class BlockGrate extends BlockBase {
     }
 
     @Override
-    protected BlockStateContainer createBlockState() {
-        return new BlockStateContainer(this, new IProperty[]{HALF});
+    protected StateDefinition createBlockState() {
+        return new StateDefinition(this, new IProperty[]{HALF});
     }
 
     @Override
-    public BlockFaceShape getBlockFaceShape(IBlockAccess worldIn, IBlockState state, BlockPos pos, EnumFacing face) {
-        return (face == EnumFacing.UP && state.getValue(HALF) == BlockTrapDoor.DoorHalf.TOP
-                || face == EnumFacing.DOWN && state.getValue(HALF) == BlockTrapDoor.DoorHalf.BOTTOM) ? BlockFaceShape.SOLID : BlockFaceShape.UNDEFINED;
+    public BlockFaceShape getBlockFaceShape(BlockGetter worldIn, BlockState state, BlockPos pos, Direction face) {
+        return (face == Direction.UP && state.getValue(HALF) == TrapDoorBlock.DoorHalf.TOP
+                || face == Direction.DOWN && state.getValue(HALF) == TrapDoorBlock.DoorHalf.BOTTOM) ? BlockFaceShape.SOLID : BlockFaceShape.UNDEFINED;
     }
 }
 

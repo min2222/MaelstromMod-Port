@@ -3,8 +3,8 @@ package com.barribob.MaelstromMod.entity.render;
 import com.barribob.MaelstromMod.entity.model.ModelAnimatedBiped;
 import net.minecraft.client.renderer.entity.RenderBiped;
 import net.minecraft.client.renderer.entity.RenderManager;
-import net.minecraft.entity.EntityLiving;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.resources.ResourceLocation;
 
 public class RenderAnimatedBiped extends RenderBiped {
     private ResourceLocation textures;
@@ -15,7 +15,7 @@ public class RenderAnimatedBiped extends RenderBiped {
     }
 
     @Override
-    protected ResourceLocation getEntityTexture(EntityLiving entity) {
+    protected ResourceLocation getEntityTexture(Mob entity) {
         return this.textures;
     }
 }

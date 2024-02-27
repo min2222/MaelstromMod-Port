@@ -1,8 +1,8 @@
 package com.barribob.MaelstromMod.entity.model;
 
 import net.minecraft.client.model.ModelRenderer;
-import net.minecraft.entity.Entity;
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.util.Mth;
 
 /**
  * Beast - Barribob Created using Tabula 7.0.0
@@ -214,12 +214,12 @@ public class ModelBeast extends ModelAnimated {
     public void setRotationAngles(float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch, float scaleFactor,
                                   Entity entityIn) {
         float limbSwingFactor = 0.4f;
-        this.frontLeftThigh.rotateAngleX = MathHelper.cos(limbSwing * 0.6662F) * 1.4F * limbSwingAmount * limbSwingFactor;
-        this.frontRightThigh.rotateAngleX = MathHelper.cos(limbSwing * 0.6662F + (float) Math.PI) * 1.4F * limbSwingAmount * limbSwingFactor;
-        this.middleLeftThigh.rotateAngleX = MathHelper.cos(limbSwing * 0.6662F + (float) Math.PI) * 1.4F * limbSwingAmount * limbSwingFactor;
-        this.middleRightThigh.rotateAngleX = MathHelper.cos(limbSwing * 0.6662F) * 1.4F * limbSwingAmount * limbSwingFactor;
-        this.backLeftThigh.rotateAngleX = MathHelper.cos(limbSwing * 0.6662F) * 1.4F * limbSwingAmount * limbSwingFactor;
-        this.backRightThigh.rotateAngleX = MathHelper.cos(limbSwing * 0.6662F + (float) Math.PI) * 1.4F * limbSwingAmount * limbSwingFactor;
+        this.frontLeftThigh.rotateAngleX = Mth.cos(limbSwing * 0.6662F) * 1.4F * limbSwingAmount * limbSwingFactor;
+        this.frontRightThigh.rotateAngleX = Mth.cos(limbSwing * 0.6662F + (float) Math.PI) * 1.4F * limbSwingAmount * limbSwingFactor;
+        this.middleLeftThigh.rotateAngleX = Mth.cos(limbSwing * 0.6662F + (float) Math.PI) * 1.4F * limbSwingAmount * limbSwingFactor;
+        this.middleRightThigh.rotateAngleX = Mth.cos(limbSwing * 0.6662F) * 1.4F * limbSwingAmount * limbSwingFactor;
+        this.backLeftThigh.rotateAngleX = Mth.cos(limbSwing * 0.6662F) * 1.4F * limbSwingAmount * limbSwingFactor;
+        this.backRightThigh.rotateAngleX = Mth.cos(limbSwing * 0.6662F + (float) Math.PI) * 1.4F * limbSwingAmount * limbSwingFactor;
 
         this.head.rotateAngleX = headPitch * 0.017453292F;
         this.head.rotateAngleY = netHeadYaw * 0.017453292F;

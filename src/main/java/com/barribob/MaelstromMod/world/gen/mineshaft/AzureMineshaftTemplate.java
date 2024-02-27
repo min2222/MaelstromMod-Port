@@ -3,12 +3,12 @@ package com.barribob.MaelstromMod.world.gen.mineshaft;
 import com.barribob.MaelstromMod.entity.entities.EntityAzureVillager;
 import com.barribob.MaelstromMod.util.handlers.LootTableHandler;
 import com.barribob.MaelstromMod.world.gen.ModStructureTemplate;
+import net.minecraft.core.BlockPos;
 import net.minecraft.entity.item.EntityMinecartEmpty;
-import net.minecraft.tileentity.TileEntity;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.tileentity.TileEntityChest;
 import net.minecraft.util.Rotation;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.gen.structure.StructureBoundingBox;
 import net.minecraft.world.gen.structure.template.TemplateManager;
 
@@ -28,13 +28,13 @@ public class AzureMineshaftTemplate extends ModStructureTemplate {
     /**
      * Loads structure block data markers and handles them by their name
      */
-    protected void handleDataMarker(String function, BlockPos pos, World worldIn, Random rand, StructureBoundingBox sbb) {
+    protected void handleDataMarker(String function, BlockPos pos, Level worldIn, Random rand, StructureBoundingBox sbb) {
         if (function.startsWith("chest")) {
             worldIn.setBlockToAir(pos);
             BlockPos blockpos = pos.down();
 
             if (sbb.isVecInside(blockpos)) {
-                TileEntity tileentity = worldIn.getTileEntity(blockpos);
+                BlockEntity tileentity = worldIn.getTileEntity(blockpos);
 
                 if (tileentity instanceof TileEntityChest) {
                     ((TileEntityChest) tileentity).setLootTable(LootTableHandler.AZURE_MINESHAFT, rand.nextLong());

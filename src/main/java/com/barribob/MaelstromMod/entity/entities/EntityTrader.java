@@ -1,24 +1,24 @@
 package com.barribob.MaelstromMod.entity.entities;
 
 import net.minecraft.entity.IMerchant;
-import net.minecraft.entity.item.EntityXPOrb;
+import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.entity.passive.EntityVillager;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.SoundEvents;
-import net.minecraft.item.ItemStack;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.pathfinding.PathNavigate;
 import net.minecraft.pathfinding.PathNavigateGround;
 import net.minecraft.scoreboard.ScorePlayerTeam;
 import net.minecraft.scoreboard.Team;
 import net.minecraft.stats.StatList;
-import net.minecraft.util.EnumHand;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.core.BlockPos;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.village.MerchantRecipe;
 import net.minecraft.village.MerchantRecipeList;
-import net.minecraft.world.World;
+import net.minecraft.world.level.Level;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -30,15 +30,15 @@ import java.util.List;
 public abstract class EntityTrader extends EntityLeveledMob implements IMerchant {
     protected MerchantRecipeList buyingList;
     @Nullable
-    protected EntityPlayer buyingPlayer;
+    protected Player buyingPlayer;
 
-    public EntityTrader(World worldIn) {
+    public EntityTrader(Level worldIn) {
         super(worldIn);
         this.setSize(0.8f, 1.8f);
     }
 
     @Override
-    protected PathNavigate createNavigator(World worldIn) {
+    protected PathNavigate createNavigator(Level worldIn) {
         return new PathNavigateGround(this, worldIn);
     }
 
@@ -76,13 +76,13 @@ public abstract class EntityTrader extends EntityLeveledMob implements IMerchant
      * When the entity is right clicked
      */
     @Override
-    public boolean processInteract(EntityPlayer player, EnumHand hand) {
+    public boolean processInteract(Player player, InteractionHand hand) {
         if (this.isEntityAlive() && !this.isTrading() && !this.isChild() && !player.isSneaking() && this.getAttackTarget() == null) {
             if (this.buyingList == null) {
                 this.populateBuyingList();
             }
 
-            if (hand == EnumHand.MAIN_HAND) {
+            if (hand == InteractionHand.MAIN_HAND) {
                 player.addStat(StatList.TALKED_TO_VILLAGER);
             }
 
@@ -101,7 +101,7 @@ public abstract class EntityTrader extends EntityLeveledMob implements IMerchant
         }
     }
 
-    protected void onTraderInteract(EntityPlayer player) {
+    protected void onTraderInteract(Player player) {
     }
 
     public boolean isTrading() {
@@ -114,18 +114,18 @@ public abstract class EntityTrader extends EntityLeveledMob implements IMerchant
      */
     @Override
     @Nullable
-    public EntityPlayer getCustomer() {
+    public Player getCustomer() {
         return this.buyingPlayer;
     }
 
     @Override
-    public void setCustomer(@Nullable EntityPlayer player) {
+    public void setCustomer(@Nullable Player player) {
         this.buyingPlayer = player;
     }
 
     @Override
     @Nullable
-    public MerchantRecipeList getRecipes(EntityPlayer player) {
+    public MerchantRecipeList getRecipes(Player player) {
         if (this.buyingList == null) {
             this.populateBuyingList();
         }
@@ -144,7 +144,7 @@ public abstract class EntityTrader extends EntityLeveledMob implements IMerchant
         this.playSound(SoundEvents.ENTITY_VILLAGER_YES, this.getSoundVolume(), this.getSoundPitch());
 
         if (recipe.getRewardsExp()) {
-            this.world.spawnEntity(new EntityXPOrb(this.world, this.posX, this.posY + 0.5D, this.posZ, 5));
+            this.world.spawnEntity(new ExperienceOrb(this.world, this.posX, this.posY + 0.5D, this.posZ, 5));
         }
     }
 
@@ -162,7 +162,7 @@ public abstract class EntityTrader extends EntityLeveledMob implements IMerchant
     }
 
     @Override
-    public World getWorld() {
+    public Level getWorld() {
         return this.world;
     }
 

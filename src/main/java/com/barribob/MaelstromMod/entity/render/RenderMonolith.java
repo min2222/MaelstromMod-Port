@@ -6,8 +6,8 @@ import com.barribob.MaelstromMod.util.ModUtils;
 import com.barribob.MaelstromMod.util.Reference;
 import com.barribob.MaelstromMod.util.RenderUtils;
 import net.minecraft.client.renderer.entity.RenderManager;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.phys.Vec3;
 
 public class RenderMonolith extends RenderModEntity<EntityMonolith> {
     public ResourceLocation TEXTURES_1 = new ResourceLocation(Reference.MOD_ID + ":textures/entity/monolith.png");
@@ -40,7 +40,7 @@ public class RenderMonolith extends RenderModEntity<EntityMonolith> {
 
         // Render the monolith lazer. Taken from the guardian lazer thingy
         if (entity.getTarget().isPresent()) {
-            RenderUtils.drawLazer(renderManager, entity.getPositionVector().add(ModUtils.yVec(entity.getEyeHeight())), entity.getTarget().get(), new Vec3d(x, y, z), new Vec3d(1, 0, 0), entity, partialTicks);
+            RenderUtils.drawLazer(renderManager, entity.getPositionVector().add(ModUtils.yVec(entity.getEyeHeight())), entity.getTarget().get(), new Vec3(x, y, z), new Vec3(1, 0, 0), entity, partialTicks);
         }
     }
 }

@@ -1,9 +1,9 @@
 package com.barribob.MaelstromMod.world.gen.maelstrom_stronghold;
 
 import com.barribob.MaelstromMod.world.gen.MapGenModStructure;
+import net.minecraft.core.BlockPos;
 import net.minecraft.util.Rotation;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.gen.structure.StructureStart;
 
 import java.util.Random;
@@ -30,12 +30,12 @@ public class MapGenMaelstromStronghold extends MapGenModStructure {
         public Start() {
         }
 
-        public Start(World worldIn, Random random, int chunkX, int chunkZ) {
+        public Start(Level worldIn, Random random, int chunkX, int chunkZ) {
             super(chunkX, chunkZ);
             this.create(worldIn, random, chunkX, chunkZ);
         }
 
-        private void create(World worldIn, Random rnd, int chunkX, int chunkZ) {
+        private void create(Level worldIn, Random rnd, int chunkX, int chunkZ) {
             Random random = new Random(chunkX + chunkZ * 10387313);
             Rotation rotation = Rotation.values()[random.nextInt(Rotation.values().length)];
             int y = 1;

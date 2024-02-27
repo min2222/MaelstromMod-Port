@@ -12,9 +12,9 @@ import com.barribob.MaelstromMod.world.gen.WorldGenMaelstrom;
 import com.barribob.MaelstromMod.world.gen.maelstrom_fortress.MapGenMaelstromFortress;
 import com.barribob.MaelstromMod.world.gen.maelstrom_stronghold.MapGenMaelstromStronghold;
 import com.barribob.MaelstromMod.world.gen.mineshaft.MapGenAzureMineshaft;
-import net.minecraft.init.Blocks;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.chunk.ChunkPrimer;
 import net.minecraft.world.gen.MapGenBase;
@@ -33,7 +33,7 @@ public class ChunkGeneratorAzure extends WorldChunkGenerator {
     private MapGenBase caveGenerator = new MapGenAzureCaves();
     private MapGenBase ravineGenerator = new MapGenAzureRavine();
 
-    public ChunkGeneratorAzure(World worldIn, long seed, boolean mapFeaturesEnabledIn, String generatorOptions) {
+    public ChunkGeneratorAzure(Level worldIn, long seed, boolean mapFeaturesEnabledIn, String generatorOptions) {
         super(worldIn, seed, mapFeaturesEnabledIn, generatorOptions, ModBlocks.DARK_AZURE_STONE, Blocks.WATER, structures);
     }
 

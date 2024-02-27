@@ -13,21 +13,21 @@ import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.entity.EntityCreature;
-import net.minecraft.entity.MoverType;
-import net.minecraft.entity.SharedMonsterAttributes;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.network.datasync.DataParameter;
-import net.minecraft.network.datasync.DataSerializers;
-import net.minecraft.network.datasync.EntityDataManager;
+import net.minecraft.world.entity.MoverType;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.pathfinding.PathNavigate;
-import net.minecraft.util.DamageSource;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.util.SoundEvent;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.level.Level;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.fml.common.registry.EntityEntry;
 import net.minecraftforge.fml.common.registry.EntityRegistry;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
 
 import java.util.PriorityQueue;
 
@@ -35,21 +35,21 @@ import java.util.PriorityQueue;
  * A base class for the mod's mobs. It includes a hodgepodge of attributes and abilities. One is to scale nicely with the leveling system.
  */
 public abstract class EntityLeveledMob extends EntityCreature implements IAnimatedMob, IElement, LeapingEntity {
-    protected static final DataParameter<Float> LEVEL = EntityDataManager.<Float>createKey(EntityLeveledMob.class, DataSerializers.FLOAT);
+    protected static final EntityDataAccessor<Float> LEVEL = SynchedEntityData.<Float>createKey(EntityLeveledMob.class, EntityDataSerializers.FLOAT);
     private float regenStartTimer;
     private static float regenStartTime = 60;
-    protected static final DataParameter<Integer> ELEMENT = EntityDataManager.<Integer>createKey(EntityLeveledMob.class, DataSerializers.VARINT);
+    protected static final EntityDataAccessor<Integer> ELEMENT = SynchedEntityData.<Integer>createKey(EntityLeveledMob.class, EntityDataSerializers.VARINT);
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     protected Animation currentAnimation;
 
-    protected static final DataParameter<Boolean> IMMOVABLE = EntityDataManager.<Boolean>createKey(EntityLeveledMob.class, DataSerializers.BOOLEAN);
-    private Vec3d initialPosition = null;
+    protected static final EntityDataAccessor<Boolean> IMMOVABLE = SynchedEntityData.<Boolean>createKey(EntityLeveledMob.class, EntityDataSerializers.BOOLEAN);
+    private Vec3 initialPosition = null;
     protected double healthScaledAttackFactor = 0.0; // Factor that determines how much attack is affected by health
     private PriorityQueue<TimedEvent> events = new PriorityQueue<TimedEvent>();
     private boolean leaping = false;
 
-    public EntityLeveledMob(World worldIn) {
+    public EntityLeveledMob(Level worldIn) {
         super(worldIn);
         this.setLevel(LevelHandler.INVASION);
         this.experienceValue = 5;
@@ -76,7 +76,7 @@ public abstract class EntityLeveledMob extends EntityCreature implements IAnimat
     // Because for some reason the default entity ai for 1.12 sends entities
     // off cliffs and holes instead of going around them
     @Override
-    protected PathNavigate createNavigator(World worldIn) {
+    protected PathNavigate createNavigator(Level worldIn) {
         if (ModConfig.entities.useVanillaPathfinding) {
             return super.createNavigator(worldIn);
         }
@@ -84,7 +84,7 @@ public abstract class EntityLeveledMob extends EntityCreature implements IAnimat
     }
 
     @Override
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public void handleStatusUpdate(byte id) {
         if (id == animationByte && currentAnimation == null) {
             initAnimation();
@@ -93,7 +93,7 @@ public abstract class EntityLeveledMob extends EntityCreature implements IAnimat
         }
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     protected void initAnimation() {
     }
 
@@ -159,7 +159,7 @@ public abstract class EntityLeveledMob extends EntityCreature implements IAnimat
         this.dataManager.set(IMMOVABLE, immovable);
     }
 
-    public void setImmovablePosition(Vec3d pos) {
+    public void setImmovablePosition(Vec3 pos) {
         this.initialPosition = pos;
         this.setPosition(0, 0, 0);
     }
@@ -189,11 +189,11 @@ public abstract class EntityLeveledMob extends EntityCreature implements IAnimat
     @Override
     protected void applyEntityAttributes() {
         super.applyEntityAttributes();
-        this.getAttributeMap().registerAttribute(SharedMonsterAttributes.ATTACK_DAMAGE);
-        this.getAttributeMap().registerAttribute(SharedMonsterAttributes.FLYING_SPEED);
-        this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(20);
-        this.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).setBaseValue(0);
-        this.getEntityAttribute(SharedMonsterAttributes.FLYING_SPEED).setBaseValue(0);
+        this.getAttributeMap().registerAttribute(Attributes.ATTACK_DAMAGE);
+        this.getAttributeMap().registerAttribute(Attributes.FLYING_SPEED);
+        this.getEntityAttribute(Attributes.MAX_HEALTH).setBaseValue(20);
+        this.getEntityAttribute(Attributes.ATTACK_DAMAGE).setBaseValue(0);
+        this.getEntityAttribute(Attributes.FLYING_SPEED).setBaseValue(0);
     }
 
     /**
@@ -205,7 +205,7 @@ public abstract class EntityLeveledMob extends EntityCreature implements IAnimat
     }
 
     @Override
-    public void writeEntityToNBT(NBTTagCompound compound) {
+    public void writeEntityToNBT(CompoundTag compound) {
         compound.setFloat("level", getLevel());
         compound.setBoolean("isImmovable", this.isImmovable());
         compound.setInteger("element", getElement().id);
@@ -219,7 +219,7 @@ public abstract class EntityLeveledMob extends EntityCreature implements IAnimat
     }
 
     @Override
-    public void readFromNBT(NBTTagCompound compound) {
+    public void readFromNBT(CompoundTag compound) {
         if (compound.hasKey("level")) {
             this.setLevel(compound.getFloat("level"));
         }
@@ -240,7 +240,7 @@ public abstract class EntityLeveledMob extends EntityCreature implements IAnimat
         // This is required because the position gets set at 0 0 0 from super.readFromNBT, which causes problems
         this.initialPosition = null;
         if (compound.hasKey("initialX")) {
-            this.initialPosition = new Vec3d(compound.getDouble("initialX"), compound.getDouble("initialY"), compound.getDouble("initialZ"));
+            this.initialPosition = new Vec3(compound.getDouble("initialX"), compound.getDouble("initialY"), compound.getDouble("initialZ"));
         }
     }
 
@@ -248,7 +248,7 @@ public abstract class EntityLeveledMob extends EntityCreature implements IAnimat
      * Return the shared monster attribute attack
      */
     public float getAttack() {
-        return ModUtils.getMobDamage(this.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).getAttributeValue(), healthScaledAttackFactor, this.getMaxHealth(),
+        return ModUtils.getMobDamage(this.getEntityAttribute(Attributes.ATTACK_DAMAGE).getAttributeValue(), healthScaledAttackFactor, this.getMaxHealth(),
                 this.getHealth(), this.getLevel(), this.getElement());
     }
 
@@ -313,7 +313,7 @@ public abstract class EntityLeveledMob extends EntityCreature implements IAnimat
         this.leaping = leaping;
     }
 
-    protected Vec3d getInitialPosition() {
+    protected Vec3 getInitialPosition() {
         return initialPosition;
     }
 

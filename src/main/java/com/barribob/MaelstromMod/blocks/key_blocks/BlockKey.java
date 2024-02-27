@@ -9,38 +9,38 @@ import com.barribob.MaelstromMod.util.ModColors;
 import com.barribob.MaelstromMod.util.ModUtils;
 import com.barribob.MaelstromMod.util.handlers.ParticleManager;
 import com.google.common.base.Predicate;
-import net.minecraft.block.ITileEntityProvider;
-import net.minecraft.block.SoundType;
-import net.minecraft.block.material.Material;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.client.entity.EntityPlayerSP;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.Item;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.EnumHand;
-import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.IBlockAccess;
-import net.minecraft.world.World;
+import net.minecraft.world.level.block.EntityBlock;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.material.Material;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.core.Direction;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.level.Level;
 
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.function.BiFunction;
 
-public class BlockKey extends BlockBase implements IBlockUpdater, ITileEntityProvider {
+public class BlockKey extends BlockBase implements IBlockUpdater, EntityBlock {
     private Item activationItem;
-    protected static final AxisAlignedBB AABB = new AxisAlignedBB(0.0D, 0.0D, 0.0D, 1.0D, 1.25D, 1.0D);
+    protected static final net.minecraft.world.phys.AABB AABB = new AABB(0.0D, 0.0D, 0.0D, 1.0D, 1.25D, 1.0D);
     int counter = 0;
-    BiFunction<World, BlockPos, Entity> spawnPortal;
+    BiFunction<Level, BlockPos, Entity> spawnPortal;
 
     public BlockKey(String name) {
         this(name, null, (world, pos) -> new EntityAzurePortalSpawn(world, pos.getX(), pos.getY(), pos.getZ()));
     }
 
-    public BlockKey(String name, Item item, BiFunction<World, BlockPos, Entity> spawnPortal) {
+    public BlockKey(String name, Item item, BiFunction<Level, BlockPos, Entity> spawnPortal) {
         super(name, Material.ROCK, 1000, 10000, SoundType.STONE);
         this.setBlockUnbreakable();
         this.activationItem = item;
@@ -50,52 +50,52 @@ public class BlockKey extends BlockBase implements IBlockUpdater, ITileEntityPro
     }
 
     @Override
-    public AxisAlignedBB getBoundingBox(IBlockState state, IBlockAccess source, BlockPos pos) {
+    public net.minecraft.world.phys.AABB getBoundingBox(BlockState state, BlockGetter source, BlockPos pos) {
         return AABB;
     }
 
     @Override
-    public boolean isOpaqueCube(IBlockState state) {
+    public boolean isOpaqueCube(BlockState state) {
         return false;
     }
 
     @Override
-    public boolean isFullCube(IBlockState state) {
+    public boolean isFullCube(BlockState state) {
         return false;
     }
 
     @Override
-    public void update(World world, BlockPos pos) {
+    public void update(Level world, BlockPos pos) {
         counter++;
         if (counter % 5 == 0) {
-            List<EntityPlayerSP> list = world.<EntityPlayerSP>getPlayers(EntityPlayerSP.class, new Predicate<EntityPlayerSP>() {
+            List<LocalPlayer> list = world.<LocalPlayer>getPlayers(LocalPlayer.class, new Predicate<LocalPlayer>() {
                 @Override
-                public boolean apply(@Nullable EntityPlayerSP player) {
-                    return player.getHeldItem(EnumHand.MAIN_HAND).getItem() == activationItem;
+                public boolean apply(@Nullable LocalPlayer player) {
+                    return player.getHeldItem(InteractionHand.MAIN_HAND).getItem() == activationItem;
                 }
             });
 
             if (list.size() > 0) {
                 ModUtils.performNTimes(50, (i) -> {
-                    ParticleManager.spawnFirework(world, new Vec3d(pos).add(new Vec3d(0.5, 1 + i, 0.5)), ModColors.WHITE, ModUtils.yVec(-0.1f));
+                    ParticleManager.spawnFirework(world, new Vec3(pos).add(new Vec3(0.5, 1 + i, 0.5)), ModColors.WHITE, ModUtils.yVec(-0.1f));
                 });
             }
         }
     }
 
     @Override
-    public TileEntity createNewTileEntity(World worldIn, int meta) {
+    public BlockEntity createNewTileEntity(Level worldIn, int meta) {
         return new TileEntityUpdater();
     }
 
     @Override
-    public void breakBlock(World worldIn, BlockPos pos, IBlockState state) {
+    public void breakBlock(Level worldIn, BlockPos pos, BlockState state) {
         super.breakBlock(worldIn, pos, state);
         worldIn.removeTileEntity(pos);
     }
 
     @Override
-    public boolean onBlockActivated(World worldIn, BlockPos pos, IBlockState state, EntityPlayer playerIn, EnumHand hand, EnumFacing facing, float hitX, float hitY,
+    public boolean onBlockActivated(Level worldIn, BlockPos pos, BlockState state, Player playerIn, InteractionHand hand, Direction facing, float hitX, float hitY,
                                     float hitZ) {
         if (playerIn.getHeldItemMainhand() != null && playerIn.getHeldItemMainhand().getItem() == this.activationItem) {
             worldIn.spawnEntity(this.spawnPortal.apply(worldIn, pos));

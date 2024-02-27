@@ -2,8 +2,8 @@ package com.barribob.MaelstromMod.init;
 
 import com.barribob.MaelstromMod.enchantments.*;
 import com.barribob.MaelstromMod.util.Reference;
-import net.minecraft.enchantment.Enchantment;
-import net.minecraft.inventory.EntityEquipmentSlot;
+import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -29,7 +29,7 @@ public class ModEnchantments {
         public static void onRegisterEnchantments(final RegistryEvent.Register<Enchantment> event) {
             final IForgeRegistry<Enchantment> registry = event.getRegistry();
 
-            EntityEquipmentSlot[] weaponSlots = new EntityEquipmentSlot[]{EntityEquipmentSlot.MAINHAND, EntityEquipmentSlot.OFFHAND};
+            EquipmentSlot[] weaponSlots = new EquipmentSlot[]{EquipmentSlot.MAINHAND, EquipmentSlot.OFFHAND};
 
             registry.register(new EnchantmentReload("reload", Enchantment.Rarity.UNCOMMON, weaponSlots));
             registry.register(new EnchantmentPower("gun_power", Enchantment.Rarity.COMMON, weaponSlots));

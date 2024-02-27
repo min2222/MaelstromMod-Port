@@ -1,14 +1,15 @@
 package com.barribob.MaelstromMod.blocks;
 
-import com.barribob.MaelstromMod.init.ModBlocks;
-import net.minecraft.block.IGrowable;
-import net.minecraft.block.SoundType;
-import net.minecraft.block.material.Material;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
-
 import java.util.Random;
+
+import com.barribob.MaelstromMod.init.ModBlocks;
+
+import net.minecraft.block.IGrowable;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.material.Material;
 
 public class BlockAzureGrass extends BlockBase implements IGrowable {
 
@@ -19,20 +20,20 @@ public class BlockAzureGrass extends BlockBase implements IGrowable {
     }
 
     @Override
-    public boolean canGrow(World worldIn, BlockPos pos, IBlockState state, boolean isClient) {
+    public boolean canGrow(Level worldIn, BlockPos pos, BlockState state, boolean isClient) {
         return true;
     }
 
     @Override
-    public boolean canUseBonemeal(World worldIn, Random rand, BlockPos pos, IBlockState state) {
+    public boolean canUseBonemeal(Level worldIn, Random rand, BlockPos pos, BlockState state) {
         return true;
     }
 
     /**
-     * Grow azure foliage when bonemeall is used
+     * Grow azure foliage when bonemeal is used
      */
     @Override
-    public void grow(World worldIn, Random rand, BlockPos pos, IBlockState state) {
+    public void grow(Level worldIn, Random rand, BlockPos pos, BlockState state) {
         BlockPos blockpos = pos.up();
 
         for (int i = 0; i < 128; ++i) {
@@ -68,7 +69,7 @@ public class BlockAzureGrass extends BlockBase implements IGrowable {
     /*
      * Makes grass spread to other blocks
      */
-    public void updateTick(World worldIn, BlockPos pos, IBlockState state, Random rand) {
+    public void updateTick(Level worldIn, BlockPos pos, BlockState state, Random rand) {
         if (!worldIn.isRemote) {
             if (!worldIn.isAreaLoaded(pos, 3))
                 return; // Forge: prevent loading unloaded chunks when checking neighbor's light and
@@ -84,11 +85,11 @@ public class BlockAzureGrass extends BlockBase implements IGrowable {
                             return;
                         }
 
-                        IBlockState iblockstate = worldIn.getBlockState(blockpos.up());
-                        IBlockState iblockstate1 = worldIn.getBlockState(blockpos);
+                        BlockState iblockstate = worldIn.getBlockState(blockpos.above());
+                        BlockState iblockstate1 = worldIn.getBlockState(blockpos);
 
                         if (iblockstate1.getBlock() == ModBlocks.DARK_AZURE_STONE && worldIn.getLightFromNeighbors(blockpos.up()) >= 4
-                                && iblockstate.getLightOpacity(worldIn, pos.up()) <= 2) {
+                                && iblockstate.getLightOpacity(worldIn, pos.above()) <= 2) {
                             worldIn.setBlockState(blockpos, ModBlocks.AZURE_GRASS.getDefaultState());
                         }
                     }

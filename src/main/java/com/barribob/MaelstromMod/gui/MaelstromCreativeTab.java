@@ -1,12 +1,12 @@
 package com.barribob.MaelstromMod.gui;
 
-import net.minecraft.creativetab.CreativeTabs;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
+import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 
 import java.util.function.Supplier;
 
-public class MaelstromCreativeTab extends CreativeTabs {
+public class MaelstromCreativeTab extends CreativeModeTab {
     Supplier<Item> icon;
 
     public MaelstromCreativeTab(int index, String label, Supplier<Item> icon) {

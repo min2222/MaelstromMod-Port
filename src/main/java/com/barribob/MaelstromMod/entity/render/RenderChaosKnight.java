@@ -10,8 +10,8 @@ import com.barribob.MaelstromMod.util.RenderUtils;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.client.renderer.entity.layers.LayerRenderer;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.phys.Vec3;
 
 public class RenderChaosKnight extends RenderModEntity<EntityChaosKnight> {
 
@@ -25,7 +25,7 @@ public class RenderChaosKnight extends RenderModEntity<EntityChaosKnight> {
         super.doRender(entity, x, y, z, entityYaw, partialTicks);
 
         if (entity.getTarget().isPresent()) {
-            RenderUtils.drawLazer(renderManager, entity.getPositionVector().add(ModUtils.yVec(entity.getEyeHeight())), entity.getTarget().get(), new Vec3d(x, y, z), ModColors.RED, entity, partialTicks);
+            RenderUtils.drawLazer(renderManager, entity.getPositionVector().add(ModUtils.yVec(entity.getEyeHeight())), entity.getTarget().get(), new Vec3(x, y, z), ModColors.RED, entity, partialTicks);
         }
     }
 

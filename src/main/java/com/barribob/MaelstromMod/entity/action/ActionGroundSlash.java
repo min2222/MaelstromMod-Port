@@ -2,7 +2,7 @@ package com.barribob.MaelstromMod.entity.action;
 
 import com.barribob.MaelstromMod.entity.entities.EntityLeveledMob;
 import com.barribob.MaelstromMod.entity.projectile.Projectile;
-import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.world.entity.LivingEntity;
 
 import java.util.function.Supplier;
 
@@ -14,7 +14,7 @@ public class ActionGroundSlash implements IAction {
     }
 
     @Override
-    public void performAction(EntityLeveledMob actor, EntityLivingBase target) {
+    public void performAction(EntityLeveledMob actor, LivingEntity target) {
         float inaccuracy = 0.0f;
         float speed = 0.8f;
         float pitch = 0; // Projectiles aim straight ahead always

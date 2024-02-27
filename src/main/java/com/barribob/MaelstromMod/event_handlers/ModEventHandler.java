@@ -22,24 +22,26 @@ import com.barribob.MaelstromMod.util.teleporter.NexusToOverworldTeleporter;
 import com.barribob.MaelstromMod.world.dimension.crimson_kingdom.WorldGenCrimsonKingdomChunk;
 import com.barribob.MaelstromMod.world.dimension.nexus.DimensionNexus;
 import com.barribob.MaelstromMod.world.gen.WorldGenCustomStructures;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.init.Blocks;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.EnumHand;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.core.BlockPos;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.util.Rotation;
-import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextComponentTranslation;
-import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.WorldType;
 import net.minecraft.world.chunk.Chunk;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.MouseEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
@@ -51,8 +53,6 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.PlayerEvent.PlayerLoggedInEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -75,8 +75,8 @@ public class ModEventHandler {
                 damageSource.isUnblockable = false;
             }
 
-            if(damageSource.getDisablesShields() && event.getEntityLiving() != null && ModUtils.canBlockDamageSource(damageSource, event.getEntityLiving()) && event.getEntityLiving() instanceof EntityPlayer) {
-                ((EntityPlayer)event.getEntityLiving()).disableShield(true);
+            if(damageSource.getDisablesShields() && event.getEntityLiving() != null && ModUtils.canBlockDamageSource(damageSource, event.getEntityLiving()) && event.getEntityLiving() instanceof Player) {
+                ((Player)event.getEntityLiving()).disableShield(true);
             }
         }
 
@@ -138,13 +138,13 @@ public class ModEventHandler {
     public static void playerLoggedInEvent(PlayerLoggedInEvent event) {
         // Sync some of the config parameters
         if (ModConfig.server.sync_on_login) {
-            Main.network.sendTo(new MessageSyncConfig(ModConfig.balance.progression_scale, ModConfig.balance.weapon_damage, ModConfig.balance.armor_toughness, ModConfig.balance.elemental_factor), (EntityPlayerMP) event.player);
+            Main.network.sendTo(new MessageSyncConfig(ModConfig.balance.progression_scale, ModConfig.balance.weapon_damage, ModConfig.balance.armor_toughness, ModConfig.balance.elemental_factor), (ServerPlayer) event.player);
         }
     }
 
     @SubscribeEvent
     public static void onServerTick(TickEvent.WorldTickEvent event) {
-        boolean correctTickPhase = event.side == Side.SERVER && event.phase == TickEvent.Phase.END;
+        boolean correctTickPhase = event.side == Dist.SERVER && event.phase == TickEvent.Phase.END;
         boolean isSuperflat = event.world.getWorldType().equals(WorldType.FLAT);
         boolean isInOverworld = event.world.provider.getDimension() == 0;
         if (!correctTickPhase || isSuperflat || !isInOverworld || !isInvasionEnabledViaGamestage) {
@@ -168,14 +168,14 @@ public class ModEventHandler {
         if (invasionCounter.getInvasionTime() > 0 && previousTime >= warningMessageTime && invasionCounter.getInvasionTime() < warningMessageTime && !invasionCounter.isInvaded()) {
             event.world.playerEntities.forEach((p) -> {
                 p.sendMessage(
-                        new TextComponentString("" + TextFormatting.DARK_PURPLE + new TextComponentTranslation(Reference.MOD_ID + ".invasion_1").getFormattedText()));
+                        new TextComponentString("" + ChatFormatting.DARK_PURPLE + new TextComponentTranslation(Reference.MOD_ID + ".invasion_1").getFormattedText()));
             });
         }
 
         if (invasionCounter.shouldDoInvasion()) {
             if (event.world.playerEntities.size() > 0) {
                 // Get the player closest to the origin
-                EntityPlayer player = event.world.playerEntities.stream().reduce(event.world.playerEntities.get(0),
+                Player player = event.world.playerEntities.stream().reduce(event.world.playerEntities.get(0),
                         (p1, p2) -> p1.getDistance(0, 0, 0) < p2.getDistance(0, 0, 0) ? p1 : p2);
 
                 List<BlockPos> positions = new ArrayList<BlockPos>();
@@ -205,7 +205,7 @@ public class ModEventHandler {
                     final BlockPos finalPos = structurePos.add(new BlockPos(0, y, 0));
 
                     // Avoid spawning in water (mostly for oceans because they can be very deep)
-                    if (event.world.containsAnyLiquid(new AxisAlignedBB(finalPos, structureSize.add(finalPos)))) {
+                    if (event.world.containsAnyLiquid(new AABB(finalPos, structureSize.add(finalPos)))) {
                         return;
                     }
 
@@ -228,7 +228,7 @@ public class ModEventHandler {
                 if (positions.size() > 0) {
                     event.world.playerEntities.forEach((p) -> {
                         p.sendMessage(new TextComponentString(
-                                "" + TextFormatting.DARK_PURPLE + new TextComponentTranslation(Reference.MOD_ID + ".invasion_2").getFormattedText()));
+                                "" + ChatFormatting.DARK_PURPLE + new TextComponentTranslation(Reference.MOD_ID + ".invasion_2").getFormattedText()));
                     });
                     invasionCounter.setInvaded(true);
                     BlockPos structurePos = positions.get(variations.indexOf(Collections.min(variations)));
@@ -248,7 +248,7 @@ public class ModEventHandler {
 
     @SubscribeEvent
     public static void attachCabability(AttachCapabilitiesEvent<Entity> event) {
-        if (event.getObject() instanceof EntityPlayer) {
+        if (event.getObject() instanceof Player) {
             event.addCapability(MANA, new ManaProvider());
         }
     }
@@ -265,13 +265,13 @@ public class ModEventHandler {
         }
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     @SubscribeEvent(receiveCanceled = true)
     public static void onMouseEvent(MouseEvent event) {
         // If left clicking
         if (event.getButton() == 0 && event.isButtonstate()) {
             Minecraft mc = Minecraft.getMinecraft();
-            EntityPlayer player = mc.player;
+            Player player = mc.player;
 
             if (player != null) {
                 ItemStack itemStack = player.getHeldItemMainhand();
@@ -292,21 +292,21 @@ public class ModEventHandler {
                             event.setCanceled(true); // Prevents shorter reach swords from hitting with the event going through
                         }
                         // We let the block ray trace result be handled by the default event
-                        mc.player.swingArm(EnumHand.MAIN_HAND);
+                        mc.player.swingArm(InteractionHand.MAIN_HAND);
                     }
                 }
             }
         }
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     @SubscribeEvent()
     public static void onEmptyLeftClick(PlayerInteractEvent.LeftClickEmpty event) {
         handleEmptyLeftClick(event);
 
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     @SubscribeEvent()
     public static void onEmptyLeftClick(PlayerInteractEvent.LeftClickBlock event) {
         handleEmptyLeftClick(event);
@@ -327,12 +327,12 @@ public class ModEventHandler {
      * Renders the maelstrom armor bar and the gun reload bar
      */
     @SubscribeEvent
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public static void onGuiPostRender(RenderGameOverlayEvent.Post event) {
         Minecraft mc = Minecraft.getMinecraft();
-        if (mc.getRenderViewEntity() instanceof EntityPlayer) {
+        if (mc.getRenderViewEntity() instanceof Player) {
             GlStateManager.enableBlend();
-            EntityPlayer player = (EntityPlayer) mc.getRenderViewEntity();
+            Player player = (Player) mc.getRenderViewEntity();
 
             // If in creative mode or something, don't draw
             if (ModConfig.gui.showArmorBar) {

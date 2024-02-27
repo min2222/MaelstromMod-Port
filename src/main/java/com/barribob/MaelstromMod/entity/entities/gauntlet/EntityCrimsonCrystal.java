@@ -8,22 +8,22 @@ import com.barribob.MaelstromMod.util.ModDamageSource;
 import com.barribob.MaelstromMod.util.ModRandom;
 import com.barribob.MaelstromMod.util.ModUtils;
 import com.barribob.MaelstromMod.util.handlers.ParticleManager;
-import net.minecraft.entity.Entity;
-import net.minecraft.init.SoundEvents;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.network.datasync.DataParameter;
-import net.minecraft.network.datasync.DataSerializers;
-import net.minecraft.network.datasync.EntityDataManager;
-import net.minecraft.util.DamageSource;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.level.Level;
 
 import javax.annotation.Nonnull;
 import java.util.OptionalDouble;
 
 public class EntityCrimsonCrystal extends Entity {
-    protected static final DataParameter<Float> CLOSEST_TARGET_DISTANCE =
-            EntityDataManager.createKey(EntityLeveledMob.class, DataSerializers.FLOAT);
+    protected static final EntityDataAccessor<Float> CLOSEST_TARGET_DISTANCE =
+            SynchedEntityData.createKey(EntityLeveledMob.class, EntityDataSerializers.FLOAT);
     private EntityLeveledMob shootingEntity = null;
     public static final float explosionDistance = (float) Main.mobsConfig.getDouble("alternative_maelstrom_gauntlet_stage_2.crystal_explosion_radius");
     public static float visualActivationDistance = explosionDistance * 4;
@@ -31,12 +31,12 @@ public class EntityCrimsonCrystal extends Entity {
     private static final double explosionRadiusSq = Math.pow(explosionDistance, 2);
     private static final float crystalLifespan = (float) Main.mobsConfig.getDouble("alternative_maelstrom_gauntlet_stage_2.crystal_lifespan");
 
-    public EntityCrimsonCrystal(World world) {
+    public EntityCrimsonCrystal(Level world) {
         super(world);
         this.setSize(1, 1);
     }
 
-    public EntityCrimsonCrystal(World world, EntityLeveledMob shootingEntity) {
+    public EntityCrimsonCrystal(Level world, EntityLeveledMob shootingEntity) {
         super(world);
         this.shootingEntity = shootingEntity;
         this.setSize(1, 1);
@@ -53,7 +53,7 @@ public class EntityCrimsonCrystal extends Entity {
                 return;
             }
 
-            Vec3d pos = this.getPositionVector();
+            Vec3 pos = this.getPositionVector();
             OptionalDouble optionalDistance = ModUtils.getEntitiesInBox(this, ModUtils.makeBox(pos, pos).grow(20))
                     .stream()
                     .filter(EntityMaelstromMob.CAN_TARGET)
@@ -79,7 +79,7 @@ public class EntityCrimsonCrystal extends Entity {
                     (visualActivationDistance - explosionDistance);
             int numParticles = (int) (distanceToExplosion * VisualActivationDistanceSq * 0.02);
             for (int i = 0; i < numParticles; i++) {
-                Vec3d vec = ModRandom.randVec().normalize().scale(explosionDistance);
+                Vec3 vec = ModRandom.randVec().normalize().scale(explosionDistance);
                 ParticleManager.spawnEffect(world, getPositionVector().add(vec), getParticleColor());
             }
         }
@@ -104,20 +104,20 @@ public class EntityCrimsonCrystal extends Entity {
     public void handleStatusUpdate(byte id) {
         if (id == ModUtils.PARTICLE_BYTE) {
             for (int i = 0; i < 20; i++) {
-                Vec3d randPos = radialRandVec();
+                Vec3 randPos = radialRandVec();
                 ParticleManager.spawnColoredExplosion(world, randPos, ModColors.RED);
             }
 
             for (int i = 0; i < 20; i++) {
-                Vec3d randPos = radialRandVec();
-                Vec3d outVelocity = ModUtils.direction(getPositionVector(), randPos).scale(0.2f);
-                ParticleManager.spawnFluff(world, randPos, Vec3d.ZERO, outVelocity);
+                Vec3 randPos = radialRandVec();
+                Vec3 outVelocity = ModUtils.direction(getPositionVector(), randPos).scale(0.2f);
+                ParticleManager.spawnFluff(world, randPos, Vec3.ZERO, outVelocity);
             }
         }
         super.handleStatusUpdate(id);
     }
 
-    public Vec3d radialRandVec() {
+    public Vec3 radialRandVec() {
         return getPositionVector()
                 .add(ModRandom.randVec().normalize()
                         .scale(rand.nextDouble() * explosionDistance));
@@ -127,11 +127,11 @@ public class EntityCrimsonCrystal extends Entity {
         return dataManager.get(CLOSEST_TARGET_DISTANCE);
     }
 
-    public Vec3d getParticleColor() {
+    public Vec3 getParticleColor() {
         double distance = Math.sqrt(Math.min(EntityCrimsonCrystal.VisualActivationDistanceSq, getTargetDistanceSq()));
         float distanceToExplosion = (float) ((EntityCrimsonCrystal.visualActivationDistance - distance) /
                 (EntityCrimsonCrystal.visualActivationDistance - EntityCrimsonCrystal.explosionDistance));
-        return new Vec3d(1.0f, 1 - distanceToExplosion, 1 - distanceToExplosion);
+        return new Vec3(1.0f, 1 - distanceToExplosion, 1 - distanceToExplosion);
     }
 
     @Override
@@ -140,12 +140,12 @@ public class EntityCrimsonCrystal extends Entity {
     }
 
     @Override
-    protected void readEntityFromNBT(@Nonnull NBTTagCompound compound) {
+    protected void readEntityFromNBT(@Nonnull CompoundTag compound) {
 
     }
 
     @Override
-    protected void writeEntityToNBT(@Nonnull NBTTagCompound compound) {
+    protected void writeEntityToNBT(@Nonnull CompoundTag compound) {
 
     }
 

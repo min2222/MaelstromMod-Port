@@ -14,19 +14,19 @@ import com.barribob.MaelstromMod.util.Element;
 import com.barribob.MaelstromMod.util.ModUtils;
 import com.barribob.MaelstromMod.util.Reference;
 import com.barribob.MaelstromMod.util.handlers.LevelHandler;
-import net.minecraft.client.util.ITooltipFlag;
-import net.minecraft.init.MobEffects;
-import net.minecraft.init.SoundEvents;
-import net.minecraft.inventory.EntityEquipmentSlot;
-import net.minecraft.item.Item;
-import net.minecraft.item.Item.ToolMaterial;
+import net.minecraft.ChatFormatting;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Item.ToolMaterial;
 import net.minecraft.item.ItemArmor.ArmorMaterial;
-import net.minecraft.item.ItemStack;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.potion.PotionEffect;
-import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvent;
-import net.minecraft.util.text.TextFormatting;
-import net.minecraft.world.World;
+import net.minecraft.world.level.Level;
 import net.minecraftforge.common.util.EnumHelper;
 
 import java.util.ArrayList;
@@ -53,7 +53,7 @@ public class ModItems {
 
     static Consumer<List<String>> kanshouBakuya = (tooltip) -> {
         if(Main.itemsConfig.getBoolean("full_set_bonuses.kanshou_bakuya")) {
-            tooltip.add(TextFormatting.GRAY + ModUtils.translateDesc("kanshou_bakuya"));
+            tooltip.add(ChatFormatting.GRAY + ModUtils.translateDesc("kanshou_bakuya"));
         }
     };
 
@@ -98,7 +98,7 @@ public class ModItems {
     public static final Item MUSKET = new ItemMusket("musket", LevelHandler.AZURE_OVERWORLD);
     public static final Item REPEATER = new ItemRepeater("repeater", LevelHandler.AZURE_OVERWORLD);
     public static final Item RIFLE = new ItemRifle("rifle", LevelHandler.AZURE_OVERWORLD).setInformation((tooltip) -> {
-        tooltip.add(TextFormatting.GRAY + ModUtils.translateDesc("rifle"));
+        tooltip.add(ChatFormatting.GRAY + ModUtils.translateDesc("rifle"));
     });
     public static final Item ELK_BLASTER = new ItemPiercer("elk_blaster", LevelHandler.AZURE_ENDGAME).setElement(Element.AZURE);
     public static final Item PUMPKIN = new ItemPumpkin("pumpkin", 80, null, LevelHandler.AZURE_ENDGAME);
@@ -125,9 +125,9 @@ public class ModItems {
     public static final Item FIREBALL_STAFF = new ItemFireballStaff("fireball_staff", STAFF_USE_TIME, LevelHandler.AZURE_ENDGAME, ModCreativeTabs.ITEMS);
     public static final Item CROSS_OF_AQUA = (new ItemBase("cross_of_aqua", ModCreativeTabs.ITEMS) {
         @Override
-        public void addInformation(ItemStack stack, World worldIn, List<String> tooltip, ITooltipFlag flagIn) {
-            tooltip.add(TextFormatting.BLUE + "When held, allows the player to walk on water");
-            tooltip.add(TextFormatting.GRAY + "Mana cost: " + TextFormatting.DARK_PURPLE + "0.5" + TextFormatting.GRAY + " per second");
+        public void addInformation(ItemStack stack, Level worldIn, List<String> tooltip, TooltipFlag flagIn) {
+            tooltip.add(ChatFormatting.BLUE + "When held, allows the player to walk on water");
+            tooltip.add(ChatFormatting.GRAY + "Mana cost: " + ChatFormatting.DARK_PURPLE + "0.5" + ChatFormatting.GRAY + " per second");
         }
 
         ;
@@ -175,67 +175,67 @@ public class ModItems {
      * Armors
      */
 
-    public static final Item STRAW_HAT = new ArmorStrawHat("straw_hat", ARMOR, 1, EntityEquipmentSlot.HEAD, LevelHandler.INVASION, "straw_hat.png");
-    public static final Item SPEED_BOOTS = new ItemSpeedBoots("speed_boots", ARMOR, 1, EntityEquipmentSlot.FEET, LevelHandler.AZURE_OVERWORLD, "speed");
+    public static final Item STRAW_HAT = new ArmorStrawHat("straw_hat", ARMOR, 1, EquipmentSlot.HEAD, LevelHandler.INVASION, "straw_hat.png");
+    public static final Item SPEED_BOOTS = new ItemSpeedBoots("speed_boots", ARMOR, 1, EquipmentSlot.FEET, LevelHandler.AZURE_OVERWORLD, "speed");
 
-    public static final Item NEXUS_HELMET = new ModArmorBase("nexus_helmet", ARMOR, 1, EntityEquipmentSlot.HEAD, LevelHandler.INVASION, "nexus");
-    public static final Item NEXUS_CHESTPLATE = new ModArmorBase("nexus_chestplate", ARMOR, 1, EntityEquipmentSlot.CHEST, LevelHandler.INVASION, "nexus");
-    public static final Item NEXUS_LEGGINGS = new ModArmorBase("nexus_leggings", ARMOR, 2, EntityEquipmentSlot.LEGS, LevelHandler.INVASION, "nexus");
-    public static final Item NEXUS_BOOTS = new ModArmorBase("nexus_boots", ARMOR, 1, EntityEquipmentSlot.FEET, LevelHandler.INVASION, "nexus");
+    public static final Item NEXUS_HELMET = new ModArmorBase("nexus_helmet", ARMOR, 1, EquipmentSlot.HEAD, LevelHandler.INVASION, "nexus");
+    public static final Item NEXUS_CHESTPLATE = new ModArmorBase("nexus_chestplate", ARMOR, 1, EquipmentSlot.CHEST, LevelHandler.INVASION, "nexus");
+    public static final Item NEXUS_LEGGINGS = new ModArmorBase("nexus_leggings", ARMOR, 2, EquipmentSlot.LEGS, LevelHandler.INVASION, "nexus");
+    public static final Item NEXUS_BOOTS = new ModArmorBase("nexus_boots", ARMOR, 1, EquipmentSlot.FEET, LevelHandler.INVASION, "nexus");
 
-    public static final Item ELK_HIDE_HELMET = new ModArmorBase("elk_hide_helmet", ARMOR, 1, EntityEquipmentSlot.HEAD, LevelHandler.AZURE_OVERWORLD, "elk_hide").setElement(Element.AZURE);
-    public static final Item ELK_HIDE_CHESTPLATE = new ModArmorBase("elk_hide_chestplate", ARMOR, 1, EntityEquipmentSlot.CHEST, LevelHandler.AZURE_OVERWORLD, "elk_hide").setElement(Element.AZURE);
-    public static final Item ELK_HIDE_LEGGINGS = new ModArmorBase("elk_hide_leggings", ARMOR, 2, EntityEquipmentSlot.LEGS, LevelHandler.AZURE_OVERWORLD, "elk_hide").setElement(Element.AZURE);
-    public static final Item ELK_HIDE_BOOTS = new ModArmorBase("elk_hide_boots", ARMOR, 1, EntityEquipmentSlot.FEET, LevelHandler.AZURE_OVERWORLD, "elk_hide").setElement(Element.AZURE);
+    public static final Item ELK_HIDE_HELMET = new ModArmorBase("elk_hide_helmet", ARMOR, 1, EquipmentSlot.HEAD, LevelHandler.AZURE_OVERWORLD, "elk_hide").setElement(Element.AZURE);
+    public static final Item ELK_HIDE_CHESTPLATE = new ModArmorBase("elk_hide_chestplate", ARMOR, 1, EquipmentSlot.CHEST, LevelHandler.AZURE_OVERWORLD, "elk_hide").setElement(Element.AZURE);
+    public static final Item ELK_HIDE_LEGGINGS = new ModArmorBase("elk_hide_leggings", ARMOR, 2, EquipmentSlot.LEGS, LevelHandler.AZURE_OVERWORLD, "elk_hide").setElement(Element.AZURE);
+    public static final Item ELK_HIDE_BOOTS = new ModArmorBase("elk_hide_boots", ARMOR, 1, EquipmentSlot.FEET, LevelHandler.AZURE_OVERWORLD, "elk_hide").setElement(Element.AZURE);
 
-    public static final Item CHASMIUM_HELMET = new ModArmorBase("chasmium_helmet", ARMOR, 1, EntityEquipmentSlot.HEAD, LevelHandler.AZURE_OVERWORLD, "chasmium");
-    public static final Item CHASMIUM_CHESTPLATE = new ModArmorBase("chasmium_chestplate", ARMOR, 1, EntityEquipmentSlot.CHEST, LevelHandler.AZURE_OVERWORLD, "chasmium");
-    public static final Item CHASMIUM_LEGGINGS = new ModArmorBase("chasmium_leggings", ARMOR, 2, EntityEquipmentSlot.LEGS, LevelHandler.AZURE_OVERWORLD, "chasmium");
-    public static final Item CHASMIUM_BOOTS = new ModArmorBase("chasmium_boots", ARMOR, 1, EntityEquipmentSlot.FEET, LevelHandler.AZURE_OVERWORLD, "chasmium");
+    public static final Item CHASMIUM_HELMET = new ModArmorBase("chasmium_helmet", ARMOR, 1, EquipmentSlot.HEAD, LevelHandler.AZURE_OVERWORLD, "chasmium");
+    public static final Item CHASMIUM_CHESTPLATE = new ModArmorBase("chasmium_chestplate", ARMOR, 1, EquipmentSlot.CHEST, LevelHandler.AZURE_OVERWORLD, "chasmium");
+    public static final Item CHASMIUM_LEGGINGS = new ModArmorBase("chasmium_leggings", ARMOR, 2, EquipmentSlot.LEGS, LevelHandler.AZURE_OVERWORLD, "chasmium");
+    public static final Item CHASMIUM_BOOTS = new ModArmorBase("chasmium_boots", ARMOR, 1, EquipmentSlot.FEET, LevelHandler.AZURE_OVERWORLD, "chasmium");
 
-    public static final Item MAELSTROM_HELMET = new ModArmorBase("maelstrom_helmet", ARMOR, 1, EntityEquipmentSlot.HEAD, LevelHandler.AZURE_ENDGAME, "maelstrom").setArmorBonusDesc("maelstrom_full_set");
-    public static final Item MAELSTROM_CHESTPLATE = new ModArmorBase("maelstrom_chestplate", ARMOR, 1, EntityEquipmentSlot.CHEST, LevelHandler.AZURE_ENDGAME, "maelstrom").setArmorBonusDesc("maelstrom_full_set");
-    public static final Item MAELSTROM_LEGGINGS = new ModArmorBase("maelstrom_leggings", ARMOR, 2, EntityEquipmentSlot.LEGS, LevelHandler.AZURE_ENDGAME, "maelstrom").setArmorBonusDesc("maelstrom_full_set");
-    public static final Item MAELSTROM_BOOTS = new ModArmorBase("maelstrom_boots", ARMOR, 1, EntityEquipmentSlot.FEET, LevelHandler.AZURE_ENDGAME, "maelstrom").setArmorBonusDesc("maelstrom_full_set");
+    public static final Item MAELSTROM_HELMET = new ModArmorBase("maelstrom_helmet", ARMOR, 1, EquipmentSlot.HEAD, LevelHandler.AZURE_ENDGAME, "maelstrom").setArmorBonusDesc("maelstrom_full_set");
+    public static final Item MAELSTROM_CHESTPLATE = new ModArmorBase("maelstrom_chestplate", ARMOR, 1, EquipmentSlot.CHEST, LevelHandler.AZURE_ENDGAME, "maelstrom").setArmorBonusDesc("maelstrom_full_set");
+    public static final Item MAELSTROM_LEGGINGS = new ModArmorBase("maelstrom_leggings", ARMOR, 2, EquipmentSlot.LEGS, LevelHandler.AZURE_ENDGAME, "maelstrom").setArmorBonusDesc("maelstrom_full_set");
+    public static final Item MAELSTROM_BOOTS = new ModArmorBase("maelstrom_boots", ARMOR, 1, EquipmentSlot.FEET, LevelHandler.AZURE_ENDGAME, "maelstrom").setArmorBonusDesc("maelstrom_full_set");
 
-    public static final Item SWAMP_HELMET = new ModArmorBase("swamp_helmet", ARMOR, 1, EntityEquipmentSlot.HEAD, LevelHandler.CLIFF_OVERWORLD, "swamp").setArmorBonusDesc("swamp_full_set");
-    public static final Item SWAMP_CHESTPLATE = new ModArmorBase("swamp_chestplate", ARMOR, 1, EntityEquipmentSlot.CHEST, LevelHandler.CLIFF_OVERWORLD, "swamp").setArmorBonusDesc("swamp_full_set");
-    public static final Item SWAMP_LEGGINGS = new ModArmorBase("swamp_leggings", ARMOR, 2, EntityEquipmentSlot.LEGS, LevelHandler.CLIFF_OVERWORLD, "swamp").setArmorBonusDesc("swamp_full_set");
-    public static final Item SWAMP_BOOTS = new ModArmorBase("swamp_boots", ARMOR, 1, EntityEquipmentSlot.FEET, LevelHandler.CLIFF_OVERWORLD, "swamp").setArmorBonusDesc("swamp_full_set");
+    public static final Item SWAMP_HELMET = new ModArmorBase("swamp_helmet", ARMOR, 1, EquipmentSlot.HEAD, LevelHandler.CLIFF_OVERWORLD, "swamp").setArmorBonusDesc("swamp_full_set");
+    public static final Item SWAMP_CHESTPLATE = new ModArmorBase("swamp_chestplate", ARMOR, 1, EquipmentSlot.CHEST, LevelHandler.CLIFF_OVERWORLD, "swamp").setArmorBonusDesc("swamp_full_set");
+    public static final Item SWAMP_LEGGINGS = new ModArmorBase("swamp_leggings", ARMOR, 2, EquipmentSlot.LEGS, LevelHandler.CLIFF_OVERWORLD, "swamp").setArmorBonusDesc("swamp_full_set");
+    public static final Item SWAMP_BOOTS = new ModArmorBase("swamp_boots", ARMOR, 1, EquipmentSlot.FEET, LevelHandler.CLIFF_OVERWORLD, "swamp").setArmorBonusDesc("swamp_full_set");
 
-    public static final Item GOLTOX_HELMET = new ModArmorBase("goltox_helmet", ARMOR, 1, EntityEquipmentSlot.HEAD, LevelHandler.CLIFF_OVERWORLD, "goltox").setElement(Element.GOLDEN).setArmorBonusDesc("goltox_full_set");
-    public static final Item GOLTOX_CHESTPLATE = new ModArmorBase("goltox_chestplate", ARMOR, 1, EntityEquipmentSlot.CHEST, LevelHandler.CLIFF_OVERWORLD, "goltox").setElement(Element.GOLDEN).setArmorBonusDesc("goltox_full_set");
-    public static final Item GOLTOX_LEGGINGS = new ModArmorBase("goltox_leggings", ARMOR, 2, EntityEquipmentSlot.LEGS, LevelHandler.CLIFF_OVERWORLD, "goltox").setElement(Element.GOLDEN).setArmorBonusDesc("goltox_full_set");
-    public static final Item GOLTOX_BOOTS = new ModArmorBase("goltox_boots", ARMOR, 1, EntityEquipmentSlot.FEET, LevelHandler.CLIFF_OVERWORLD, "goltox").setElement(Element.GOLDEN).setArmorBonusDesc("goltox_full_set");
+    public static final Item GOLTOX_HELMET = new ModArmorBase("goltox_helmet", ARMOR, 1, EquipmentSlot.HEAD, LevelHandler.CLIFF_OVERWORLD, "goltox").setElement(Element.GOLDEN).setArmorBonusDesc("goltox_full_set");
+    public static final Item GOLTOX_CHESTPLATE = new ModArmorBase("goltox_chestplate", ARMOR, 1, EquipmentSlot.CHEST, LevelHandler.CLIFF_OVERWORLD, "goltox").setElement(Element.GOLDEN).setArmorBonusDesc("goltox_full_set");
+    public static final Item GOLTOX_LEGGINGS = new ModArmorBase("goltox_leggings", ARMOR, 2, EquipmentSlot.LEGS, LevelHandler.CLIFF_OVERWORLD, "goltox").setElement(Element.GOLDEN).setArmorBonusDesc("goltox_full_set");
+    public static final Item GOLTOX_BOOTS = new ModArmorBase("goltox_boots", ARMOR, 1, EquipmentSlot.FEET, LevelHandler.CLIFF_OVERWORLD, "goltox").setElement(Element.GOLDEN).setArmorBonusDesc("goltox_full_set");
 
-    public static final Item NYAN_HELMET = new ArmorNyanHelmet("nyan_helmet", ARMOR, 1, EntityEquipmentSlot.HEAD, LevelHandler.CLIFF_ENDGAME, "nyan_helmet.png").setArmorBonusDesc("nyan_full_set");
-    public static final Item NYAN_CHESTPLATE = new ModArmorBase("nyan_chestplate", ARMOR, 1, EntityEquipmentSlot.CHEST, LevelHandler.CLIFF_ENDGAME, "nyan").setArmorBonusDesc("nyan_full_set");
-    public static final Item NYAN_LEGGINGS = new ModArmorBase("nyan_leggings", ARMOR, 2, EntityEquipmentSlot.LEGS, LevelHandler.CLIFF_ENDGAME, "nyan").setArmorBonusDesc("nyan_full_set");
-    public static final Item NYAN_BOOTS = new ModArmorBase("nyan_boots", ARMOR, 1, EntityEquipmentSlot.FEET, LevelHandler.CLIFF_ENDGAME, "nyan").setArmorBonusDesc("nyan_full_set");
+    public static final Item NYAN_HELMET = new ArmorNyanHelmet("nyan_helmet", ARMOR, 1, EquipmentSlot.HEAD, LevelHandler.CLIFF_ENDGAME, "nyan_helmet.png").setArmorBonusDesc("nyan_full_set");
+    public static final Item NYAN_CHESTPLATE = new ModArmorBase("nyan_chestplate", ARMOR, 1, EquipmentSlot.CHEST, LevelHandler.CLIFF_ENDGAME, "nyan").setArmorBonusDesc("nyan_full_set");
+    public static final Item NYAN_LEGGINGS = new ModArmorBase("nyan_leggings", ARMOR, 2, EquipmentSlot.LEGS, LevelHandler.CLIFF_ENDGAME, "nyan").setArmorBonusDesc("nyan_full_set");
+    public static final Item NYAN_BOOTS = new ModArmorBase("nyan_boots", ARMOR, 1, EquipmentSlot.FEET, LevelHandler.CLIFF_ENDGAME, "nyan").setArmorBonusDesc("nyan_full_set");
 
-    public static final Item BLACK_GOLD_HELMET = new ModArmorBase("black_gold_helmet", ARMOR, 1, EntityEquipmentSlot.HEAD, LevelHandler.CLIFF_ENDGAME, "black_gold").setElement(Element.GOLDEN).setArmorBonusDesc("black_gold_full_set");
-    public static final Item BLACK_GOLD_CHESTPLATE = new ModArmorBase("black_gold_chestplate", ARMOR, 1, EntityEquipmentSlot.CHEST, LevelHandler.CLIFF_ENDGAME, "black_gold").setElement(Element.GOLDEN).setArmorBonusDesc("black_gold_full_set");
-    public static final Item BLACK_GOLD_LEGGINGS = new ModArmorBase("black_gold_leggings", ARMOR, 2, EntityEquipmentSlot.LEGS, LevelHandler.CLIFF_ENDGAME, "black_gold").setElement(Element.GOLDEN).setArmorBonusDesc("black_gold_full_set");
-    public static final Item BLACK_GOLD_BOOTS = new ModArmorBase("black_gold_boots", ARMOR, 1, EntityEquipmentSlot.FEET, LevelHandler.CLIFF_ENDGAME, "black_gold").setElement(Element.GOLDEN).setArmorBonusDesc("black_gold_full_set");
+    public static final Item BLACK_GOLD_HELMET = new ModArmorBase("black_gold_helmet", ARMOR, 1, EquipmentSlot.HEAD, LevelHandler.CLIFF_ENDGAME, "black_gold").setElement(Element.GOLDEN).setArmorBonusDesc("black_gold_full_set");
+    public static final Item BLACK_GOLD_CHESTPLATE = new ModArmorBase("black_gold_chestplate", ARMOR, 1, EquipmentSlot.CHEST, LevelHandler.CLIFF_ENDGAME, "black_gold").setElement(Element.GOLDEN).setArmorBonusDesc("black_gold_full_set");
+    public static final Item BLACK_GOLD_LEGGINGS = new ModArmorBase("black_gold_leggings", ARMOR, 2, EquipmentSlot.LEGS, LevelHandler.CLIFF_ENDGAME, "black_gold").setElement(Element.GOLDEN).setArmorBonusDesc("black_gold_full_set");
+    public static final Item BLACK_GOLD_BOOTS = new ModArmorBase("black_gold_boots", ARMOR, 1, EquipmentSlot.FEET, LevelHandler.CLIFF_ENDGAME, "black_gold").setElement(Element.GOLDEN).setArmorBonusDesc("black_gold_full_set");
 
     public static final Item ENERGETIC_STEEL_HELMET =
-            new ModArmorBase("energetic_steel_helmet", ARMOR, 1, EntityEquipmentSlot.HEAD, LevelHandler.CRIMSON_START, "energetic_steel").setElement(Element.CRIMSON).setArmorBonusDesc("energetic_steel_full_set");
+            new ModArmorBase("energetic_steel_helmet", ARMOR, 1, EquipmentSlot.HEAD, LevelHandler.CRIMSON_START, "energetic_steel").setElement(Element.CRIMSON).setArmorBonusDesc("energetic_steel_full_set");
     public static final Item ENERGETIC_STEEL_CHESTPLATE =
-            new ModArmorBase("energetic_steel_chestplate", ARMOR, 1, EntityEquipmentSlot.CHEST, LevelHandler.CRIMSON_START, "energetic_steel").setElement(Element.CRIMSON).setArmorBonusDesc("energetic_steel_full_set");
+            new ModArmorBase("energetic_steel_chestplate", ARMOR, 1, EquipmentSlot.CHEST, LevelHandler.CRIMSON_START, "energetic_steel").setElement(Element.CRIMSON).setArmorBonusDesc("energetic_steel_full_set");
     public static final Item ENERGETIC_STEEL_LEGGINGS =
-            new ModArmorBase("energetic_steel_leggings", ARMOR, 2, EntityEquipmentSlot.LEGS, LevelHandler.CRIMSON_START, "energetic_steel").setElement(Element.CRIMSON).setArmorBonusDesc("energetic_steel_full_set");
+            new ModArmorBase("energetic_steel_leggings", ARMOR, 2, EquipmentSlot.LEGS, LevelHandler.CRIMSON_START, "energetic_steel").setElement(Element.CRIMSON).setArmorBonusDesc("energetic_steel_full_set");
     public static final Item ENERGETIC_STEEL_BOOTS =
-            new ModArmorBase("energetic_steel_boots", ARMOR, 1, EntityEquipmentSlot.FEET, LevelHandler.CRIMSON_START, "energetic_steel").setElement(Element.CRIMSON).setArmorBonusDesc("energetic_steel_full_set");
+            new ModArmorBase("energetic_steel_boots", ARMOR, 1, EquipmentSlot.FEET, LevelHandler.CRIMSON_START, "energetic_steel").setElement(Element.CRIMSON).setArmorBonusDesc("energetic_steel_full_set");
 
-    public static final Item FADESTEEL_HELMET = new ModArmorBase("fadesteel_helmet", ARMOR, 1, EntityEquipmentSlot.HEAD, LevelHandler.CRIMSON_START, "fadesteel").setArmorBonusDesc("fadesteel_full_set");
-    public static final Item FADESTEEL_CHESTPLATE = new ModArmorBase("fadesteel_chestplate", ARMOR, 1, EntityEquipmentSlot.CHEST, LevelHandler.CRIMSON_START, "fadesteel").setArmorBonusDesc("fadesteel_full_set");
-    public static final Item FADESTEEL_LEGGINGS = new ModArmorBase("fadesteel_leggings", ARMOR, 2, EntityEquipmentSlot.LEGS, LevelHandler.CRIMSON_START, "fadesteel").setArmorBonusDesc("fadesteel_full_set");
-    public static final Item FADESTEEL_BOOTS = new ModArmorBase("fadesteel_boots", ARMOR, 1, EntityEquipmentSlot.FEET, LevelHandler.CRIMSON_START, "fadesteel").setArmorBonusDesc("fadesteel_full_set");
+    public static final Item FADESTEEL_HELMET = new ModArmorBase("fadesteel_helmet", ARMOR, 1, EquipmentSlot.HEAD, LevelHandler.CRIMSON_START, "fadesteel").setArmorBonusDesc("fadesteel_full_set");
+    public static final Item FADESTEEL_CHESTPLATE = new ModArmorBase("fadesteel_chestplate", ARMOR, 1, EquipmentSlot.CHEST, LevelHandler.CRIMSON_START, "fadesteel").setArmorBonusDesc("fadesteel_full_set");
+    public static final Item FADESTEEL_LEGGINGS = new ModArmorBase("fadesteel_leggings", ARMOR, 2, EquipmentSlot.LEGS, LevelHandler.CRIMSON_START, "fadesteel").setArmorBonusDesc("fadesteel_full_set");
+    public static final Item FADESTEEL_BOOTS = new ModArmorBase("fadesteel_boots", ARMOR, 1, EquipmentSlot.FEET, LevelHandler.CRIMSON_START, "fadesteel").setArmorBonusDesc("fadesteel_full_set");
 
-    public static final Item ELYSIUM_HELMET = new ModArmorBase("elysium_helmet", ARMOR, 1, EntityEquipmentSlot.HEAD, LevelHandler.CRIMSON_END, "elysium").setArmorBonusDesc("elysium_full_set");
-    public static final Item ELYSIUM_CHESTPLATE = new ModArmorBase("elysium_chestplate", ARMOR, 1, EntityEquipmentSlot.CHEST, LevelHandler.CRIMSON_END, "elysium").setArmorBonusDesc("elysium_full_set");
-    public static final Item ELYSIUM_LEGGINGS = new ModArmorBase("elysium_leggings", ARMOR, 2, EntityEquipmentSlot.LEGS, LevelHandler.CRIMSON_END, "elysium").setArmorBonusDesc("elysium_full_set");
-    public static final Item ELYSIUM_BOOTS = new ModArmorBase("elysium_boots", ARMOR, 1, EntityEquipmentSlot.FEET, LevelHandler.CRIMSON_END, "elysium").setArmorBonusDesc("elysium_full_set");
+    public static final Item ELYSIUM_HELMET = new ModArmorBase("elysium_helmet", ARMOR, 1, EquipmentSlot.HEAD, LevelHandler.CRIMSON_END, "elysium").setArmorBonusDesc("elysium_full_set");
+    public static final Item ELYSIUM_CHESTPLATE = new ModArmorBase("elysium_chestplate", ARMOR, 1, EquipmentSlot.CHEST, LevelHandler.CRIMSON_END, "elysium").setArmorBonusDesc("elysium_full_set");
+    public static final Item ELYSIUM_LEGGINGS = new ModArmorBase("elysium_leggings", ARMOR, 2, EquipmentSlot.LEGS, LevelHandler.CRIMSON_END, "elysium").setArmorBonusDesc("elysium_full_set");
+    public static final Item ELYSIUM_BOOTS = new ModArmorBase("elysium_boots", ARMOR, 1, EquipmentSlot.FEET, LevelHandler.CRIMSON_END, "elysium").setArmorBonusDesc("elysium_full_set");
 
     public static final Item AMMO_CASE = new ItemAmmoCase("ammo_case", LevelHandler.INVASION);
     public static final Item CHASMIUM_AMMO_CASE = new ItemAmmoCase("chasmium_ammo_case", LevelHandler.AZURE_OVERWORLD);

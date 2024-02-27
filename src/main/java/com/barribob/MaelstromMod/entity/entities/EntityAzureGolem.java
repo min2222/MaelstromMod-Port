@@ -4,41 +4,38 @@ import com.barribob.MaelstromMod.entity.action.ActionGolemSlam;
 import com.barribob.MaelstromMod.entity.ai.EntityAIRangedAttack;
 import com.barribob.MaelstromMod.entity.animation.AnimationAzureGolem;
 import com.barribob.MaelstromMod.entity.render.RenderAzureGolem;
-import com.barribob.MaelstromMod.init.ModEntities;
 import com.barribob.MaelstromMod.util.ModRandom;
-import com.barribob.MaelstromMod.util.handlers.LevelHandler;
 import com.barribob.MaelstromMod.util.handlers.LootTableHandler;
-import net.minecraft.block.Block;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.IRangedAttackMob;
-import net.minecraft.entity.SharedMonsterAttributes;
-import net.minecraft.entity.ai.EntityAIHurtByTarget;
-import net.minecraft.entity.ai.EntityAILookIdle;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.entity.monster.RangedAttackMob;
+import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
 import net.minecraft.entity.ai.EntityAIWanderAvoidWater;
 import net.minecraft.entity.ai.EntityAIWatchClosest;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.Blocks;
-import net.minecraft.init.SoundEvents;
-import net.minecraft.util.DamageSource;
-import net.minecraft.util.EnumHand;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.util.Mth;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.SoundEvent;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.world.World;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 
 import javax.annotation.Nullable;
 
-public class EntityAzureGolem extends EntityLeveledMob implements IRangedAttackMob {
-    public EntityAzureGolem(World worldIn) {
+public class EntityAzureGolem extends EntityLeveledMob implements RangedAttackMob {
+    public EntityAzureGolem(Level worldIn) {
         super(worldIn);
         this.setSize(1.4F * RenderAzureGolem.AZURE_GOLEM_SIZE, 2.7F * RenderAzureGolem.AZURE_GOLEM_SIZE);
     }
 
     @Override
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     protected void initAnimation() {
         this.currentAnimation = new AnimationAzureGolem();
     }
@@ -53,9 +50,9 @@ public class EntityAzureGolem extends EntityLeveledMob implements IRangedAttackM
         super.initEntityAI();
         this.tasks.addTask(4, new EntityAIRangedAttack<EntityAzureGolem>(this, 1f, 60, 15, 7.0f, 0.1f));
         this.tasks.addTask(5, new EntityAIWanderAvoidWater(this, 0.6D));
-        this.tasks.addTask(6, new EntityAILookIdle(this));
-        this.tasks.addTask(7, new EntityAIWatchClosest(this, EntityPlayer.class, 6.0F));
-        this.targetTasks.addTask(1, new EntityAIHurtByTarget(this, false, new Class[0]));
+        this.tasks.addTask(6, new RandomLookAroundGoal(this));
+        this.tasks.addTask(7, new EntityAIWatchClosest(this, Player.class, 6.0F));
+        this.targetTasks.addTask(1, new HurtByTargetGoal(this, false, new Class[0]));
     }
 
     /**
@@ -64,9 +61,9 @@ public class EntityAzureGolem extends EntityLeveledMob implements IRangedAttackM
      */
     @Override
     public boolean getCanSpawnHere() {
-        int i = MathHelper.floor(this.posX);
-        int j = MathHelper.floor(this.getEntityBoundingBox().minY);
-        int k = MathHelper.floor(this.posZ);
+        int i = Mth.floor(this.posX);
+        int j = Mth.floor(this.getEntityBoundingBox().minY);
+        int k = Mth.floor(this.posZ);
         BlockPos blockpos = new BlockPos(i, j, k);
         return this.world.getBlockState(blockpos.down()).getBlock() == Blocks.GRASS && this.world.getLight(blockpos) > 8 && super.getCanSpawnHere();
     }
@@ -98,12 +95,12 @@ public class EntityAzureGolem extends EntityLeveledMob implements IRangedAttackM
     }
 
     @Override
-    public void attackEntityWithRangedAttack(EntityLivingBase target, float distanceFactor) {
+    public void attackEntityWithRangedAttack(LivingEntity target, float distanceFactor) {
         new ActionGolemSlam().performAction(this, target);
     }
 
     @Override
-    public void swingArm(EnumHand hand) {
+    public void swingArm(InteractionHand hand) {
     }
 
     @Override
@@ -115,10 +112,10 @@ public class EntityAzureGolem extends EntityLeveledMob implements IRangedAttackM
     }
 
     /**
-     * Handler for {@link World#setEntityState}
+     * Handler for {@link Level#setEntityState}
      */
     @Override
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public void handleStatusUpdate(byte id) {
         if (id == 4) {
             this.currentAnimation = new AnimationAzureGolem();

@@ -2,23 +2,27 @@ package com.barribob.MaelstromMod.entity.projectile;
 
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
-import net.minecraft.block.Block;
-import net.minecraft.block.material.Material;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.MoverType;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.material.Material;
+import net.minecraft.core.BlockPos;
+import net.minecraft.util.Mth;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.entity.IProjectile;
-import net.minecraft.entity.MoverType;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.util.EntitySelectors;
-import net.minecraft.util.EnumParticleTypes;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.datafix.DataFixer;
 import net.minecraft.util.math.*;
-import net.minecraft.world.World;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.api.distmarker.Dist;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -47,11 +51,11 @@ public abstract class EntityModThrowable extends Entity implements IProjectile {
     /**
      * The owner of this arrow.
      */
-    public EntityLivingBase shootingEntity;
+    public LivingEntity shootingEntity;
     private int ticksInGround;
     private int ticksInAir;
 
-    public EntityModThrowable(World worldIn) {
+    public EntityModThrowable(Level worldIn) {
         super(worldIn);
         this.xTile = -1;
         this.yTile = -1;
@@ -59,12 +63,12 @@ public abstract class EntityModThrowable extends Entity implements IProjectile {
         this.setSize(0.5F, 0.5F);
     }
 
-    public EntityModThrowable(World worldIn, double x, double y, double z) {
+    public EntityModThrowable(Level worldIn, double x, double y, double z) {
         this(worldIn);
         this.setPosition(x, y, z);
     }
 
-    public EntityModThrowable(World worldIn, EntityLivingBase shooter) {
+    public EntityModThrowable(Level worldIn, LivingEntity shooter) {
         this(worldIn, shooter.posX, shooter.posY + shooter.getEyeHeight() - 0.10000000149011612D, shooter.posZ);
         this.shootingEntity = shooter;
     }
@@ -73,7 +77,7 @@ public abstract class EntityModThrowable extends Entity implements IProjectile {
      * Checks if the entity is in range to render.
      */
     @Override
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public boolean isInRangeToRenderDist(double distance) {
         double d0 = this.getEntityBoundingBox().getAverageEdgeLength() * 10.0D;
 
@@ -86,9 +90,9 @@ public abstract class EntityModThrowable extends Entity implements IProjectile {
     }
 
     public void shoot(Entity shooter, float pitch, float yaw, float p_184547_4_, float velocity, float inaccuracy) {
-        float f = -MathHelper.sin(yaw * 0.017453292F) * MathHelper.cos(pitch * 0.017453292F);
-        float f1 = -MathHelper.sin(pitch * 0.017453292F);
-        float f2 = MathHelper.cos(yaw * 0.017453292F) * MathHelper.cos(pitch * 0.017453292F);
+        float f = -Mth.sin(yaw * 0.017453292F) * Mth.cos(pitch * 0.017453292F);
+        float f1 = -Mth.sin(pitch * 0.017453292F);
+        float f2 = Mth.cos(yaw * 0.017453292F) * Mth.cos(pitch * 0.017453292F);
         this.shoot(f, f1, f2, velocity, inaccuracy);
         this.motionX += shooter.motionX;
         this.motionZ += shooter.motionZ;
@@ -104,7 +108,7 @@ public abstract class EntityModThrowable extends Entity implements IProjectile {
      */
     @Override
     public void shoot(double x, double y, double z, float velocity, float inaccuracy) {
-        float f = MathHelper.sqrt(x * x + y * y + z * z);
+        float f = Mth.sqrt(x * x + y * y + z * z);
         x = x / f;
         y = y / f;
         z = z / f;
@@ -117,9 +121,9 @@ public abstract class EntityModThrowable extends Entity implements IProjectile {
         this.motionX = x;
         this.motionY = y;
         this.motionZ = z;
-        float f1 = MathHelper.sqrt(x * x + z * z);
-        this.rotationYaw = (float) (MathHelper.atan2(x, z) * (180D / Math.PI));
-        this.rotationPitch = (float) (MathHelper.atan2(y, f1) * (180D / Math.PI));
+        float f1 = Mth.sqrt(x * x + z * z);
+        this.rotationYaw = (float) (Mth.atan2(x, z) * (180D / Math.PI));
+        this.rotationPitch = (float) (Mth.atan2(y, f1) * (180D / Math.PI));
         this.prevRotationYaw = this.rotationYaw;
         this.prevRotationPitch = this.rotationPitch;
         this.ticksInGround = 0;
@@ -129,16 +133,16 @@ public abstract class EntityModThrowable extends Entity implements IProjectile {
      * Updates the entity motion clientside, called by packets from the server
      */
     @Override
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public void setVelocity(double x, double y, double z) {
         this.motionX = x;
         this.motionY = y;
         this.motionZ = z;
 
         if (this.prevRotationPitch == 0.0F && this.prevRotationYaw == 0.0F) {
-            float f = MathHelper.sqrt(x * x + z * z);
-            this.rotationPitch = (float) (MathHelper.atan2(y, f) * (180D / Math.PI));
-            this.rotationYaw = (float) (MathHelper.atan2(x, z) * (180D / Math.PI));
+            float f = Mth.sqrt(x * x + z * z);
+            this.rotationPitch = (float) (Mth.atan2(y, f) * (180D / Math.PI));
+            this.rotationYaw = (float) (Mth.atan2(x, z) * (180D / Math.PI));
             this.prevRotationPitch = this.rotationPitch;
             this.prevRotationYaw = this.rotationYaw;
             this.setLocationAndAngles(this.posX, this.posY, this.posZ, this.rotationYaw, this.rotationPitch);
@@ -153,21 +157,21 @@ public abstract class EntityModThrowable extends Entity implements IProjectile {
         super.onUpdate();
 
         if (this.prevRotationPitch == 0.0F && this.prevRotationYaw == 0.0F) {
-            float f = MathHelper.sqrt(this.motionX * this.motionX + this.motionZ * this.motionZ);
-            this.rotationYaw = (float) (MathHelper.atan2(this.motionX, this.motionZ) * (180D / Math.PI));
-            this.rotationPitch = (float) (MathHelper.atan2(this.motionY, f) * (180D / Math.PI));
+            float f = Mth.sqrt(this.motionX * this.motionX + this.motionZ * this.motionZ);
+            this.rotationYaw = (float) (Mth.atan2(this.motionX, this.motionZ) * (180D / Math.PI));
+            this.rotationPitch = (float) (Mth.atan2(this.motionY, f) * (180D / Math.PI));
             this.prevRotationYaw = this.rotationYaw;
             this.prevRotationPitch = this.rotationPitch;
         }
 
         BlockPos blockpos = new BlockPos(this.xTile, this.yTile, this.zTile);
-        IBlockState iblockstate = this.world.getBlockState(blockpos);
+        BlockState iblockstate = this.world.getBlockState(blockpos);
         Block block = iblockstate.getBlock();
 
         if (iblockstate.getMaterial() != Material.AIR) {
-            AxisAlignedBB axisalignedbb = iblockstate.getCollisionBoundingBox(this.world, blockpos);
+            AABB axisalignedbb = iblockstate.getCollisionBoundingBox(this.world, blockpos);
 
-            if (axisalignedbb != Block.NULL_AABB && axisalignedbb.offset(blockpos).contains(new Vec3d(this.posX, this.posY, this.posZ))) {
+            if (axisalignedbb != Block.NULL_AABB && axisalignedbb.offset(blockpos).contains(new Vec3(this.posX, this.posY, this.posZ))) {
                 this.inGround = true;
             }
         }
@@ -196,14 +200,14 @@ public abstract class EntityModThrowable extends Entity implements IProjectile {
         } else {
             this.timeInGround = 0;
             ++this.ticksInAir;
-            Vec3d vec3d1 = new Vec3d(this.posX, this.posY, this.posZ);
-            Vec3d vec3d = new Vec3d(this.posX + this.motionX, this.posY + this.motionY, this.posZ + this.motionZ);
+            Vec3 vec3d1 = new Vec3(this.posX, this.posY, this.posZ);
+            Vec3 vec3d = new Vec3(this.posX + this.motionX, this.posY + this.motionY, this.posZ + this.motionZ);
             RayTraceResult raytraceresult = this.world.rayTraceBlocks(vec3d1, vec3d, false, true, false);
-            vec3d1 = new Vec3d(this.posX, this.posY, this.posZ);
-            vec3d = new Vec3d(this.posX + this.motionX, this.posY + this.motionY, this.posZ + this.motionZ);
+            vec3d1 = new Vec3(this.posX, this.posY, this.posZ);
+            vec3d = new Vec3(this.posX + this.motionX, this.posY + this.motionY, this.posZ + this.motionZ);
 
             if (raytraceresult != null) {
-                vec3d = new Vec3d(raytraceresult.hitVec.x, raytraceresult.hitVec.y, raytraceresult.hitVec.z);
+                vec3d = new Vec3(raytraceresult.hitVec.x, raytraceresult.hitVec.y, raytraceresult.hitVec.z);
             }
 
             Entity entity = this.findEntityOnPath(vec3d1, vec3d);
@@ -212,10 +216,10 @@ public abstract class EntityModThrowable extends Entity implements IProjectile {
                 raytraceresult = new RayTraceResult(entity);
             }
 
-            if (raytraceresult != null && raytraceresult.entityHit instanceof EntityPlayer) {
-                EntityPlayer entityplayer = (EntityPlayer) raytraceresult.entityHit;
+            if (raytraceresult != null && raytraceresult.entityHit instanceof Player) {
+                Player entityplayer = (Player) raytraceresult.entityHit;
 
-                if (this.shootingEntity instanceof EntityPlayer && !((EntityPlayer) this.shootingEntity).canAttackPlayer(entityplayer)) {
+                if (this.shootingEntity instanceof Player && !((Player) this.shootingEntity).canAttackPlayer(entityplayer)) {
                     raytraceresult = null;
                 }
             }
@@ -227,10 +231,10 @@ public abstract class EntityModThrowable extends Entity implements IProjectile {
             this.posX += this.motionX;
             this.posY += this.motionY;
             this.posZ += this.motionZ;
-            float f4 = MathHelper.sqrt(this.motionX * this.motionX + this.motionZ * this.motionZ);
-            this.rotationYaw = (float) (MathHelper.atan2(this.motionX, this.motionZ) * (180D / Math.PI));
+            float f4 = Mth.sqrt(this.motionX * this.motionX + this.motionZ * this.motionZ);
+            this.rotationYaw = (float) (Mth.atan2(this.motionX, this.motionZ) * (180D / Math.PI));
 
-            for (this.rotationPitch = (float) (MathHelper.atan2(this.motionY, f4) * (180D / Math.PI)); this.rotationPitch
+            for (this.rotationPitch = (float) (Mth.atan2(this.motionY, f4) * (180D / Math.PI)); this.rotationPitch
                     - this.prevRotationPitch < -180.0F; this.prevRotationPitch -= 360.0F) {
                 ;
             }
@@ -255,7 +259,7 @@ public abstract class EntityModThrowable extends Entity implements IProjectile {
             if (this.isInWater()) {
                 for (int i = 0; i < 4; ++i) {
                     float f3 = 0.25F;
-                    this.world.spawnParticle(EnumParticleTypes.WATER_BUBBLE, this.posX - this.motionX * 0.25D, this.posY - this.motionY * 0.25D,
+                    this.world.spawnParticle(ParticleTypes.WATER_BUBBLE, this.posX - this.motionX * 0.25D, this.posY - this.motionY * 0.25D,
                             this.posZ - this.motionZ * 0.25D, this.motionX, this.motionY, this.motionZ);
                 }
 
@@ -292,14 +296,14 @@ public abstract class EntityModThrowable extends Entity implements IProjectile {
         super.move(type, x, y, z);
 
         if (this.inGround) {
-            this.xTile = MathHelper.floor(this.posX);
-            this.yTile = MathHelper.floor(this.posY);
-            this.zTile = MathHelper.floor(this.posZ);
+            this.xTile = Mth.floor(this.posX);
+            this.yTile = Mth.floor(this.posY);
+            this.zTile = Mth.floor(this.posZ);
         }
     }
 
     @Nullable
-    protected Entity findEntityOnPath(Vec3d start, Vec3d end) {
+    protected Entity findEntityOnPath(Vec3 start, Vec3 end) {
         Entity entity = null;
         List<Entity> list = this.world.getEntitiesInAABBexcluding(this, this.getEntityBoundingBox().expand(this.motionX, this.motionY, this.motionZ).grow(1.0D),
                 ARROW_TARGETS);
@@ -309,7 +313,7 @@ public abstract class EntityModThrowable extends Entity implements IProjectile {
             Entity entity1 = list.get(i);
 
             if (entity1 != this.shootingEntity || this.ticksInAir >= 5) {
-                AxisAlignedBB axisalignedbb = entity1.getEntityBoundingBox().grow(0.30000001192092896D);
+                AABB axisalignedbb = entity1.getEntityBoundingBox().grow(0.30000001192092896D);
                 RayTraceResult raytraceresult = axisalignedbb.calculateIntercept(start, end);
 
                 if (raytraceresult != null) {
@@ -337,7 +341,7 @@ public abstract class EntityModThrowable extends Entity implements IProjectile {
      * (abstract) Protected helper method to write subclass entity data to NBT.
      */
     @Override
-    public void writeEntityToNBT(NBTTagCompound compound) {
+    public void writeEntityToNBT(CompoundTag compound) {
         compound.setInteger("xTile", this.xTile);
         compound.setInteger("yTile", this.yTile);
         compound.setInteger("zTile", this.zTile);
@@ -352,7 +356,7 @@ public abstract class EntityModThrowable extends Entity implements IProjectile {
      * (abstract) Protected helper method to read subclass entity data from NBT.
      */
     @Override
-    public void readEntityFromNBT(NBTTagCompound compound) {
+    public void readEntityFromNBT(CompoundTag compound) {
         this.xTile = compound.getInteger("xTile");
         this.yTile = compound.getInteger("yTile");
         this.zTile = compound.getInteger("zTile");

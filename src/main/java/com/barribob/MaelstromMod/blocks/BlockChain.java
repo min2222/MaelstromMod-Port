@@ -1,66 +1,66 @@
 package com.barribob.MaelstromMod.blocks;
 
 import com.barribob.MaelstromMod.util.ModRandom;
-import net.minecraft.block.SoundType;
-import net.minecraft.block.material.Material;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.init.SoundEvents;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.IBlockAccess;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.material.Material;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.core.Direction;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.level.Level;
+import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.ForgeHooks;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraftforge.api.distmarker.OnlyIn;
 
 public class BlockChain extends BlockBase {
-    private AxisAlignedBB PILLAR_AABB;
+    private AABB PILLAR_AABB;
 
-    public BlockChain(String name, Material material, float hardness, float resistance, SoundType soundType, AxisAlignedBB collision) {
+    public BlockChain(String name, Material material, float hardness, float resistance, SoundType soundType, AABB collision) {
         super(name, material, hardness, resistance, soundType);
         PILLAR_AABB = collision;
     }
 
     @Override
-    public void onEntityCollidedWithBlock(World worldIn, BlockPos pos, IBlockState state, Entity entityIn) {
+    public void onEntityCollidedWithBlock(Level worldIn, BlockPos pos, BlockState state, Entity entityIn) {
         // Some hacky checks to make climbing sounds
-        if (entityIn instanceof EntityLivingBase && ForgeHooks.isLivingOnLadder(state, worldIn, pos, (EntityLivingBase) entityIn) && !entityIn.onGround && Math.abs(entityIn.motionY) > 0.1 && entityIn.ticksExisted % 15 == 0) {
+        if (entityIn instanceof LivingEntity && ForgeHooks.isLivingOnLadder(state, worldIn, pos, (LivingEntity) entityIn) && !entityIn.onGround && Math.abs(entityIn.motionY) > 0.1 && entityIn.ticksExisted % 15 == 0) {
             entityIn.playSound(SoundEvents.ITEM_ARMOR_EQUIP_IRON, 0.4f, 1.0f + ModRandom.getFloat(0.2f));
         }
         super.onEntityCollidedWithBlock(worldIn, pos, state, entityIn);
     }
 
     @Override
-    public AxisAlignedBB getBoundingBox(IBlockState state, IBlockAccess source, BlockPos pos) {
+    public AABB getBoundingBox(BlockState state, BlockGetter source, BlockPos pos) {
         return PILLAR_AABB;
     }
 
     @Override
-    public AxisAlignedBB getCollisionBoundingBox(IBlockState state, IBlockAccess source, BlockPos pos) {
+    public AABB getCollisionBoundingBox(BlockState state, BlockGetter source, BlockPos pos) {
         return PILLAR_AABB.grow(-0.15, 0, -0.15);
     }
 
     @Override
-    public boolean isOpaqueCube(IBlockState state) {
+    public boolean isOpaqueCube(BlockState state) {
         return false;
     }
 
     @Override
-    public boolean isFullCube(IBlockState state) {
+    public boolean isFullCube(BlockState state) {
         return false;
     }
 
     @Override
-    @SideOnly(Side.CLIENT)
-    public boolean shouldSideBeRendered(IBlockState blockState, IBlockAccess blockAccess, BlockPos pos, EnumFacing side) {
+    @OnlyIn(Dist.CLIENT)
+    public boolean shouldSideBeRendered(BlockState blockState, BlockGetter blockAccess, BlockPos pos, Direction side) {
         return true;
     }
 
     @Override
-    public boolean isLadder(IBlockState state, IBlockAccess world, BlockPos pos, EntityLivingBase entity) {
+    public boolean isLadder(BlockState state, BlockGetter world, BlockPos pos, LivingEntity entity) {
         return true;
     }
 }

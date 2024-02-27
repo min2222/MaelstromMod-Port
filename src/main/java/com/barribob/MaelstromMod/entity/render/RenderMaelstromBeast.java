@@ -3,7 +3,7 @@ package com.barribob.MaelstromMod.entity.render;
 import com.barribob.MaelstromMod.entity.entities.EntityMaelstromBeast;
 import com.barribob.MaelstromMod.entity.model.ModelMaelstromBeast;
 import net.minecraft.client.renderer.entity.RenderManager;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.resources.ResourceLocation;
 
 public class RenderMaelstromBeast extends RenderModEntity<EntityMaelstromBeast> {
     public ResourceLocation TEXTURES_1 = new ResourceLocation(com.barribob.MaelstromMod.util.Reference.MOD_ID + ":textures/entity/maelstrom_beast.png");

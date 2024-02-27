@@ -11,16 +11,15 @@ import com.barribob.MaelstromMod.util.ModRandom;
 import com.barribob.MaelstromMod.util.ModUtils;
 import com.barribob.MaelstromMod.util.handlers.ParticleManager;
 import com.barribob.MaelstromMod.util.handlers.SoundsHandler;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.SharedMonsterAttributes;
-import net.minecraft.init.SoundEvents;
-import net.minecraft.util.DamageSource;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.SoundEvent;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraft.util.Mth;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.level.Level;
+import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.api.distmarker.Dist;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,7 +29,7 @@ public class EntityMaelstromMage extends EntityMaelstromMob {
     public static final float PROJECTILE_INACCURACY = 6.0f;
     public static final float PROJECTILE_SPEED = 1.2f;
 
-    public EntityMaelstromMage(World worldIn) {
+    public EntityMaelstromMage(Level worldIn) {
         super(worldIn);
         this.setSize(0.9f, 1.8f);
     }
@@ -73,9 +72,9 @@ public class EntityMaelstromMage extends EntityMaelstromMob {
         float f = ModRandom.getFloat(0.25f);
 
         if (getElement() != Element.NONE) {
-            ParticleManager.spawnEffect(world, new Vec3d(this.posX + f, this.posY + this.getEyeHeight() + 1.0f, this.posZ + f), getElement().particleColor);
+            ParticleManager.spawnEffect(world, new Vec3(this.posX + f, this.posY + this.getEyeHeight() + 1.0f, this.posZ + f), getElement().particleColor);
         } else {
-            ParticleManager.spawnMaelstromPotionParticle(world, rand, new Vec3d(this.posX + f, this.posY + this.getEyeHeight() + 1.0f, this.posZ + f), true);
+            ParticleManager.spawnMaelstromPotionParticle(world, rand, new Vec3(this.posX + f, this.posY + this.getEyeHeight() + 1.0f, this.posZ + f), true);
         }
     }
 
@@ -99,7 +98,7 @@ public class EntityMaelstromMage extends EntityMaelstromMob {
     ;
 
     @Override
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public void handleStatusUpdate(byte id) {
         if (id == 4) {
             getCurrentAnimation().startAnimation();
@@ -119,7 +118,7 @@ public class EntityMaelstromMage extends EntityMaelstromMob {
      * EntitySnowman)
      */
     @Override
-    public void attackEntityWithRangedAttack(EntityLivingBase target, float distanceFactor) {
+    public void attackEntityWithRangedAttack(LivingEntity target, float distanceFactor) {
         if (!world.isRemote) {
             ProjectileHorrorAttack projectile = new ProjectileHorrorAttack(this.world, this, this.getAttack());
             projectile.posY = this.posY + this.getEyeHeight() + 1.0f; // Raise pos y to summon the projectile above the head
@@ -127,7 +126,7 @@ public class EntityMaelstromMage extends EntityMaelstromMob {
             double d1 = target.posX - this.posX;
             double d2 = d0 - projectile.posY;
             double d3 = target.posZ - this.posZ;
-            float f = MathHelper.sqrt(d1 * d1 + d3 * d3) * 0.2F;
+            float f = Mth.sqrt(d1 * d1 + d3 * d3) * 0.2F;
             projectile.shoot(d1, d2 + f, d3, this.PROJECTILE_SPEED, this.PROJECTILE_INACCURACY);
             this.playSound(SoundEvents.ENTITY_BLAZE_SHOOT, 1.0F, 1.0F / (this.getRNG().nextFloat() * 0.4F + 0.8F));
             this.world.spawnEntity(projectile);
@@ -135,7 +134,7 @@ public class EntityMaelstromMage extends EntityMaelstromMob {
     }
 
     @Override
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     protected void initAnimation() {
         List<List<AnimationClip<ModelMaelstromMage>>> animation = new ArrayList<List<AnimationClip<ModelMaelstromMage>>>();
         List<AnimationClip<ModelMaelstromMage>> leftArmXStream = new ArrayList<AnimationClip<ModelMaelstromMage>>();

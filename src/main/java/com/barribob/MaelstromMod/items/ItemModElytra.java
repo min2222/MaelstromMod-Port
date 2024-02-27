@@ -3,20 +3,20 @@ package com.barribob.MaelstromMod.items;
 import com.barribob.MaelstromMod.util.ModUtils;
 import com.barribob.MaelstromMod.util.Reference;
 import com.google.common.collect.Multimap;
-import net.minecraft.client.util.ITooltipFlag;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLiving;
-import net.minecraft.entity.SharedMonsterAttributes;
+import net.minecraft.ChatFormatting;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.entity.ai.attributes.AttributeModifier;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.inventory.EntityEquipmentSlot;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.item.ItemArmor;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.ActionResult;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.util.EnumActionResult;
-import net.minecraft.util.EnumHand;
-import net.minecraft.util.text.TextFormatting;
-import net.minecraft.world.World;
+import net.minecraft.world.level.Level;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -37,55 +37,55 @@ public class ItemModElytra extends ItemBase {
 
     // Taken from {@code ItemElytra}
     @Override
-    public ActionResult<ItemStack> onItemRightClick(World worldIn, EntityPlayer playerIn, EnumHand handIn) {
+    public InteractionResultHolder<ItemStack> onItemRightClick(Level worldIn, Player playerIn, InteractionHand handIn) {
         ItemStack itemstack = playerIn.getHeldItem(handIn);
-        EntityEquipmentSlot entityequipmentslot = EntityLiving.getSlotForItemStack(itemstack);
+        EquipmentSlot entityequipmentslot = Mob.getSlotForItemStack(itemstack);
         ItemStack itemstack1 = playerIn.getItemStackFromSlot(entityequipmentslot);
 
         if (itemstack1.isEmpty()) {
             playerIn.setItemStackToSlot(entityequipmentslot, itemstack.copy());
             itemstack.setCount(0);
-            return new ActionResult<ItemStack>(EnumActionResult.SUCCESS, itemstack);
+            return new InteractionResultHolder<ItemStack>(EnumActionResult.SUCCESS, itemstack);
         } else {
-            return new ActionResult<ItemStack>(EnumActionResult.FAIL, itemstack);
+            return new InteractionResultHolder<ItemStack>(EnumActionResult.FAIL, itemstack);
         }
     }
 
     @Override
-    public boolean isValidArmor(ItemStack stack, EntityEquipmentSlot armorType, Entity entity) {
-        return armorType == EntityEquipmentSlot.CHEST;
+    public boolean isValidArmor(ItemStack stack, EquipmentSlot armorType, Entity entity) {
+        return armorType == EquipmentSlot.CHEST;
     }
 
     @Nullable
     @Override
-    public EntityEquipmentSlot getEquipmentSlot(ItemStack stack) {
-        return EntityEquipmentSlot.CHEST;
+    public EquipmentSlot getEquipmentSlot(ItemStack stack) {
+        return EquipmentSlot.CHEST;
     }
 
     @Nullable
     @Override
-    public String getArmorTexture(ItemStack stack, Entity entity, EntityEquipmentSlot slot, String type) {
-        if (slot == EntityEquipmentSlot.CHEST) {
+    public String getArmorTexture(ItemStack stack, Entity entity, EquipmentSlot slot, String type) {
+        if (slot == EquipmentSlot.CHEST) {
             return Reference.MOD_ID + ":textures/models/armor/" + this.getUnlocalizedName().replace("item.", "") + ".png";
         }
         return null;
     }
 
     @Override
-    public Multimap<String, AttributeModifier> getAttributeModifiers(EntityEquipmentSlot equipmentSlot, ItemStack stack) {
+    public Multimap<String, AttributeModifier> getAttributeModifiers(EquipmentSlot equipmentSlot, ItemStack stack) {
         Multimap<String, AttributeModifier> multimap = super.getAttributeModifiers(equipmentSlot, stack);
 
-        if (equipmentSlot == EntityEquipmentSlot.CHEST) {
-            multimap.put(SharedMonsterAttributes.ARMOR.getName(), new AttributeModifier(ARMOR_MODIFIER, "Armor modifier", this.material.getDamageReductionAmount(EntityEquipmentSlot.CHEST), 0));
-            multimap.put(SharedMonsterAttributes.ARMOR_TOUGHNESS.getName(), new AttributeModifier(ARMOR_MODIFIER, "Armor toughness", this.material.getToughness(), 0));
+        if (equipmentSlot == EquipmentSlot.CHEST) {
+            multimap.put(Attributes.ARMOR.getName(), new AttributeModifier(ARMOR_MODIFIER, "Armor modifier", this.material.getDamageReductionAmount(EquipmentSlot.CHEST), 0));
+            multimap.put(Attributes.ARMOR_TOUGHNESS.getName(), new AttributeModifier(ARMOR_MODIFIER, "Armor toughness", this.material.getToughness(), 0));
         }
 
         return multimap;
     }
 
     @Override
-    public void addInformation(ItemStack stack, World worldIn, List<String> tooltip, ITooltipFlag flagIn) {
+    public void addInformation(ItemStack stack, Level worldIn, List<String> tooltip, TooltipFlag flagIn) {
         super.addInformation(stack, worldIn, tooltip, flagIn);
-        tooltip.add(TextFormatting.GRAY + ModUtils.translateDesc(this.getUnlocalizedName().replace("item.", "")));
+        tooltip.add(ChatFormatting.GRAY + ModUtils.translateDesc(this.getUnlocalizedName().replace("item.", "")));
     }
 }

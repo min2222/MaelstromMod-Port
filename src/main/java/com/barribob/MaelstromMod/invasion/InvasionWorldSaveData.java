@@ -2,7 +2,7 @@ package com.barribob.MaelstromMod.invasion;
 
 import com.barribob.MaelstromMod.config.ModConfig;
 import com.barribob.MaelstromMod.util.Reference;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.storage.WorldSavedData;
 
 public class InvasionWorldSaveData extends WorldSavedData {
@@ -21,7 +21,7 @@ public class InvasionWorldSaveData extends WorldSavedData {
     }
 
     @Override
-    public void readFromNBT(NBTTagCompound nbt) {
+    public void readFromNBT(CompoundTag nbt) {
         if (nbt.hasKey("invaded") && nbt.hasKey("invasion_time")) {
             this.timeUntilInvasion = nbt.getInteger("invasion_time");
             this.invaded = nbt.getBoolean("invaded");
@@ -29,7 +29,7 @@ public class InvasionWorldSaveData extends WorldSavedData {
     }
 
     @Override
-    public NBTTagCompound writeToNBT(NBTTagCompound compound) {
+    public CompoundTag writeToNBT(CompoundTag compound) {
         compound.setBoolean("invaded", invaded);
         compound.setInteger("invasion_time", timeUntilInvasion);
         return compound;

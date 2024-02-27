@@ -12,21 +12,21 @@ import com.barribob.MaelstromMod.init.ModItems;
 import com.barribob.MaelstromMod.util.ModUtils;
 import com.barribob.MaelstromMod.util.handlers.LevelHandler;
 import com.barribob.MaelstromMod.util.handlers.SoundsHandler;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.SharedMonsterAttributes;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.entity.ai.EntityAIFindEntityNearestPlayer;
-import net.minecraft.init.SoundEvents;
-import net.minecraft.item.Item;
-import net.minecraft.util.DamageSource;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.util.SoundEvent;
-import net.minecraft.world.World;
+import net.minecraft.world.level.Level;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;
 
 public class EntityCliffFly extends EntityLeveledFlyingMob {
-    public EntityCliffFly(World worldIn) {
+    public EntityCliffFly(Level worldIn) {
         super(worldIn);
         this.moveHelper = new FlyingMoveHelper(this);
         this.setSize(1.0f, 1.8f);
@@ -44,13 +44,13 @@ public class EntityCliffFly extends EntityLeveledFlyingMob {
     @Override
     protected void applyEntityAttributes() {
         super.applyEntityAttributes();
-        this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(20.0D);
-        this.getEntityAttribute(SharedMonsterAttributes.FOLLOW_RANGE).setBaseValue(30.0D);
-        this.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).setBaseValue(4.5);
+        this.getEntityAttribute(Attributes.MAX_HEALTH).setBaseValue(20.0D);
+        this.getEntityAttribute(Attributes.FOLLOW_RANGE).setBaseValue(30.0D);
+        this.getEntityAttribute(Attributes.ATTACK_DAMAGE).setBaseValue(4.5);
     }
 
     @Override
-    public void attackEntityWithRangedAttack(EntityLivingBase target, float distanceFactor) {
+    public void attackEntityWithRangedAttack(LivingEntity target, float distanceFactor) {
         for (int i = 0; i < 5; i++) {
             ModUtils.throwProjectile(this, target, new ProjectileSwampSpittle(world, this, this.getAttack()));
             this.playSound(SoundEvents.ENTITY_BLAZE_SHOOT, 1.0F, 1.0F / (this.getRNG().nextFloat() * 0.4F + 0.8F));

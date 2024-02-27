@@ -3,15 +3,15 @@ package com.barribob.MaelstromMod.entity.tileentity;
 import com.barribob.MaelstromMod.entity.entities.EntityLeveledMob;
 import com.barribob.MaelstromMod.util.ModRandom;
 import com.barribob.MaelstromMod.util.ModUtils;
-import net.minecraft.block.Block;
-import net.minecraft.entity.Entity;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.Level;
 
 import java.util.function.Supplier;
 
 public class BossSpawnerLogic extends DisappearingSpawnerLogic {
-    public BossSpawnerLogic(Supplier<World> world, Supplier<BlockPos> pos, Block block) {
+    public BossSpawnerLogic(Supplier<Level> world, Supplier<BlockPos> pos, Block block) {
         super(world, pos, block);
     }
 

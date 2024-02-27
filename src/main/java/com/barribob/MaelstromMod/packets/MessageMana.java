@@ -4,7 +4,7 @@ import com.barribob.MaelstromMod.gui.InGameGui;
 import com.barribob.MaelstromMod.mana.IMana;
 import com.barribob.MaelstromMod.mana.ManaProvider;
 import io.netty.buffer.ByteBuf;
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
@@ -34,7 +34,7 @@ public class MessageMana implements IMessage {
         @Override
         public IMessage onMessage(MessageMana message, MessageContext ctx) {
             if (PacketUtils.getPlayer() != null) {
-                EntityPlayer player = PacketUtils.getPlayer();
+                Player player = PacketUtils.getPlayer();
                 IMana mana = player.getCapability(ManaProvider.MANA, null);
 
                 // Handle flash animation

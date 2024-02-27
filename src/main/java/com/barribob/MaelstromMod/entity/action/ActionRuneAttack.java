@@ -3,7 +3,7 @@ package com.barribob.MaelstromMod.entity.action;
 import com.barribob.MaelstromMod.entity.entities.EntityLeveledMob;
 import com.barribob.MaelstromMod.entity.projectile.Projectile;
 import com.barribob.MaelstromMod.entity.util.IEntityAdjustment;
-import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.world.entity.LivingEntity;
 
 import java.util.function.Supplier;
 
@@ -18,7 +18,7 @@ public class ActionRuneAttack implements IAction {
     }
 
     @Override
-    public void performAction(EntityLeveledMob actor, EntityLivingBase target) {
+    public void performAction(EntityLeveledMob actor, LivingEntity target) {
         Projectile projectile = projectileSupplier.get();
         projectile.shoot(zeroish, zeroish, zeroish, zeroish, zeroish);
         adjustment.adjust(projectile);

@@ -1,20 +1,20 @@
 package com.barribob.MaelstromMod.world.dimension.azure_dimension;
 
 import com.barribob.MaelstromMod.init.ModBlocks;
-import net.minecraft.block.Block;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.init.Blocks;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.world.World;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.core.BlockPos;
+import net.minecraft.util.Mth;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.chunk.ChunkPrimer;
 import net.minecraft.world.gen.MapGenBase;
 
 import java.util.Random;
 
 public class MapGenAzureRavine extends MapGenBase {
-    protected static final IBlockState FLOWING_LIQUID = Blocks.FLOWING_WATER.getDefaultState();
-    protected static final IBlockState AIR = Blocks.AIR.getDefaultState();
+    protected static final BlockState FLOWING_LIQUID = Blocks.FLOWING_WATER.getDefaultState();
+    protected static final BlockState AIR = Blocks.AIR.getDefaultState();
     private final float[] rs = new float[1024];
 
     // I have no idea what the last three parameters are supposed to do
@@ -48,15 +48,15 @@ public class MapGenAzureRavine extends MapGenBase {
         }
 
         for (; specialInt1 < specialInt2; ++specialInt1) {
-            double d9 = 1.5D + (double) (MathHelper.sin((float) specialInt1 * (float) Math.PI / (float) specialInt2) * randFloat1);
+            double d9 = 1.5D + (double) (Mth.sin((float) specialInt1 * (float) Math.PI / (float) specialInt2) * randFloat1);
             double yRange = d9 * specialDouble;
             d9 = d9 * ((double) random.nextFloat() * 0.25D + 0.75D);
             yRange = yRange * ((double) random.nextFloat() * 0.25D + 0.75D);
-            float f3 = MathHelper.cos(randFloat3);
-            float f4 = MathHelper.sin(randFloat3);
-            x += (double) (MathHelper.cos(randFloat2) * f3);
+            float f3 = Mth.cos(randFloat3);
+            float f4 = Mth.sin(randFloat3);
+            x += (double) (Mth.cos(randFloat2) * f3);
             y += (double) f4;
-            z += (double) (MathHelper.sin(randFloat2) * f3);
+            z += (double) (Mth.sin(randFloat2) * f3);
             randFloat3 = randFloat3 * 0.7F;
             randFloat3 = randFloat3 + f1 * 0.05F;
             randFloat2 += f * 0.05F;
@@ -76,12 +76,12 @@ public class MapGenAzureRavine extends MapGenBase {
                 }
 
                 if (x >= d0 - 16.0D - d9 * 2.0D && z >= d1 - 16.0D - d9 * 2.0D && x <= d0 + 16.0D + d9 * 2.0D && z <= d1 + 16.0D + d9 * 2.0D) {
-                    int k2 = MathHelper.floor(x - d9) - originalX * 16 - 1;
-                    int k = MathHelper.floor(x + d9) - originalX * 16 + 1;
-                    int min_y = MathHelper.floor(y - yRange) - 1;
-                    int start_y = MathHelper.floor(y + yRange) + 1;
-                    int i3 = MathHelper.floor(z - d9) - originalY * 16 - 1;
-                    int i1 = MathHelper.floor(z + d9) - originalY * 16 + 1;
+                    int k2 = Mth.floor(x - d9) - originalX * 16 - 1;
+                    int k = Mth.floor(x + d9) - originalX * 16 + 1;
+                    int min_y = Mth.floor(y - yRange) - 1;
+                    int start_y = Mth.floor(y + yRange) + 1;
+                    int i3 = Mth.floor(z - d9) - originalY * 16 - 1;
+                    int i1 = Mth.floor(z + d9) - originalY * 16 + 1;
 
                     if (k2 < 0) {
                         k2 = 0;
@@ -161,7 +161,7 @@ public class MapGenAzureRavine extends MapGenBase {
     /**
      * Recursively called by generate()
      */
-    protected void recursiveGenerate(World worldIn, int chunkX, int chunkZ, int originalX, int originalZ, ChunkPrimer chunkPrimerIn) {
+    protected void recursiveGenerate(Level worldIn, int chunkX, int chunkZ, int originalX, int originalZ, ChunkPrimer chunkPrimerIn) {
         int chance = 5;
         float length = 2.5f;
         float scale = 1.0f;
@@ -187,7 +187,7 @@ public class MapGenAzureRavine extends MapGenBase {
     }
 
     protected boolean isOceanBlock(ChunkPrimer data, int x, int y, int z, int chunkX, int chunkZ) {
-        net.minecraft.block.Block block = data.getBlockState(x, y, z).getBlock();
+        Block block = data.getBlockState(x, y, z).getBlock();
         return block == Blocks.FLOWING_WATER || block == Blocks.WATER;
     }
 
@@ -195,7 +195,7 @@ public class MapGenAzureRavine extends MapGenBase {
     //Vanilla bugs to make sure that we generate the map the same way vanilla does.
     private boolean isTopBlock(ChunkPrimer data, int x, int y, int z, int chunkX, int chunkZ) {
         net.minecraft.world.biome.Biome biome = world.getBiome(new BlockPos(x + chunkX * 16, 0, z + chunkZ * 16));
-        IBlockState state = data.getBlockState(x, y, z);
+        BlockState state = data.getBlockState(x, y, z);
         return (state.getBlock() == biome.topBlock);
     }
 
@@ -216,9 +216,9 @@ public class MapGenAzureRavine extends MapGenBase {
      */
     protected void digBlock(ChunkPrimer data, int x, int y, int z, int chunkX, int chunkZ, boolean foundTop) {
         net.minecraft.world.biome.Biome biome = world.getBiome(new BlockPos(x + chunkX * 16, 0, z + chunkZ * 16));
-        IBlockState state = data.getBlockState(x, y, z);
-        IBlockState top = biome.topBlock;
-        IBlockState filler = biome.fillerBlock;
+        BlockState state = data.getBlockState(x, y, z);
+        BlockState top = biome.topBlock;
+        BlockState filler = biome.fillerBlock;
         Block stone = ModBlocks.DARK_AZURE_STONE;
 
         if (state.getBlock() == stone || state.getBlock() == top.getBlock() || state.getBlock() == filler.getBlock()) {

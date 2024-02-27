@@ -5,11 +5,11 @@ import com.barribob.MaelstromMod.util.ModDamageSource;
 import com.barribob.MaelstromMod.util.ModRandom;
 import com.barribob.MaelstromMod.util.ModUtils;
 import com.barribob.MaelstromMod.util.handlers.ParticleManager;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.init.MobEffects;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.math.RayTraceResult;
-import net.minecraft.world.World;
+import net.minecraft.world.level.Level;
 
 /**
  * The simple attacks that the beast outputs during its ranged mode
@@ -18,15 +18,15 @@ public class ProjectileBeastAttack extends Projectile {
     private static final int PARTICLE_AMOUNT = 3;
     private static final int IMPACT_PARTICLE_AMOUNT = 20;
 
-    public ProjectileBeastAttack(World worldIn, EntityLivingBase throwerIn, float damage) {
+    public ProjectileBeastAttack(Level worldIn, LivingEntity throwerIn, float damage) {
         super(worldIn, throwerIn, damage);
     }
 
-    public ProjectileBeastAttack(World worldIn) {
+    public ProjectileBeastAttack(Level worldIn) {
         super(worldIn);
     }
 
-    public ProjectileBeastAttack(World worldIn, double x, double y, double z) {
+    public ProjectileBeastAttack(Level worldIn, double x, double y, double z) {
         super(worldIn, x, y, z);
     }
 
@@ -52,8 +52,8 @@ public class ProjectileBeastAttack extends Projectile {
     @Override
     protected void onHit(RayTraceResult result) {
         ModUtils.handleBulletImpact(result.entityHit, this, this.getDamage(), ModDamageSource.causeElementalThrownDamage(this, shootingEntity, getElement()), 1, (proj, entity) -> {
-            if (this.getElement().equals(Element.CRIMSON) && entity instanceof EntityLivingBase) {
-                ((EntityLivingBase) entity).addPotionEffect(new PotionEffect(MobEffects.WITHER, 100));
+            if (this.getElement().equals(Element.CRIMSON) && entity instanceof LivingEntity) {
+                ((LivingEntity) entity).addPotionEffect(new PotionEffect(MobEffects.WITHER, 100));
             }
         }, (proj, entity) -> {
         });

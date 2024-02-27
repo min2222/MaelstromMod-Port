@@ -5,22 +5,22 @@ import com.barribob.MaelstromMod.entity.tileentity.TileEntityMalestromSpawner;
 import com.barribob.MaelstromMod.init.ModBlocks;
 import com.barribob.MaelstromMod.init.ModItems;
 import com.barribob.MaelstromMod.util.IHasModel;
-import net.minecraft.block.BlockContainer;
-import net.minecraft.block.SoundType;
-import net.minecraft.block.material.Material;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemBlock;
-import net.minecraft.tileentity.TileEntity;
+import net.minecraft.world.level.block.entity.BaseContainerBlockEntity;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.material.Material;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.util.EnumBlockRenderType;
-import net.minecraft.world.World;
+import net.minecraft.world.level.Level;
 
 import java.util.Random;
 
 /**
  * The maelstrom mob spawner. Also prevent decay of the maelstrom block
  */
-public class BlockMaelstromCore extends BlockContainer implements IHasModel {
+public class BlockMaelstromCore extends BaseContainerBlockEntity implements IHasModel {
     private Item itemDropped;
 
     public BlockMaelstromCore(String name, Material material, Item itemDropped) {
@@ -30,7 +30,7 @@ public class BlockMaelstromCore extends BlockContainer implements IHasModel {
 
         // Add both an item as a block and the block itself
         ModBlocks.BLOCKS.add(this);
-        ModItems.ITEMS.add(new ItemBlock(this).setRegistryName(this.getRegistryName()));
+        ModItems.ITEMS.add(new BlockItem(this).setRegistryName(this.getRegistryName()));
         this.hasTileEntity = true;
         this.itemDropped = itemDropped;
     }
@@ -56,7 +56,7 @@ public class BlockMaelstromCore extends BlockContainer implements IHasModel {
     }
 
     @Override
-    public TileEntity createNewTileEntity(World worldIn, int meta) {
+    public BlockEntity createNewTileEntity(Level worldIn, int meta) {
         return new TileEntityMalestromSpawner();
     }
 
@@ -66,12 +66,12 @@ public class BlockMaelstromCore extends BlockContainer implements IHasModel {
      * skip all rendering
      */
     @Override
-    public EnumBlockRenderType getRenderType(IBlockState state) {
+    public EnumBlockRenderType getRenderType(BlockState state) {
         return EnumBlockRenderType.MODEL;
     }
 
     @Override
-    public Item getItemDropped(IBlockState state, Random rand, int fortune) {
+    public Item getItemDropped(BlockState state, Random rand, int fortune) {
         return itemDropped;
     }
 }

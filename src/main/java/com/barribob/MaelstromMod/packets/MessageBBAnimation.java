@@ -4,8 +4,8 @@ import com.barribob.MaelstromMod.entity.animation.AnimationManager;
 import com.barribob.MaelstromMod.init.ModBBAnimations;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.client.Minecraft;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
@@ -60,8 +60,8 @@ public class MessageBBAnimation implements IMessage {
                     entity = PacketUtils.getWorld().getEntityByID(message.entityId);
                 }
 
-                if (entity != null && entity instanceof EntityLivingBase) {
-                    AnimationManager.updateAnimation((EntityLivingBase) entity, ModBBAnimations.getAnimationName(message.animationId), message.remove);
+                if (entity != null && entity instanceof LivingEntity) {
+                    AnimationManager.updateAnimation((LivingEntity) entity, ModBBAnimations.getAnimationName(message.animationId), message.remove);
                 }
             });
             return null;

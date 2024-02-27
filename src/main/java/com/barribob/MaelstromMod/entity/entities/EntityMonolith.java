@@ -23,23 +23,23 @@ import com.barribob.MaelstromMod.util.handlers.ParticleManager;
 import com.barribob.MaelstromMod.util.handlers.SoundsHandler;
 import net.minecraft.client.model.ModelBox;
 import net.minecraft.client.model.ModelRenderer;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.SharedMonsterAttributes;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.init.Blocks;
-import net.minecraft.init.SoundEvents;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.network.datasync.DataParameter;
-import net.minecraft.network.datasync.DataSerializers;
-import net.minecraft.network.datasync.EntityDataManager;
-import net.minecraft.util.DamageSource;
-import net.minecraft.util.EnumParticleTypes;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.BossEvent;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.util.SoundEvent;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.BossInfo;
-import net.minecraft.world.BossInfoServer;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.server.level.ServerBossEvent;
+import net.minecraft.world.level.Level;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -54,17 +54,17 @@ public class EntityMonolith extends EntityMaelstromMob implements IAttack, Direc
     public static final byte redAttack = 5;
     public static final byte yellowAttack = 6;
     private byte stageTransform = 7;
-    private static final DataParameter<Boolean> TRANSFORMED = EntityDataManager.<Boolean>createKey(EntityMonolith.class, DataSerializers.BOOLEAN);
-    private final BossInfoServer bossInfo = (new BossInfoServer(this.getDisplayName(), BossInfo.Color.PURPLE, BossInfo.Overlay.NOTCHED_6));
+    private static final EntityDataAccessor<Boolean> TRANSFORMED = SynchedEntityData.<Boolean>createKey(EntityMonolith.class, EntityDataSerializers.BOOLEAN);
+    private final ServerBossEvent bossInfo = (new ServerBossEvent(this.getDisplayName(), BossEvent.Color.PURPLE, BossEvent.Overlay.NOTCHED_6));
 
     // Field to store the lazer's aimed direction
-    private Vec3d lazerDir;
+    private Vec3 lazerDir;
     private float lazerRadius = 2.5f;
 
     // Datamanager to keep track of which attack the mob is doing
-    private static final DataParameter<Byte> ATTACK = EntityDataManager.<Byte>createKey(EntityMonolith.class, DataSerializers.BYTE);
+    private static final EntityDataAccessor<Byte> ATTACK = SynchedEntityData.<Byte>createKey(EntityMonolith.class, EntityDataSerializers.BYTE);
 
-    public EntityMonolith(World worldIn) {
+    public EntityMonolith(Level worldIn) {
         super(worldIn);
         this.setImmovable(true);
         this.setNoGravity(true);
@@ -72,17 +72,17 @@ public class EntityMonolith extends EntityMaelstromMob implements IAttack, Direc
         this.healthScaledAttackFactor = 0.2;
         this.isImmuneToFire = true;
 
-        BiConsumer<EntityLeveledMob, EntityLivingBase> fireballs = (EntityLeveledMob actor, EntityLivingBase target) -> {
+        BiConsumer<EntityLeveledMob, LivingEntity> fireballs = (EntityLeveledMob actor, LivingEntity target) -> {
             ModUtils.performNTimes(3, (i) -> spawnFireball(actor, target, this::getRandomFireballPosition));
             spawnFireball(actor, target, this::getPositionAboveTarget);
         };
 
-        BiConsumer<EntityLeveledMob, EntityLivingBase> lazer = (EntityLeveledMob actor, EntityLivingBase target) -> {
+        BiConsumer<EntityLeveledMob, LivingEntity> lazer = (EntityLeveledMob actor, LivingEntity target) -> {
             actor.playSound(SoundEvents.ENTITY_BLAZE_SHOOT, 1.5F, 0.4F / (actor.world.rand.nextFloat() * 0.4F + 0.8F));
 
             float numParticles = 10;
-            Vec3d dir = lazerDir.subtract(actor.getPositionVector().add(ModUtils.yVec(actor.getEyeHeight()))).scale(1 / numParticles);
-            Vec3d currentPos = actor.getPositionVector().add(ModUtils.yVec(actor.getEyeHeight()));
+            Vec3 dir = lazerDir.subtract(actor.getPositionVector().add(ModUtils.yVec(actor.getEyeHeight()))).scale(1 / numParticles);
+            Vec3 currentPos = actor.getPositionVector().add(ModUtils.yVec(actor.getEyeHeight()));
             for (int i = 0; i < numParticles; i++) {
 
                 DamageSource source = ModDamageSource.builder()
@@ -95,7 +95,7 @@ public class EntityMonolith extends EntityMaelstromMob implements IAttack, Direc
                         5, false);
                 currentPos = currentPos.add(dir);
                 for (int j = 0; j < 20; j++) {
-                    Vec3d pos = currentPos.add(ModRandom.randVec().scale(lazerRadius));
+                    Vec3 pos = currentPos.add(ModRandom.randVec().scale(lazerRadius));
                     if (world.isBlockFullCube(new BlockPos(pos).down()) && world.isAirBlock(new BlockPos(pos))) {
                         world.setBlockState(new BlockPos(pos), Blocks.FIRE.getDefaultState());
                     }
@@ -107,7 +107,7 @@ public class EntityMonolith extends EntityMaelstromMob implements IAttack, Direc
         if (!world.isRemote) {
             attackHandler.setAttack(blueAttack, new IAction() {
                 @Override
-                public void performAction(EntityLeveledMob actor, EntityLivingBase target) {
+                public void performAction(EntityLeveledMob actor, LivingEntity target) {
                     int numMobs = getMobConfig().getInt("summoning_algorithm.mobs_per_spawn");
                     for (int i = 0; i < numMobs; i++) {
                         ModUtils.spawnMob(world, getPosition(), getLevel(), getMobConfig().getConfig("summoning_algorithm"));
@@ -129,14 +129,14 @@ public class EntityMonolith extends EntityMaelstromMob implements IAttack, Direc
             attackHandler.setAttack(stageTransform, new IAction() {
                 // Change the yellow and blue attacks to new attacks
                 @Override
-                public void performAction(EntityLeveledMob actor, EntityLivingBase target) {
+                public void performAction(EntityLeveledMob actor, LivingEntity target) {
                     actor.getDataManager().set(TRANSFORMED, Boolean.valueOf(true));
                     attackHandler.setAttack(yellowAttack, (IAction) (actor1, target1) -> {
                         actor1.motionY = 0;
                         actor1.setImmovable(false);
                         actor1.setNoGravity(false);
-                        Vec3d pos = target1.getPositionVector().add(target1.getLookVec()).add(ModUtils.yVec(24))
-                                .add(new Vec3d(ModRandom.getFloat(1), 0, ModRandom.getFloat(1)));
+                        Vec3 pos = target1.getPositionVector().add(target1.getLookVec()).add(ModUtils.yVec(24))
+                                .add(new Vec3(ModRandom.getFloat(1), 0, ModRandom.getFloat(1)));
                         actor1.playSound(SoundEvents.ENTITY_ENDERMEN_TELEPORT, 1.0F, 1.0F);
                         actor1.setPosition(pos.x, pos.y, pos.z);
                         EntityMonolith.this.setLeaping(true);
@@ -147,9 +147,9 @@ public class EntityMonolith extends EntityMaelstromMob implements IAttack, Direc
         }
     }
 
-    public void spawnFireball(EntityLeveledMob actor, EntityLivingBase target, Function<EntityLivingBase, Vec3d> getPosition) {
+    public void spawnFireball(EntityLeveledMob actor, LivingEntity target, Function<LivingEntity, Vec3> getPosition) {
         ProjectileMonolithFireball meteor = new ProjectileMonolithFireball(world, actor, actor.getAttack() * actor.getConfigFloat("fireball_damage"), null);
-        Vec3d pos = getPosition.apply(target);
+        Vec3 pos = getPosition.apply(target);
         meteor.setPosition(pos.x, pos.y, pos.z);
         meteor.shoot(actor, 90, 0, 0.0F, 0.5f, 0);
         meteor.motionX -= actor.motionX;
@@ -158,14 +158,14 @@ public class EntityMonolith extends EntityMaelstromMob implements IAttack, Direc
         world.spawnEntity(meteor);
     }
 
-    private Vec3d getRandomFireballPosition(EntityLivingBase target) {
+    private Vec3 getRandomFireballPosition(LivingEntity target) {
         return ModRandom.randFlatVec(ModUtils.Y_AXIS)
                 .scale(ModRandom.range(4, 5))
                 .add(target.getPositionVector())
                 .add(ModUtils.yVec(ModRandom.range(15, 20)));
     }
 
-    private Vec3d getPositionAboveTarget(EntityLivingBase target) {
+    private Vec3 getPositionAboveTarget(LivingEntity target) {
         return target.getPositionVector()
                 .add(ModUtils.yVec(ModRandom.range(15, 20)));
     }
@@ -212,7 +212,7 @@ public class EntityMonolith extends EntityMaelstromMob implements IAttack, Direc
     @Override
     protected void applyEntityAttributes() {
         super.applyEntityAttributes();
-        this.getEntityAttribute(SharedMonsterAttributes.KNOCKBACK_RESISTANCE).setBaseValue(1);
+        this.getEntityAttribute(Attributes.KNOCKBACK_RESISTANCE).setBaseValue(1);
     }
 
     @Override
@@ -221,7 +221,7 @@ public class EntityMonolith extends EntityMaelstromMob implements IAttack, Direc
         this.tasks.addTask(4, new EntityAITimedAttack<EntityMonolith>(this, 0, 90, 30, 0, 30.0f));
     }
 
-    public Optional<Vec3d> getTarget() {
+    public Optional<Vec3> getTarget() {
         if (isTransformed() && getAttackColor() == redAttack && this.lazerDir != null) {
             return Optional.of(this.lazerDir);
         }
@@ -254,7 +254,7 @@ public class EntityMonolith extends EntityMaelstromMob implements IAttack, Direc
         int maxMeteors = 20;
         if (!world.isRemote && this.getAttackTarget() == null && this.ticksExisted % maelstromMeteorTime == 0 && this.ticksExisted < maelstromMeteorTime * maxMeteors) {
             ProjectileMaelstromMeteor meteor = new ProjectileMaelstromMeteor(world, this, this.getAttack());
-            Vec3d pos = new Vec3d(ModRandom.getFloat(1.0f), 0, ModRandom.getFloat(1.0f)).normalize().scale(ModRandom.range(20, 50)).add(this.getPositionVector());
+            Vec3 pos = new Vec3(ModRandom.getFloat(1.0f), 0, ModRandom.getFloat(1.0f)).normalize().scale(ModRandom.range(20, 50)).add(this.getPositionVector());
             meteor.setPosition(pos.x, pos.y, pos.z);
             meteor.shoot(this, 90, 0, 0.0F, 0.7f, 0);
             meteor.motionX -= this.motionX;
@@ -272,7 +272,7 @@ public class EntityMonolith extends EntityMaelstromMob implements IAttack, Direc
             currentAnimation = attackHandler.getAnimation(id);
             getCurrentAnimation().startAnimation();
         } else if (id == ModUtils.PARTICLE_BYTE) {
-            Vec3d particlePos = getPositionVector().add(ModUtils.yVec(2)).add(ModRandom.randVec().scale(4));
+            Vec3 particlePos = getPositionVector().add(ModUtils.yVec(2)).add(ModRandom.randVec().scale(4));
             switch (this.getAttackColor()) {
                 case noAttack:
                     ParticleManager.spawnMaelstromSmoke(world, rand, particlePos, false);
@@ -289,27 +289,27 @@ public class EntityMonolith extends EntityMaelstromMob implements IAttack, Direc
         } else if (id == ModUtils.SECOND_PARTICLE_BYTE) {
             ModUtils.performNTimes(4, (i) -> {
                 ModUtils.circleCallback(2, 60, (pos) -> {
-                    pos = new Vec3d(pos.x, 0, pos.y);
+                    pos = new Vec3(pos.x, 0, pos.y);
                     ParticleManager.spawnFirework(world, pos.add(getPositionVector()).add(ModUtils.yVec(i + 1)), ModColors.YELLOW, pos.scale(0.5f));
                 });
             });
         } else if (id == ModUtils.THIRD_PARTICLE_BYTE) {
             ModUtils.performNTimes(100, (i) -> {
-                this.world.spawnParticle(EnumParticleTypes.EXPLOSION_LARGE, this.posX + ModRandom.getFloat(5), this.posY + ModRandom.getFloat(5),
+                this.world.spawnParticle(ParticleTypes.EXPLOSION_LARGE, this.posX + ModRandom.getFloat(5), this.posY + ModRandom.getFloat(5),
                         this.posZ + ModRandom.getFloat(5), 0, 0, 0);
             });
         } else if (id == ModUtils.FOURTH_PARTICLE_BYTE) {
             if (lazerDir != null) {
                 float numParticles = 10;
-                Vec3d dir = lazerDir.subtract(this.getPositionVector().add(ModUtils.yVec(this.getEyeHeight()))).scale(1 / numParticles);
-                Vec3d currentPos = this.getPositionVector().add(ModUtils.yVec(this.getEyeHeight()));
+                Vec3 dir = lazerDir.subtract(this.getPositionVector().add(ModUtils.yVec(this.getEyeHeight()))).scale(1 / numParticles);
+                Vec3 currentPos = this.getPositionVector().add(ModUtils.yVec(this.getEyeHeight()));
                 for (int i = 0; i < numParticles; i++) {
                     for (int j = 0; j < 50; j++) {
                         ParticleManager.spawnWisp(world, currentPos.add(ModRandom.randVec().scale(lazerRadius * 2)), ModColors.RED, ModUtils.yVec(0.1f));
-                        Vec3d pos = currentPos.add(ModRandom.randVec().scale(lazerRadius * 2));
-                        world.spawnParticle(EnumParticleTypes.FLAME, pos.x, pos.y, pos.z, 0, 0, 0);
+                        Vec3 pos = currentPos.add(ModRandom.randVec().scale(lazerRadius * 2));
+                        world.spawnParticle(ParticleTypes.FLAME, pos.x, pos.y, pos.z, 0, 0, 0);
                         pos = currentPos.add(ModRandom.randVec().scale(lazerRadius * 2));
-                        world.spawnParticle(EnumParticleTypes.EXPLOSION_LARGE, pos.x, pos.y, pos.z, 0, 0, 0);
+                        world.spawnParticle(ParticleTypes.EXPLOSION_LARGE, pos.x, pos.y, pos.z, 0, 0, 0);
                     }
                     currentPos = currentPos.add(dir);
                 }
@@ -350,7 +350,7 @@ public class EntityMonolith extends EntityMaelstromMob implements IAttack, Direc
     }
 
     @Override
-    public void setRenderDirection(Vec3d lazerDir) {
+    public void setRenderDirection(Vec3 lazerDir) {
         this.lazerDir = lazerDir;
     }
 
@@ -376,7 +376,7 @@ public class EntityMonolith extends EntityMaelstromMob implements IAttack, Direc
     }
 
     @Override
-    public void writeEntityToNBT(NBTTagCompound compound) {
+    public void writeEntityToNBT(CompoundTag compound) {
         // Make sure we save as immovable to avoid some weird states
         if (!this.isImmovable()) {
             this.setImmovable(true);
@@ -414,7 +414,7 @@ public class EntityMonolith extends EntityMaelstromMob implements IAttack, Direc
     }
 
     @Override
-    public void readEntityFromNBT(NBTTagCompound compound) {
+    public void readEntityFromNBT(CompoundTag compound) {
         if (this.hasCustomName()) {
             this.bossInfo.setName(this.getDisplayName());
         }
@@ -434,19 +434,19 @@ public class EntityMonolith extends EntityMaelstromMob implements IAttack, Direc
     }
 
     @Override
-    public void addTrackingPlayer(EntityPlayerMP player) {
+    public void addTrackingPlayer(ServerPlayer player) {
         super.addTrackingPlayer(player);
         this.bossInfo.addPlayer(player);
     }
 
     @Override
-    public void removeTrackingPlayer(EntityPlayerMP player) {
+    public void removeTrackingPlayer(ServerPlayer player) {
         super.removeTrackingPlayer(player);
         this.bossInfo.removePlayer(player);
     }
 
     @Override
-    public int startAttack(EntityLivingBase target, float distanceSq, boolean strafingBackwards) {
+    public int startAttack(LivingEntity target, float distanceSq, boolean strafingBackwards) {
         this.playSound(SoundsHandler.ENTITY_MONOLITH_AMBIENT, 0.7f, 1.0f * ModRandom.getFloat(0.2f));
 
         chooseAttack();
@@ -493,6 +493,6 @@ public class EntityMonolith extends EntityMaelstromMob implements IAttack, Direc
     }
 
     @Override
-    public void attackEntityWithRangedAttack(EntityLivingBase target, float distanceFactor) {
+    public void attackEntityWithRangedAttack(LivingEntity target, float distanceFactor) {
     }
 }

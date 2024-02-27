@@ -2,12 +2,12 @@ package com.barribob.MaelstromMod.packets;
 
 import com.barribob.MaelstromMod.particle.EnumModParticles;
 import io.netty.buffer.ByteBuf;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
 
 /**
  * Taken from the minecraft particle packet.
@@ -29,7 +29,7 @@ public class MessageModParticles implements IMessage {
     public MessageModParticles() {
     }
 
-    public MessageModParticles(EnumModParticles particleIn, Vec3d pos, Vec3d vel, Vec3d color) {
+    public MessageModParticles(EnumModParticles particleIn, Vec3 pos, Vec3 vel, Vec3 color) {
         this(particleIn, (float) pos.x, (float) pos.y, (float) pos.z, (float) vel.x, (float) vel.y, (float) vel.z, (float) color.x, (float) color.y, (float) color.z);
     }
 
@@ -45,7 +45,7 @@ public class MessageModParticles implements IMessage {
         this.particleArguments = argumentsIn;
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public EnumModParticles getParticleType() {
         return this.particleType;
     }
@@ -53,7 +53,7 @@ public class MessageModParticles implements IMessage {
     /**
      * Gets the x coordinate to spawn the particle.
      */
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public double getXCoordinate() {
         return this.xCoord;
     }
@@ -61,7 +61,7 @@ public class MessageModParticles implements IMessage {
     /**
      * Gets the y coordinate to spawn the particle.
      */
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public double getYCoordinate() {
         return this.yCoord;
     }
@@ -69,7 +69,7 @@ public class MessageModParticles implements IMessage {
     /**
      * Gets the z coordinate to spawn the particle.
      */
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public double getZCoordinate() {
         return this.zCoord;
     }
@@ -78,7 +78,7 @@ public class MessageModParticles implements IMessage {
      * Gets the x coordinate offset for the particle. The particle may use the
      * offset for particle spread.
      */
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public float getXOffset() {
         return this.xOffset;
     }
@@ -87,7 +87,7 @@ public class MessageModParticles implements IMessage {
      * Gets the y coordinate offset for the particle. The particle may use the
      * offset for particle spread.
      */
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public float getYOffset() {
         return this.yOffset;
     }
@@ -96,7 +96,7 @@ public class MessageModParticles implements IMessage {
      * Gets the z coordinate offset for the particle. The particle may use the
      * offset for particle spread.
      */
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public float getZOffset() {
         return this.zOffset;
     }
@@ -105,7 +105,7 @@ public class MessageModParticles implements IMessage {
      * Gets the particle arguments. Some particles rely on block and/or item ids and
      * sometimes metadata ids to color or texture the particle.
      */
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public float[] getParticleArgs() {
         return this.particleArguments;
     }

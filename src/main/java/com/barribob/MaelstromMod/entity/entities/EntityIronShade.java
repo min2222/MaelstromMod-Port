@@ -15,16 +15,16 @@ import com.barribob.MaelstromMod.util.ModUtils;
 import com.barribob.MaelstromMod.util.handlers.LootTableHandler;
 import com.barribob.MaelstromMod.util.handlers.ParticleManager;
 import com.barribob.MaelstromMod.util.handlers.SoundsHandler;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.init.SoundEvents;
-import net.minecraft.util.DamageSource;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.server.level.ServerBossEvent;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.BossEvent;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.SoundEvent;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.BossInfo;
-import net.minecraft.world.BossInfoServer;
-import net.minecraft.world.World;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.level.Level;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,9 +36,9 @@ public class EntityIronShade extends EntityMaelstromMob {
     private byte spin = 5;
     private int spinDuration = 30;
     private int maxSpinDuration = 30;
-    private final BossInfoServer bossInfo = (new BossInfoServer(this.getDisplayName(), BossInfo.Color.PURPLE, BossInfo.Overlay.NOTCHED_6));
+    private final ServerBossEvent bossInfo = (new ServerBossEvent(this.getDisplayName(), BossEvent.Color.PURPLE, BossEvent.Overlay.NOTCHED_6));
 
-    public EntityIronShade(World worldIn) {
+    public EntityIronShade(Level worldIn) {
         super(worldIn);
         this.healthScaledAttackFactor = 0.2;
         this.setSize(0.9f, 2.2f);
@@ -50,7 +50,7 @@ public class EntityIronShade extends EntityMaelstromMob {
                         .type(ModDamageSource.MOB)
                         .disablesShields().build();
 
-                Vec3d pos = this.getPositionVector().add(ModUtils.yVec(1)).add(this.getLookVec().scale(2.0f));
+                Vec3 pos = this.getPositionVector().add(ModUtils.yVec(1)).add(this.getLookVec().scale(2.0f));
                 this.playSound(SoundEvents.ENTITY_PLAYER_ATTACK_SWEEP, 1.0F, 0.8F / (this.getRNG().nextFloat() * 0.4F + 0.8F));
                 ModUtils.handleAreaImpact(1.0f, (e) -> this.getAttack() * getConfigFloat("flip_damage"), this, pos, source, 0.20f, this.getElement() == Element.CRIMSON ? 3 : 0, false);
                 actor.world.setEntityState(actor, ModUtils.SECOND_PARTICLE_BYTE);
@@ -218,25 +218,25 @@ public class EntityIronShade extends EntityMaelstromMob {
     @Override
     public void handleStatusUpdate(byte id) {
         // We want a special black flame for the non-elemental shade, and red flames for the crimson element.
-        Vec3d flameColor = getElement() == Element.NONE ? new Vec3d(0.1f, 0, 0.1f) : getElement().sweepColor;
+        Vec3 flameColor = getElement() == Element.NONE ? new Vec3(0.1f, 0, 0.1f) : getElement().sweepColor;
         if (id >= 4 && id <= 6) {
             currentAnimation = attackHandler.getAnimation(id);
             getCurrentAnimation().startAnimation();
         } else if (id == EntityHerobrineOne.slashParticleByte) {
             ModUtils.performNTimes(4, (i) -> {
                 ModUtils.circleCallback(i, 15, (pos) -> {
-                    ParticleManager.spawnColoredFire(world, rand, getPositionVector().add(new Vec3d(pos.x, this.getEyeHeight() - 0.3f + ModRandom.getFloat(0.2f), pos.y)), flameColor);
+                    ParticleManager.spawnColoredFire(world, rand, getPositionVector().add(new Vec3(pos.x, this.getEyeHeight() - 0.3f + ModRandom.getFloat(0.2f), pos.y)), flameColor);
                 });
             });
         } else if (id == ModUtils.PARTICLE_BYTE) {
-            Vec3d look = this.getVectorForRotation(this.rotationPitch, this.rotationYawHead);
-            Vec3d side = look.rotateYaw((float) Math.PI * -0.5f);
-            Vec3d offset = getPositionVector().add(side.scale(0.5f * ModRandom.randSign())).add(ModUtils.yVec(rand.nextFloat()));
+            Vec3 look = this.getVectorForRotation(this.rotationPitch, this.rotationYawHead);
+            Vec3 side = look.rotateYaw((float) Math.PI * -0.5f);
+            Vec3 offset = getPositionVector().add(side.scale(0.5f * ModRandom.randSign())).add(ModUtils.yVec(rand.nextFloat()));
             ParticleManager.spawnColoredFire(world, rand, offset, flameColor);
             offset = getPositionVector().add(side.scale(0.5f * ModRandom.randSign())).add(look.scale(-rand.nextFloat())).add(ModUtils.yVec(0.1f));
             ParticleManager.spawnColoredFire(world, rand, offset, flameColor);
         } else if (id == ModUtils.SECOND_PARTICLE_BYTE) {
-            Vec3d pos = this.getPositionVector().add(ModUtils.yVec(1)).add(this.getLookVec().scale(2.0f));
+            Vec3 pos = this.getPositionVector().add(ModUtils.yVec(1)).add(this.getLookVec().scale(2.0f));
             for (int i = 0; i < 30; i++) {
                 ParticleManager.spawnColoredFire(world, rand, pos.add(ModRandom.randVec().add(ModUtils.yVec(ModRandom.getFloat(1.5f)))), flameColor);
             }
@@ -270,7 +270,7 @@ public class EntityIronShade extends EntityMaelstromMob {
     }
 
     @Override
-    public void attackEntityWithRangedAttack(EntityLivingBase target, float distanceFactor) {
+    public void attackEntityWithRangedAttack(LivingEntity target, float distanceFactor) {
         if (attackHandler.getCurrentAttack() == spin) {
             spinDuration = 0;
         } else {
@@ -285,13 +285,13 @@ public class EntityIronShade extends EntityMaelstromMob {
     }
 
     @Override
-    public void addTrackingPlayer(EntityPlayerMP player) {
+    public void addTrackingPlayer(ServerPlayer player) {
         super.addTrackingPlayer(player);
         this.bossInfo.addPlayer(player);
     }
 
     @Override
-    public void removeTrackingPlayer(EntityPlayerMP player) {
+    public void removeTrackingPlayer(ServerPlayer player) {
         super.removeTrackingPlayer(player);
         this.bossInfo.removePlayer(player);
     }

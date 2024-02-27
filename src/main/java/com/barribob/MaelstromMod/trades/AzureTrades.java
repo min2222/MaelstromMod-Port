@@ -3,7 +3,7 @@ package com.barribob.MaelstromMod.trades;
 import com.barribob.MaelstromMod.init.ModItems;
 import net.minecraft.entity.IMerchant;
 import net.minecraft.entity.passive.EntityVillager.ITradeList;
-import net.minecraft.item.ItemStack;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.village.MerchantRecipe;
 import net.minecraft.village.MerchantRecipeList;
 

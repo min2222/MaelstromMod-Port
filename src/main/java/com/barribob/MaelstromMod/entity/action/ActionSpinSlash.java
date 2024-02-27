@@ -5,9 +5,9 @@ import com.barribob.MaelstromMod.entity.entities.EntityLeveledMob;
 import com.barribob.MaelstromMod.util.Element;
 import com.barribob.MaelstromMod.util.ModDamageSource;
 import com.barribob.MaelstromMod.util.ModUtils;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.init.SoundEvents;
-import net.minecraft.util.DamageSource;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.damagesource.DamageSource;
 
 /*
  * Deals damage in an area around the entity
@@ -23,7 +23,7 @@ public class ActionSpinSlash implements IAction {
     }
 
     @Override
-    public void performAction(EntityLeveledMob actor, EntityLivingBase target) {
+    public void performAction(EntityLeveledMob actor, LivingEntity target) {
         DamageSource source = ModDamageSource.builder()
                 .type(ModDamageSource.MOB)
                 .directEntity(actor)

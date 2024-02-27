@@ -2,8 +2,8 @@ package com.barribob.MaelstromMod.util.handlers;
 
 import com.barribob.MaelstromMod.items.armor.ModArmorBase;
 import com.barribob.MaelstromMod.util.Element;
-import net.minecraft.entity.Entity;
-import net.minecraft.item.ItemStack;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.item.ItemStack;
 
 /**
  * Get the maelstrom armor from a player

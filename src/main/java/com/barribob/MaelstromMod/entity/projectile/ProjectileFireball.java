@@ -4,33 +4,33 @@ import com.barribob.MaelstromMod.util.ModColors;
 import com.barribob.MaelstromMod.util.ModRandom;
 import com.barribob.MaelstromMod.util.ModUtils;
 import com.barribob.MaelstromMod.util.handlers.ParticleManager;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.init.Items;
-import net.minecraft.init.SoundEvents;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.DamageSource;
-import net.minecraft.util.EnumParticleTypes;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.util.math.RayTraceResult;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.level.Level;
 
 public class ProjectileFireball extends ProjectileGun {
     private static final int IMPACT_PARTICLE_AMOUNT = 30;
     private static final int EXPOSION_AREA_FACTOR = 4;
-    public static final Vec3d FIREBALL_COLOR = new Vec3d(1.0, 0.6, 0.5);
+    public static final Vec3 FIREBALL_COLOR = new Vec3(1.0, 0.6, 0.5);
 
-    public ProjectileFireball(World worldIn, EntityLivingBase throwerIn, float baseDamage, ItemStack stack) {
+    public ProjectileFireball(Level worldIn, LivingEntity throwerIn, float baseDamage, ItemStack stack) {
         super(worldIn, throwerIn, baseDamage, stack);
         this.setNoGravity(true);
     }
 
-    public ProjectileFireball(World worldIn) {
+    public ProjectileFireball(Level worldIn) {
         super(worldIn);
         this.setNoGravity(true);
     }
 
-    public ProjectileFireball(World worldIn, double x, double y, double z) {
+    public ProjectileFireball(Level worldIn, double x, double y, double z) {
         super(worldIn, x, y, z);
         this.setNoGravity(true);
     }
@@ -40,7 +40,7 @@ public class ProjectileFireball extends ProjectileGun {
         float size = 0.25f;
         for (int i = 0; i < 2; i++) {
             ParticleManager.spawnCustomSmoke(this.world,
-                    new Vec3d(this.posX, this.posY, this.posZ).add(new Vec3d(ModRandom.getFloat(size), ModRandom.getFloat(size), ModRandom.getFloat(size))),
+                    new Vec3(this.posX, this.posY, this.posZ).add(new Vec3(ModRandom.getFloat(size), ModRandom.getFloat(size), ModRandom.getFloat(size))),
                     FIREBALL_COLOR,
                     ModUtils.yVec(0.1f));
         }
@@ -50,7 +50,7 @@ public class ProjectileFireball extends ProjectileGun {
     protected void spawnImpactParticles() {
         for (int i = 0; i < IMPACT_PARTICLE_AMOUNT; i++) {
             ParticleManager.spawnColoredExplosion(world, this.getPositionVector().add(ModRandom.randVec().scale(EXPOSION_AREA_FACTOR * 2)), ModColors.FIREBALL_ORANGE);
-            this.world.spawnParticle(EnumParticleTypes.FLAME, this.posX + ModRandom.getFloat(EXPOSION_AREA_FACTOR), this.posY + ModRandom.getFloat(EXPOSION_AREA_FACTOR),
+            this.world.spawnParticle(ParticleTypes.FLAME, this.posX + ModRandom.getFloat(EXPOSION_AREA_FACTOR), this.posY + ModRandom.getFloat(EXPOSION_AREA_FACTOR),
                     this.posZ + ModRandom.getFloat(EXPOSION_AREA_FACTOR), 0, 0, 0);
             ParticleManager.spawnEffect(world, getPositionVector().add(ModRandom.randVec().scale(EXPOSION_AREA_FACTOR * 2)), FIREBALL_COLOR);
         }

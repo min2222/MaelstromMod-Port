@@ -3,13 +3,13 @@ package com.barribob.MaelstromMod.entity.animation;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.ModelBase;
 import net.minecraft.client.model.ModelRenderer;
-import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.Phase;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
 
 import java.util.*;
 import java.util.Map.Entry;
@@ -20,14 +20,14 @@ import java.util.Map.Entry;
  *
  * @author Barribob
  */
-@Mod.EventBusSubscriber(value = Side.CLIENT)
-@SideOnly(Side.CLIENT)
+@Mod.EventBusSubscriber(value = Dist.CLIENT)
+@OnlyIn(Dist.CLIENT)
 public class AnimationManager {
-    private static Map<EntityLivingBase, Map<String, BBAnimation>> animations = new HashMap<>();
+    private static Map<LivingEntity, Map<String, BBAnimation>> animations = new HashMap<>();
     private static Map<ModelBase, Map<ModelRenderer, float[]>> defaultModelValues = new HashMap<>();
-    private static Map<EntityLivingBase, Set<String>> animationsToRemoveOnceEnded = new HashMap<>();
+    private static Map<LivingEntity, Set<String>> animationsToRemoveOnceEnded = new HashMap<>();
 
-    public static void updateAnimation(EntityLivingBase entity, String animationId, boolean remove) {
+    public static void updateAnimation(LivingEntity entity, String animationId, boolean remove) {
         if (remove) {
             removeAnimation(entity, animationId);
             return;
@@ -44,7 +44,7 @@ public class AnimationManager {
         animations.get(entity).get(animationId).startAnimation();
     }
 
-    private static void removeAnimation(EntityLivingBase entity, String animationId) {
+    private static void removeAnimation(LivingEntity entity, String animationId) {
         if (animations.containsKey(entity)) {
             if (animations.get(entity).containsKey(animationId)) {
                 BBAnimation animation = animations.get(entity).get(animationId);
@@ -58,7 +58,7 @@ public class AnimationManager {
         }
     }
 
-    private static void scheduleLoopingAnimationStop(EntityLivingBase entity, String animationId) {
+    private static void scheduleLoopingAnimationStop(LivingEntity entity, String animationId) {
         if(!animationsToRemoveOnceEnded.containsKey(entity)) {
             animationsToRemoveOnceEnded.put(entity, new HashSet<>());
         }
@@ -66,7 +66,7 @@ public class AnimationManager {
         animationsToRemoveOnceEnded.get(entity).add(animationId);
     }
 
-    private static void removeEndedSheduledEndedLoopingAnimations(EntityLivingBase entity, Map<String, BBAnimation> animations, float partialTicks) {
+    private static void removeEndedSheduledEndedLoopingAnimations(LivingEntity entity, Map<String, BBAnimation> animations, float partialTicks) {
         if(animationsToRemoveOnceEnded.containsKey(entity)) {
             for (String animationId : animationsToRemoveOnceEnded.get(entity)) {
                 BBAnimation animation = animations.get(animationId);
@@ -81,7 +81,7 @@ public class AnimationManager {
     /**
      * Receive periodic updates to looping animation in case the animation is destroyed under certain conditions If the animation exists, it will not be updated
      */
-    public static void updateLoopingAnimation(EntityLivingBase entity, String animationId) {
+    public static void updateLoopingAnimation(LivingEntity entity, String animationId) {
         if (!animations.containsKey(entity)) {
             animations.put(entity, new HashMap<>());
         }
@@ -99,9 +99,9 @@ public class AnimationManager {
     @SubscribeEvent
     public static void onClientTick(TickEvent.ClientTickEvent event) {
         if (event.phase == Phase.END && !Minecraft.getMinecraft().isGamePaused()) {
-            List<EntityLivingBase> entitiesToRemove = new ArrayList<EntityLivingBase>();
-            for (Entry<EntityLivingBase, Map<String, BBAnimation>> entry : animations.entrySet()) {
-                EntityLivingBase entity = entry.getKey();
+            List<LivingEntity> entitiesToRemove = new ArrayList<LivingEntity>();
+            for (Entry<LivingEntity, Map<String, BBAnimation>> entry : animations.entrySet()) {
+                LivingEntity entity = entry.getKey();
 
                 if (!entity.isAddedToWorld() && entity.isDead) {
                     entitiesToRemove.add(entity);
@@ -130,7 +130,7 @@ public class AnimationManager {
             }
 
             // Remove entities not in this world anymore
-            for (EntityLivingBase entity : entitiesToRemove) {
+            for (LivingEntity entity : entitiesToRemove) {
                 animations.remove(entity);
             }
         }
@@ -177,7 +177,7 @@ public class AnimationManager {
         }
     }
 
-    public static void setModelRotations(ModelBase model, EntityLivingBase entity, float limbSwing, float limbSwingAmount, float partialTicks) {
+    public static void setModelRotations(ModelBase model, LivingEntity entity, float limbSwing, float limbSwingAmount, float partialTicks) {
         // Update all models for each entity
         if (animations.containsKey(entity)) {
             for (BBAnimation animation : animations.get(entity).values()) {

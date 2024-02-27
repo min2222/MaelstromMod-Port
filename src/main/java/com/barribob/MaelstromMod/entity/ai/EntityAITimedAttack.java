@@ -1,14 +1,14 @@
 package com.barribob.MaelstromMod.entity.ai;
 
 import com.barribob.MaelstromMod.entity.util.IAttack;
-import net.minecraft.entity.EntityLiving;
-import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.entity.ai.EntityAIBase;
 
 /**
  * A simplified version of the skeleton's ranged attack AI
  */
-public class EntityAITimedAttack<T extends EntityLiving & IAttack> extends EntityAIBase {
+public class EntityAITimedAttack<T extends Mob & IAttack> extends EntityAIBase {
     private final T entity;
     private final double moveSpeedAmp;
     private final int attackCooldown;
@@ -61,7 +61,7 @@ public class EntityAITimedAttack<T extends EntityLiving & IAttack> extends Entit
      */
     @Override
     public void updateTask() {
-        EntityLivingBase target = this.entity.getAttackTarget();
+        LivingEntity target = this.entity.getAttackTarget();
 
         if (target == null) {
             return;
@@ -80,7 +80,7 @@ public class EntityAITimedAttack<T extends EntityLiving & IAttack> extends Entit
         }
     }
 
-    public void move(EntityLivingBase target, double distSq, boolean canSee) {
+    public void move(LivingEntity target, double distSq, boolean canSee) {
         if (distSq <= this.maxAttackDistSq && canSee) {
             this.entity.getNavigator().clearPath();
             ++this.strafingTime;

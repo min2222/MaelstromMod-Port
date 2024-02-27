@@ -4,9 +4,9 @@ import com.barribob.MaelstromMod.entity.action.IAction;
 import com.barribob.MaelstromMod.entity.animation.Animation;
 import com.barribob.MaelstromMod.entity.animation.AnimationNone;
 import com.barribob.MaelstromMod.entity.entities.EntityLeveledMob;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.api.distmarker.Dist;
 
 import java.util.HashMap;
 import java.util.function.BiConsumer;
@@ -19,7 +19,7 @@ import java.util.function.Supplier;
 public class ComboAttack {
     private HashMap<Byte, IAction> actions = new HashMap<Byte, IAction>();
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     private HashMap<Byte, Supplier<Animation>> animations;
     private byte currentAttack;
 
@@ -35,7 +35,7 @@ public class ComboAttack {
         return getAction(currentAttack);
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public void setAttack(byte b, IAction action, Supplier<Animation> anim) {
         if (animations == null) {
             animations = new HashMap<Byte, Supplier<Animation>>();
@@ -44,10 +44,10 @@ public class ComboAttack {
         animations.put(b, anim);
     }
 
-    public void setAttack(byte b, BiConsumer<EntityLeveledMob, EntityLivingBase> action) {
+    public void setAttack(byte b, BiConsumer<EntityLeveledMob, LivingEntity> action) {
         actions.put(b, new IAction() {
             @Override
-            public void performAction(EntityLeveledMob actor, EntityLivingBase target) {
+            public void performAction(EntityLeveledMob actor, LivingEntity target) {
                 action.accept(actor, target);
             }
         });
@@ -57,7 +57,7 @@ public class ComboAttack {
         actions.put(b, action);
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public Animation getAnimation(byte b) {
         if (animations == null) {
             return new AnimationNone();

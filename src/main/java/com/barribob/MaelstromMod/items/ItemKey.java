@@ -1,24 +1,24 @@
 package com.barribob.MaelstromMod.items;
 
 import com.barribob.MaelstromMod.util.ModUtils;
-import net.minecraft.client.util.ITooltipFlag;
-import net.minecraft.creativetab.CreativeTabs;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.text.TextFormatting;
-import net.minecraft.world.World;
+import net.minecraft.ChatFormatting;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 
 import java.util.List;
 
 public class ItemKey extends ItemBase {
     private String info_loc;
 
-    public ItemKey(String name, String info_loc, CreativeTabs tab) {
+    public ItemKey(String name, String info_loc, CreativeModeTab tab) {
         super(name, tab);
         this.info_loc = info_loc;
     }
 
     @Override
-    public void addInformation(ItemStack stack, World worldIn, List<String> tooltip, ITooltipFlag flagIn) {
-        tooltip.add(TextFormatting.GRAY + ModUtils.translateDesc(info_loc));
+    public void addInformation(ItemStack stack, Level worldIn, List<String> tooltip, TooltipFlag flagIn) {
+        tooltip.add(ChatFormatting.GRAY + ModUtils.translateDesc(info_loc));
     }
 }

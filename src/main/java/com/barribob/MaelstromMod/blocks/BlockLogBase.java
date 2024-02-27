@@ -6,15 +6,15 @@ import com.barribob.MaelstromMod.init.ModItems;
 import com.barribob.MaelstromMod.util.IHasModel;
 import net.minecraft.block.BlockLog;
 import net.minecraft.block.BlockPlanks;
-import net.minecraft.block.SoundType;
-import net.minecraft.block.material.MapColor;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.material.MaterialColor;
 import net.minecraft.block.properties.IProperty;
-import net.minecraft.block.state.BlockStateContainer;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemBlock;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.IBlockAccess;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.level.BlockGetter;
 
 /**
  * The base class for a log, so that it can sustain leaves Also, some of the
@@ -29,7 +29,7 @@ public class BlockLogBase extends BlockLog implements IHasModel {
 
         // Add both an item as a block and the block itself
         ModBlocks.BLOCKS.add(this);
-        ModItems.ITEMS.add(new ItemBlock(this).setRegistryName(this.getRegistryName()));
+        ModItems.ITEMS.add(new BlockItem(this).setRegistryName(this.getRegistryName()));
     }
 
     public BlockLogBase(String name, float hardness, float resistance, SoundType soundType) {
@@ -53,20 +53,20 @@ public class BlockLogBase extends BlockLog implements IHasModel {
      * @return
      */
     @Override
-    public boolean canSustainLeaves(IBlockState state, IBlockAccess world, BlockPos pos) {
+    public boolean canSustainLeaves(BlockState state, BlockGetter world, BlockPos pos) {
         return true;
     }
 
     @Override
-    public MapColor getMapColor(IBlockState state, IBlockAccess worldIn, BlockPos pos) {
+    public MaterialColor getMapColor(BlockState state, BlockGetter worldIn, BlockPos pos) {
         return BlockPlanks.EnumType.SPRUCE.getMapColor();
     }
 
     /**
      * Convert the given metadata into a BlockState for this Block
      */
-    public IBlockState getStateFromMeta(int meta) {
-        IBlockState iblockstate = this.getDefaultState();
+    public BlockState getStateFromMeta(int meta) {
+        BlockState iblockstate = this.getDefaultState();
 
         switch (meta & 12) {
             case 0:
@@ -86,7 +86,7 @@ public class BlockLogBase extends BlockLog implements IHasModel {
     }
 
     @SuppressWarnings("incomplete-switch")
-    public int getMetaFromState(IBlockState state) {
+    public int getMetaFromState(BlockState state) {
         int i = 0;
 
         switch ((BlockLog.EnumAxis) state.getValue(LOG_AXIS)) {
@@ -103,7 +103,7 @@ public class BlockLogBase extends BlockLog implements IHasModel {
         return i;
     }
 
-    protected BlockStateContainer createBlockState() {
-        return new BlockStateContainer(this, new IProperty[]{LOG_AXIS});
+    protected StateDefinition createBlockState() {
+        return new StateDefinition(this, new IProperty[]{LOG_AXIS});
     }
 }

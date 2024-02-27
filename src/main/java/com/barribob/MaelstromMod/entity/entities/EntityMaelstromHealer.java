@@ -11,32 +11,32 @@ import com.barribob.MaelstromMod.util.ModRandom;
 import com.barribob.MaelstromMod.util.ModUtils;
 import com.barribob.MaelstromMod.util.handlers.ParticleManager;
 import com.barribob.MaelstromMod.util.handlers.SoundsHandler;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.MoverType;
+import net.minecraft.core.BlockPos;
+import net.minecraft.util.Mth;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.MoverType;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.entity.ai.EntityAIBase;
 import net.minecraft.entity.ai.EntityMoveHelper;
-import net.minecraft.network.datasync.DataParameter;
-import net.minecraft.network.datasync.DataSerializers;
-import net.minecraft.network.datasync.EntityDataManager;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.pathfinding.PathNavigateFlying;
 import net.minecraft.pathfinding.PathNavigateGround;
-import net.minecraft.util.DamageSource;
 import net.minecraft.util.SoundEvent;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.level.Level;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 
 public class EntityMaelstromHealer extends EntityMaelstromMob implements IAcceleration {
-    Vec3d acceleration = Vec3d.ZERO;
-    protected static final DataParameter<Boolean> FLYING = EntityDataManager.<Boolean>createKey(EntityMaelstromHealer.class, DataSerializers.BOOLEAN);
+    Vec3 acceleration = Vec3.ZERO;
+    protected static final EntityDataAccessor<Boolean> FLYING = SynchedEntityData.<Boolean>createKey(EntityMaelstromHealer.class, EntityDataSerializers.BOOLEAN);
     private EntityAIBase flyingAI = new AIFlyingSupport(this, 1.2f, 3.5f, 10f, 60);
     private float timeSinceNoTarget = 0;
 
-    public EntityMaelstromHealer(World worldIn) {
+    public EntityMaelstromHealer(Level worldIn) {
         super(worldIn);
         this.setSize(0.9f, 2.0f);
     }
@@ -45,7 +45,7 @@ public class EntityMaelstromHealer extends EntityMaelstromMob implements IAccele
     public void onUpdate() {
         super.onUpdate();
 
-        Vec3d motion = new Vec3d(this.motionX, this.motionY, this.motionZ);
+        Vec3 motion = new Vec3(this.motionX, this.motionY, this.motionZ);
         this.acceleration = motion.scale(0.1).add(this.acceleration.scale(0.9));
 
         if (this.world.isRemote) {
@@ -81,7 +81,7 @@ public class EntityMaelstromHealer extends EntityMaelstromMob implements IAccele
     }
 
     @Override
-    public void setAttackTarget(EntityLivingBase entity) {
+    public void setAttackTarget(LivingEntity entity) {
         super.setAttackTarget(entity);
         if (entity != null) {
             this.timeSinceNoTarget = 0;
@@ -89,7 +89,7 @@ public class EntityMaelstromHealer extends EntityMaelstromMob implements IAccele
     }
 
     @Override
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public void handleStatusUpdate(byte id) {
         if (id == ModUtils.PARTICLE_BYTE) {
             if (this.getElement().equals(Element.NONE)) {
@@ -98,13 +98,13 @@ public class EntityMaelstromHealer extends EntityMaelstromMob implements IAccele
 
             ParticleManager.spawnEffect(world, this.getPositionVector().add(ModRandom.randVec()).add(ModUtils.yVec(1)), getElement().particleColor);
         } else if (id == ModUtils.SECOND_PARTICLE_BYTE) {
-            ParticleManager.spawnSwirl2(world, this.getPositionVector(), ModColors.PURPLE, Vec3d.ZERO);
+            ParticleManager.spawnSwirl2(world, this.getPositionVector(), ModColors.PURPLE, Vec3.ZERO);
         }
         super.handleStatusUpdate(id);
     }
 
-    public Vec3d getAcceleration() {
-        return this.isFlying() ? this.acceleration : Vec3d.ZERO;
+    public Vec3 getAcceleration() {
+        return this.isFlying() ? this.acceleration : Vec3.ZERO;
     }
 
     @Override
@@ -126,8 +126,8 @@ public class EntityMaelstromHealer extends EntityMaelstromMob implements IAccele
                 float f = 0.91F;
 
                 if (this.onGround) {
-                    BlockPos underPos = new BlockPos(MathHelper.floor(this.posX), MathHelper.floor(this.getEntityBoundingBox().minY) - 1, MathHelper.floor(this.posZ));
-                    IBlockState underState = this.world.getBlockState(underPos);
+                    BlockPos underPos = new BlockPos(Mth.floor(this.posX), Mth.floor(this.getEntityBoundingBox().minY) - 1, Mth.floor(this.posZ));
+                    BlockState underState = this.world.getBlockState(underPos);
                     f = underState.getBlock().getSlipperiness(underState, this.world, underPos, this) * 0.91F;
                 }
 
@@ -136,8 +136,8 @@ public class EntityMaelstromHealer extends EntityMaelstromMob implements IAccele
                 f = 0.91F;
 
                 if (this.onGround) {
-                    BlockPos underPos = new BlockPos(MathHelper.floor(this.posX), MathHelper.floor(this.getEntityBoundingBox().minY) - 1, MathHelper.floor(this.posZ));
-                    IBlockState underState = this.world.getBlockState(underPos);
+                    BlockPos underPos = new BlockPos(Mth.floor(this.posX), Mth.floor(this.getEntityBoundingBox().minY) - 1, Mth.floor(this.posZ));
+                    BlockState underState = this.world.getBlockState(underPos);
                     f = underState.getBlock().getSlipperiness(underState, this.world, underPos, this) * 0.91F;
                 }
 
@@ -150,7 +150,7 @@ public class EntityMaelstromHealer extends EntityMaelstromMob implements IAccele
             this.prevLimbSwingAmount = this.limbSwingAmount;
             double d1 = this.posX - this.prevPosX;
             double d0 = this.posZ - this.prevPosZ;
-            float f2 = MathHelper.sqrt(d1 * d1 + d0 * d0) * 4.0F;
+            float f2 = Mth.sqrt(d1 * d1 + d0 * d0) * 4.0F;
 
             if (f2 > 1.0F) {
                 f2 = 1.0F;
@@ -178,7 +178,7 @@ public class EntityMaelstromHealer extends EntityMaelstromMob implements IAccele
     }
 
     @Override
-    public void attackEntityWithRangedAttack(EntityLivingBase target, float distanceFactor) {
+    public void attackEntityWithRangedAttack(LivingEntity target, float distanceFactor) {
         ModBBAnimations.animation(this, "healer.summon_orb", false);
         this.addEvent(() -> {
             EntityHealerOrb orb = new EntityHealerOrb(world, this, target);
@@ -207,7 +207,7 @@ public class EntityMaelstromHealer extends EntityMaelstromMob implements IAccele
     }
 
     @Override
-    protected void updateFallState(double y, boolean onGroundIn, IBlockState state, BlockPos pos) {
+    protected void updateFallState(double y, boolean onGroundIn, BlockState state, BlockPos pos) {
     }
 
     @Override

@@ -1,11 +1,11 @@
 package com.barribob.MaelstromMod.world.gen.foliage;
 
-import net.minecraft.block.Block;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.block.BlockHugeMushroom;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.init.Blocks;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.gen.feature.WorldGenerator;
 
 import java.util.Arrays;
@@ -23,7 +23,7 @@ public class WorldGenCliffMushroom extends WorldGenerator {
     }
 
     @Override
-    public boolean generate(World worldIn, Random rand, BlockPos position) {
+    public boolean generate(Level worldIn, Random rand, BlockPos position) {
 
         Block block = rand.nextInt(4) == 0 ? Blocks.SLIME_BLOCK : Blocks.BROWN_MUSHROOM_BLOCK;
 
@@ -125,7 +125,7 @@ public class WorldGenCliffMushroom extends WorldGenerator {
 
                         if (position.getY() >= position.getY() - 1 || blockhugemushroom$enumtype != BlockHugeMushroom.EnumType.ALL_INSIDE) {
                             BlockPos blockpos = new BlockPos(l1, l2, i2);
-                            IBlockState state = worldIn.getBlockState(blockpos);
+                            BlockState state = worldIn.getBlockState(blockpos);
 
                             if (state.getBlock().canBeReplacedByLeaves(state, worldIn, blockpos)) {
                                 state = block.equals(Blocks.SLIME_BLOCK) ? block.getDefaultState()
@@ -142,7 +142,7 @@ public class WorldGenCliffMushroom extends WorldGenerator {
         return false;
     }
 
-    private boolean isBlockNearby(World world, BlockPos pos) {
+    private boolean isBlockNearby(Level world, BlockPos pos) {
         for (BlockPos dir : Arrays.asList(pos.down(), pos.east(), pos.west(), pos.north(), pos.south())) {
             if (world.getBlockState(dir).getBlock() == cliffBlock) {
                 return true;

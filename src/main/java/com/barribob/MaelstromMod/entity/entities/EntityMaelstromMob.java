@@ -15,42 +15,41 @@ import com.barribob.MaelstromMod.util.ModUtils;
 import com.barribob.MaelstromMod.util.handlers.LootTableHandler;
 import com.barribob.MaelstromMod.util.handlers.ParticleManager;
 import com.google.common.base.Predicate;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLiving;
-import net.minecraft.entity.IRangedAttackMob;
-import net.minecraft.entity.SharedMonsterAttributes;
-import net.minecraft.entity.ai.EntityAIHurtByTarget;
-import net.minecraft.entity.ai.EntityAILookIdle;
-import net.minecraft.entity.ai.EntityAINearestAttackableTarget;
-import net.minecraft.entity.ai.EntityAISwimming;
-import net.minecraft.entity.item.EntityXPOrb;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.init.SoundEvents;
-import net.minecraft.network.datasync.DataParameter;
-import net.minecraft.network.datasync.DataSerializers;
-import net.minecraft.network.datasync.EntityDataManager;
-import net.minecraft.util.DamageSource;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.SoundCategory;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.ExperienceOrb;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.ai.goal.FloatGoal;
+import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
+import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
+import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
+import net.minecraft.world.entity.monster.RangedAttackMob;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.SoundEvent;
-import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.EnumDifficulty;
-import net.minecraft.world.World;
+import net.minecraft.world.level.Level;
 import net.minecraftforge.fml.common.registry.EntityEntry;
 import net.minecraftforge.fml.common.registry.EntityRegistry;
 import org.lwjgl.Sys;
 
 import javax.annotation.Nonnull;
-import java.util.List;
 
 /**
  * The base mob that most mobs in this mod will extend A lot of these methods are from the EntityMob class to make it behave similarly
  */
-public abstract class EntityMaelstromMob extends EntityLeveledMob implements IRangedAttackMob {
+public abstract class EntityMaelstromMob extends EntityLeveledMob implements RangedAttackMob {
     // Swinging arms is the animation for the attack
-    private static final DataParameter<Boolean> SWINGING_ARMS = EntityDataManager.<Boolean>createKey(EntityLeveledMob.class, DataSerializers.BOOLEAN);
+    private static final EntityDataAccessor<Boolean> SWINGING_ARMS = SynchedEntityData.<Boolean>createKey(EntityLeveledMob.class, EntityDataSerializers.BOOLEAN);
     public static final Predicate<Entity> CAN_TARGET = entity -> {
         boolean isConfigFriend = false;
         if (entity != null) {
@@ -71,52 +70,52 @@ public abstract class EntityMaelstromMob extends EntityLeveledMob implements IRa
         return !CAN_TARGET.apply(entity);
     }
 
-    public EntityMaelstromMob(World worldIn) {
+    public EntityMaelstromMob(Level worldIn) {
         super(worldIn);
     }
 
     @Override
     protected void initEntityAI() {
-        this.tasks.addTask(1, new EntityAISwimming(this));
+        this.tasks.addTask(1, new FloatGoal(this));
         this.tasks.addTask(5, new EntityAIFollowAttackers(this, 1.0D));
         this.tasks.addTask(6, new EntityAIAvoidCrowding(this, 1.0D));
         this.tasks.addTask(7, new EntityAIWanderWithGroup(this, 1.0D));
-        this.tasks.addTask(8, new EntityAILookIdle(this));
-        this.targetTasks.addTask(3, new EntityAIHurtByTarget(this, false));
-        this.targetTasks.addTask(1, new EntityAINearestAttackableTarget<EntityPlayer>(this, EntityPlayer.class, 1, true, false, null){
+        this.tasks.addTask(8, new RandomLookAroundGoal(this));
+        this.targetTasks.addTask(3, new HurtByTargetGoal(this, false));
+        this.targetTasks.addTask(1, new NearestAttackableTargetGoal<Player>(this, Player.class, 1, true, false, null){
             @Override
             @Nonnull
-            protected AxisAlignedBB getTargetableArea(double targetDistance) {
+            protected AABB getTargetableArea(double targetDistance) {
                 return EntityMaelstromMob.this.getTargetableArea(targetDistance);
             }
         });
 
         if (ModConfig.entities.attackAll) {
             // This makes it so that the entity attack every entity except others of its kind
-            this.targetTasks.addTask(2, new EntityAINearestAttackableTarget<EntityLiving>(this, EntityLiving.class, 10, true, false, CAN_TARGET){
+            this.targetTasks.addTask(2, new NearestAttackableTargetGoal<Mob>(this, Mob.class, 10, true, false, CAN_TARGET){
                 @Override
                 @Nonnull
-                protected AxisAlignedBB getTargetableArea(double targetDistance) {
+                protected AABB getTargetableArea(double targetDistance) {
                     return EntityMaelstromMob.this.getTargetableArea(targetDistance);
                 }
             });
         }
     }
 
-    protected AxisAlignedBB getTargetableArea(double targetDistance) {
+    protected AABB getTargetableArea(double targetDistance) {
         return this.getEntityBoundingBox().grow(targetDistance, 4.0D, targetDistance);
     }
 
     @Override
     protected void applyEntityAttributes() {
         super.applyEntityAttributes();
-        this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.23000000417232513D);
-        this.getEntityAttribute(SharedMonsterAttributes.FOLLOW_RANGE).setBaseValue(20.0D);
+        this.getEntityAttribute(Attributes.MOVEMENT_SPEED).setBaseValue(0.23000000417232513D);
+        this.getEntityAttribute(Attributes.FOLLOW_RANGE).setBaseValue(20.0D);
     }
 
     @Override
-    public SoundCategory getSoundCategory() {
-        return SoundCategory.HOSTILE;
+    public SoundSource getSoundCategory() {
+        return SoundSource.HOSTILE;
     }
 
     @Override
@@ -195,7 +194,7 @@ public abstract class EntityMaelstromMob extends EntityLeveledMob implements IRa
                 double d0 = this.rand.nextGaussian() * 0.02D;
                 double d1 = this.rand.nextGaussian() * 0.02D;
                 double d2 = this.rand.nextGaussian() * 0.02D;
-                ParticleManager.spawnMaelstromLargeSmoke(world, rand, new Vec3d(this.posX + this.rand.nextFloat() * this.width * 2.0F - this.width - d0 * 10.0D,
+                ParticleManager.spawnMaelstromLargeSmoke(world, rand, new Vec3(this.posX + this.rand.nextFloat() * this.width * 2.0F - this.width - d0 * 10.0D,
                         this.posY + this.rand.nextFloat() * this.height - d1 * 10.0D, this.posZ + this.rand.nextFloat() * this.width * 2.0F - this.width - d2 * 10.0D));
             }
         } else {
@@ -228,11 +227,11 @@ public abstract class EntityMaelstromMob extends EntityLeveledMob implements IRa
 
     @Override
     public void onDeath(DamageSource cause) {
-        if (!world.isRemote && cause.getTrueSource() instanceof EntityPlayerMP) {
+        if (!world.isRemote && cause.getTrueSource() instanceof ServerPlayer) {
             IMana mana = cause.getTrueSource().getCapability(ManaProvider.MANA, null);
             if (!mana.isLocked()) {
                 mana.replenish(getManaExp());
-                Main.network.sendTo(new MessageMana(mana.getMana()), (EntityPlayerMP) cause.getTrueSource());
+                Main.network.sendTo(new MessageMana(mana.getMana()), (ServerPlayer) cause.getTrueSource());
             }
         }
         super.onDeath(cause);
@@ -251,9 +250,9 @@ public abstract class EntityMaelstromMob extends EntityLeveledMob implements IRa
                 int i = this.getExperiencePoints(this.attackingPlayer);
                 i = net.minecraftforge.event.ForgeEventFactory.getExperienceDrop(this, this.attackingPlayer, i);
                 while (i > 0) {
-                    int j = EntityXPOrb.getXPSplit(i);
+                    int j = ExperienceOrb.getXPSplit(i);
                     i -= j;
-                    this.world.spawnEntity(new EntityXPOrb(this.world, this.posX, this.posY, this.posZ, j));
+                    this.world.spawnEntity(new ExperienceOrb(this.world, this.posX, this.posY, this.posZ, j));
                 }
             }
 

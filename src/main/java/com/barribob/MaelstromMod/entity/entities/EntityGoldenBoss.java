@@ -18,26 +18,26 @@ import com.barribob.MaelstromMod.util.ModRandom;
 import com.barribob.MaelstromMod.util.ModUtils;
 import com.barribob.MaelstromMod.util.RenderUtils;
 import com.barribob.MaelstromMod.util.handlers.ParticleManager;
-import net.minecraft.block.state.IBlockState;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.client.renderer.entity.RenderManager;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.SharedMonsterAttributes;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.init.SoundEvents;
-import net.minecraft.network.datasync.DataParameter;
-import net.minecraft.network.datasync.DataSerializers;
-import net.minecraft.network.datasync.EntityDataManager;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.pathfinding.PathNavigateFlying;
-import net.minecraft.util.DamageSource;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.util.SoundEvent;
-import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.BossInfo;
-import net.minecraft.world.BossInfoServer;
-import net.minecraft.world.World;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.BossEvent;
+import net.minecraft.server.level.ServerBossEvent;
+import net.minecraft.world.level.Level;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
@@ -48,12 +48,12 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 public class EntityGoldenBoss extends EntityMaelstromMob implements IAttack {
-    private final BossInfoServer bossInfo = (new BossInfoServer(this.getDisplayName(), BossInfo.Color.YELLOW, BossInfo.Overlay.NOTCHED_6));
-    protected static final DataParameter<Integer> ATTACK_COUNT = EntityDataManager.createKey(EntityLeveledMob.class, DataSerializers.VARINT);
+    private final ServerBossEvent bossInfo = (new ServerBossEvent(this.getDisplayName(), BossEvent.Color.YELLOW, BossEvent.Overlay.NOTCHED_6));
+    protected static final EntityDataAccessor<Integer> ATTACK_COUNT = SynchedEntityData.createKey(EntityLeveledMob.class, EntityDataSerializers.VARINT);
     private static boolean doSummonNext;
     private static boolean doTeleportNext;
 
-    public EntityGoldenBoss(World worldIn) {
+    public EntityGoldenBoss(Level worldIn) {
         super(worldIn);
         this.moveHelper = new FlyingMoveHelper(this);
         this.navigator = new PathNavigateFlying(this, worldIn);
@@ -64,7 +64,7 @@ public class EntityGoldenBoss extends EntityMaelstromMob implements IAttack {
         }
     }
 
-    protected AxisAlignedBB getTargetableArea(double targetDistance) {
+    protected AABB getTargetableArea(double targetDistance) {
         return this.getEntityBoundingBox().grow(targetDistance);
     }
 
@@ -76,7 +76,7 @@ public class EntityGoldenBoss extends EntityMaelstromMob implements IAttack {
     IAction goldenRayAction = new ActionRayAttack(goldenMissile, 1.1f);
     IAction maelstromRayAction = new ActionRayAttack(maelstromMissile, 1.1f);
 
-    private final Consumer<EntityLivingBase> rayAttack = target -> {
+    private final Consumer<LivingEntity> rayAttack = target -> {
         ModBBAnimations.animation(this, "statue.fireball", false);
 
         addEvent(() -> {
@@ -85,7 +85,7 @@ public class EntityGoldenBoss extends EntityMaelstromMob implements IAttack {
         }, 22);
     };
 
-    private final Consumer<EntityLivingBase> secondPhaseRayAttack = target -> {
+    private final Consumer<LivingEntity> secondPhaseRayAttack = target -> {
         ModBBAnimations.animation(this, "statue.fireball", false);
 
         addEvent(() -> {
@@ -95,17 +95,17 @@ public class EntityGoldenBoss extends EntityMaelstromMob implements IAttack {
         }, 22);
     };
 
-    private final Consumer<EntityLivingBase> runeAttack = target -> {
+    private final Consumer<LivingEntity> runeAttack = target -> {
         ModBBAnimations.animation(this, "statue.runes", false);
         addEvent(() -> new ActionRuneAttack(goldenRune, new RandomRuneAdjustment(target)).performAction(this, target), 12);
     };
 
-    private final Consumer<EntityLivingBase> secondPhaseRuneAttack = target -> {
+    private final Consumer<LivingEntity> secondPhaseRuneAttack = target -> {
         ModBBAnimations.animation(this, "statue.runes", false);
         addEvent(() -> new ActionRuneAttack(maelstromRune, new MovingRuneAdjustment(target)).performAction(this, target), 12);
     };
 
-    private final Consumer<EntityLivingBase> spawnPillarAttack = target -> {
+    private final Consumer<LivingEntity> spawnPillarAttack = target -> {
         ModBBAnimations.animation(this, "statue.summon", false);
 
         this.addEvent(() -> {
@@ -118,19 +118,19 @@ public class EntityGoldenBoss extends EntityMaelstromMob implements IAttack {
                 if (mob != null) {
                     mob.setAttackTarget(target);
                     ModUtils.lineCallback(this.getPositionEyes(1), mob.getPositionVector(), 20, (pos, j) ->
-                            Main.network.sendToAllTracking(new MessageModParticles(EnumModParticles.EFFECT, pos, Vec3d.ZERO, mob.getElement().particleColor), this));
+                            Main.network.sendToAllTracking(new MessageModParticles(EnumModParticles.EFFECT, pos, Vec3.ZERO, mob.getElement().particleColor), this));
                 }
             }
         }, 15);
     };
 
-    private final Consumer<EntityLivingBase> volleyAttack = target -> {
+    private final Consumer<LivingEntity> volleyAttack = target -> {
         ModBBAnimations.animation(this, "statue.volley", false);
         Supplier<Projectile> projectileSupplier = isSecondPhase() ? maelstromOrGoldenMissile : goldenMissile;
         new ActionVolley(projectileSupplier, 1.6f).performAction(this, target);
     };
 
-    private final Consumer<EntityLivingBase> teleportAttack = target -> new ActionAerialTeleport(ModColors.YELLOW).performAction(this, target);
+    private final Consumer<LivingEntity> teleportAttack = target -> new ActionAerialTeleport(ModColors.YELLOW).performAction(this, target);
 
     @Override
     protected boolean canDespawn() {
@@ -149,7 +149,7 @@ public class EntityGoldenBoss extends EntityMaelstromMob implements IAttack {
             boss.setElement(getElement());
             world.spawnEntity(boss);
 
-            EntityLivingBase attackTarget = this.getAttackTarget();
+            LivingEntity attackTarget = this.getAttackTarget();
             if(attackTarget != null) {
                 boss.setAttackTarget(attackTarget);
                 playSound(SoundEvents.ENTITY_ILLAGER_PREPARE_MIRROR, 2.5f, 1.0f + ModRandom.getFloat(0.2f));
@@ -167,7 +167,7 @@ public class EntityGoldenBoss extends EntityMaelstromMob implements IAttack {
     }
 
     private void initNirvanaAI() {
-        float attackDistance = (float) this.getEntityAttribute(SharedMonsterAttributes.FOLLOW_RANGE).getAttributeValue();
+        float attackDistance = (float) this.getEntityAttribute(Attributes.FOLLOW_RANGE).getAttributeValue();
         this.tasks.addTask(4,
                 new AIAerialTimedAttack(this, attackDistance, 20, 30,
                         new TimedAttackInitiator<>(this, 40)));
@@ -223,7 +223,7 @@ public class EntityGoldenBoss extends EntityMaelstromMob implements IAttack {
     }
 
     @Override
-    public int startAttack(EntityLivingBase target, float distanceSq, boolean strafingBackwards) {
+    public int startAttack(LivingEntity target, float distanceSq, boolean strafingBackwards) {
         if(doSummonNext) {
             doSummonNext = false;
             spawnPillarAttack.accept(target);
@@ -235,20 +235,20 @@ public class EntityGoldenBoss extends EntityMaelstromMob implements IAttack {
         return doNormalAttack(target);
     }
 
-    public int doNormalAttack(EntityLivingBase target) {
+    public int doNormalAttack(LivingEntity target) {
         if(getAttackCount() == 0) {
             setAttackCount(ModRandom.range(4, 7));
         }
 
         boolean canSee = world.rayTraceBlocks(target.getPositionEyes(1), getPositionEyes(1), false, true, false) == null;
-        List<Consumer<EntityLivingBase>> attacks = new ArrayList<>(Arrays.asList(
+        List<Consumer<LivingEntity>> attacks = new ArrayList<>(Arrays.asList(
                 volleyAttack,
                 isSecondPhase() ? secondPhaseRayAttack : rayAttack,
                 isSecondPhase() ? secondPhaseRuneAttack : runeAttack,
                 teleportAttack));
         double[] weights = {1, 1, 1, canSee ? 0 : 2};
 
-        Consumer<EntityLivingBase> nextAttack = ModRandom.choice(attacks, rand, weights).next();
+        Consumer<LivingEntity> nextAttack = ModRandom.choice(attacks, rand, weights).next();
 
         if(doTeleportNext) {
             nextAttack = teleportAttack;
@@ -265,19 +265,19 @@ public class EntityGoldenBoss extends EntityMaelstromMob implements IAttack {
     }
 
     @Override
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public void handleStatusUpdate(byte id) {
         if (id == ModUtils.PARTICLE_BYTE) {
-            Vec3d particleColor = this.isSecondPhase() && rand.nextFloat() < 0.5 ? ModColors.PURPLE : ModColors.YELLOW;
+            Vec3 particleColor = this.isSecondPhase() && rand.nextFloat() < 0.5 ? ModColors.PURPLE : ModColors.YELLOW;
             ParticleManager.spawnEffect(world, ModRandom.randVec()
                     .add(this.getPositionVector()),
                     particleColor);
         } else if(id == ModUtils.SECOND_PARTICLE_BYTE) {
             ModUtils.performNTimes(3, i -> ModUtils.circleCallback(i * 0.5f + 1, 30, pos -> {
-                ParticleManager.spawnSwirl(world, getPositionVector().add(pos), ModColors.YELLOW, Vec3d.ZERO, ModRandom.range(10, 15));
+                ParticleManager.spawnSwirl(world, getPositionVector().add(pos), ModColors.YELLOW, Vec3.ZERO, ModRandom.range(10, 15));
                 ParticleManager.spawnSwirl(world,
                         getPositionVector().add(ModUtils.rotateVector2(pos, ModUtils.yVec(1), 90)),
-                        ModColors.YELLOW, Vec3d.ZERO, ModRandom.range(10, 15));
+                        ModColors.YELLOW, Vec3.ZERO, ModRandom.range(10, 15));
             }));
         }
 
@@ -287,7 +287,7 @@ public class EntityGoldenBoss extends EntityMaelstromMob implements IAttack {
     @Override
     public void doRender(RenderManager renderManager, double x, double y, double z, float entityYaw, float partialTicks) {
         for (EntityGoldenPillar e : goldenPillars()) {
-            RenderUtils.drawLazer(renderManager, this.getPositionVector(), e.getPositionVector(), new Vec3d(x, y - 1, z), ModColors.YELLOW, this, partialTicks);
+            RenderUtils.drawLazer(renderManager, this.getPositionVector(), e.getPositionVector(), new Vec3(x, y - 1, z), ModColors.YELLOW, this, partialTicks);
         }
     }
 
@@ -302,13 +302,13 @@ public class EntityGoldenBoss extends EntityMaelstromMob implements IAttack {
     }
 
     @Override
-    public void addTrackingPlayer(@Nonnull EntityPlayerMP player) {
+    public void addTrackingPlayer(@Nonnull ServerPlayer player) {
         super.addTrackingPlayer(player);
         this.bossInfo.addPlayer(player);
     }
 
     @Override
-    public void removeTrackingPlayer(@Nonnull EntityPlayerMP player) {
+    public void removeTrackingPlayer(@Nonnull ServerPlayer player) {
         super.removeTrackingPlayer(player);
         this.bossInfo.removePlayer(player);
     }
@@ -342,7 +342,7 @@ public class EntityGoldenBoss extends EntityMaelstromMob implements IAttack {
     }
 
     @Override
-    public void attackEntityWithRangedAttack(@Nonnull EntityLivingBase target, float distanceFactor) {
+    public void attackEntityWithRangedAttack(@Nonnull LivingEntity target, float distanceFactor) {
     }
 
     @Override
@@ -355,7 +355,7 @@ public class EntityGoldenBoss extends EntityMaelstromMob implements IAttack {
     }
 
     @Override
-    protected void updateFallState(double y, boolean onGroundIn, @Nonnull IBlockState state, @Nonnull BlockPos pos) {
+    protected void updateFallState(double y, boolean onGroundIn, @Nonnull BlockState state, @Nonnull BlockPos pos) {
     }
 
     @Override

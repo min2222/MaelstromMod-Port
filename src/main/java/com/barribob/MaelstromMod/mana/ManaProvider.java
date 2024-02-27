@@ -1,7 +1,7 @@
 package com.barribob.MaelstromMod.mana;
 
+import net.minecraft.core.Direction;
 import net.minecraft.nbt.NBTBase;
-import net.minecraft.util.EnumFacing;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityInject;
 import net.minecraftforge.common.capabilities.ICapabilitySerializable;
@@ -13,12 +13,12 @@ public class ManaProvider implements ICapabilitySerializable<NBTBase> {
     private IMana instance = MANA.getDefaultInstance();
 
     @Override
-    public boolean hasCapability(Capability<?> capability, EnumFacing facing) {
+    public boolean hasCapability(Capability<?> capability, Direction facing) {
         return MANA == capability;
     }
 
     @Override
-    public <T> T getCapability(Capability<T> capability, EnumFacing facing) {
+    public <T> T getCapability(Capability<T> capability, Direction facing) {
         return MANA == capability ? MANA.<T>cast(this.instance) : null;
     }
 

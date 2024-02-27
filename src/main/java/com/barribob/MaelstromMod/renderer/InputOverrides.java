@@ -3,13 +3,13 @@ package com.barribob.MaelstromMod.renderer;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import net.minecraft.client.Minecraft;
-import net.minecraft.entity.Entity;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.util.EntitySelectors;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.core.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.phys.Vec3;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -33,7 +33,7 @@ public class InputOverrides {
                 // Holds the reach distance for blocks (not entities)
                 double d0 = raycastLength;
                 result = player.rayTrace(d0, partialTicks);
-                Vec3d playerEyes = player.getPositionEyes(partialTicks);
+                Vec3 playerEyes = player.getPositionEyes(partialTicks);
                 boolean outOfHitRange = false;
 
                 // Used in determining if the entity is within reach
@@ -48,9 +48,9 @@ public class InputOverrides {
                     d1 = result.hitVec.distanceTo(playerEyes);
                 }
 
-                Vec3d vec3d1 = player.getLook(1.0F);
-                Vec3d vec3d2 = playerEyes.addVector(vec3d1.x * d0, vec3d1.y * d0, vec3d1.z * d0);
-                Vec3d vec3d3 = null;
+                Vec3 vec3d1 = player.getLook(1.0F);
+                Vec3 vec3d2 = playerEyes.addVector(vec3d1.x * d0, vec3d1.y * d0, vec3d1.z * d0);
+                Vec3 vec3d3 = null;
                 List<Entity> list = mc.world.getEntitiesInAABBexcluding(player,
                         player.getEntityBoundingBox().expand(vec3d1.x * d0, vec3d1.y * d0, vec3d1.z * d0).grow(1.0D, 1.0D, 1.0D),
                         Predicates.and(EntitySelectors.NOT_SPECTATING, new Predicate<Entity>() {
@@ -65,7 +65,7 @@ public class InputOverrides {
                 // Search for the pointed entity in the list of entities
                 for (int j = 0; j < list.size(); ++j) {
                     Entity entity1 = list.get(j);
-                    AxisAlignedBB axisalignedbb = entity1.getEntityBoundingBox().grow((double) entity1.getCollisionBorderSize());
+                    AABB axisalignedbb = entity1.getEntityBoundingBox().grow((double) entity1.getCollisionBorderSize());
                     RayTraceResult raytraceresult = axisalignedbb.calculateIntercept(playerEyes, vec3d2);
 
                     if (axisalignedbb.contains(playerEyes)) // If the entity is literally in the players eyes?
@@ -95,7 +95,7 @@ public class InputOverrides {
                 }
 
                 if (pointedEntity != null && outOfHitRange && playerEyes.distanceTo(vec3d3) > hitRange) {
-                    return new RayTraceResult(RayTraceResult.Type.MISS, vec3d3, (EnumFacing) null, new BlockPos(vec3d3));
+                    return new RayTraceResult(RayTraceResult.Type.MISS, vec3d3, (Direction) null, new BlockPos(vec3d3));
                 }
 
                 if (pointedEntity != null && (d2 < d1 || result == null)) {

@@ -3,7 +3,7 @@ package com.barribob.MaelstromMod.entity.entities.gauntlet;
 import com.barribob.MaelstromMod.entity.entities.EntityLeveledMob;
 import com.barribob.MaelstromMod.init.ModBBAnimations;
 import com.barribob.MaelstromMod.util.ModUtils;
-import net.minecraft.entity.Entity;
+import net.minecraft.world.entity.Entity;
 
 public class SummonMobsAction implements IGauntletAction {
 

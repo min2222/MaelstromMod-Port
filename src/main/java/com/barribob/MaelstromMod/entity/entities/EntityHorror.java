@@ -5,20 +5,19 @@ import com.barribob.MaelstromMod.entity.projectile.ProjectileHorrorAttack;
 import com.barribob.MaelstromMod.util.ModRandom;
 import com.barribob.MaelstromMod.util.handlers.ParticleManager;
 import com.barribob.MaelstromMod.util.handlers.SoundsHandler;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.SharedMonsterAttributes;
-import net.minecraft.init.SoundEvents;
-import net.minecraft.util.DamageSource;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.util.SoundEvent;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.level.Level;
 
 public class EntityHorror extends EntityMaelstromMob {
     public static final float PROJECTILE_INACCURACY = 0;
     public static final float PROJECTILE_VELOCITY = 0.5f;
     public static final float PROJECTILE_VARIATION_FACTOR = 0.5f;
 
-    public EntityHorror(World worldIn) {
+    public EntityHorror(Level worldIn) {
         super(worldIn);
         this.setSize(1.3F, 1.3F);
     }
@@ -37,13 +36,13 @@ public class EntityHorror extends EntityMaelstromMob {
         super.onUpdate();
         if (world.isRemote) {
             for (int i = 0; i < 5; i++) {
-                ParticleManager.spawnMaelstromSmoke(world, rand, new Vec3d(this.posX + ModRandom.getFloat(0.4f), this.posY + 1, this.posZ + ModRandom.getFloat(0.4f)), true);
+                ParticleManager.spawnMaelstromSmoke(world, rand, new Vec3(this.posX + ModRandom.getFloat(0.4f), this.posY + 1, this.posZ + ModRandom.getFloat(0.4f)), true);
             }
         }
     }
 
     @Override
-    public void attackEntityWithRangedAttack(EntityLivingBase target, float distanceFactor) {
+    public void attackEntityWithRangedAttack(LivingEntity target, float distanceFactor) {
         if (!world.isRemote) {
             ProjectileHorrorAttack projectile = new ProjectileHorrorAttack(this.world, this, this.getAttack());
             double xDir = (rand.nextFloat() - rand.nextFloat()) * PROJECTILE_VARIATION_FACTOR;

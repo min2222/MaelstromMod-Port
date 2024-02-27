@@ -1,15 +1,15 @@
 package com.barribob.MaelstromMod.entity.ai;
 
-import net.minecraft.block.Block;
-import net.minecraft.block.material.Material;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLiving;
-import net.minecraft.init.Blocks;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.material.Material;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.pathfinding.*;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
+import net.minecraft.util.Mth;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.level.Level;
 
 /**
  * Changes out the 1.12 node processor with the 1.14 node processor. Otherwise,
@@ -18,7 +18,7 @@ import net.minecraft.world.World;
 public class ModGroundNavigator extends PathNavigate {
     private boolean shouldAvoidSun;
 
-    public ModGroundNavigator(EntityLiving entitylivingIn, World worldIn) {
+    public ModGroundNavigator(Mob entitylivingIn, Level worldIn) {
         super(entitylivingIn, worldIn);
     }
 
@@ -38,8 +38,8 @@ public class ModGroundNavigator extends PathNavigate {
     }
 
     @Override
-    protected Vec3d getEntityPosition() {
-        return new Vec3d(this.entity.posX, this.getPathablePosY(), this.entity.posZ);
+    protected Vec3 getEntityPosition() {
+        return new Vec3(this.entity.posX, this.getPathablePosY(), this.entity.posZ);
     }
 
     /**
@@ -93,12 +93,12 @@ public class ModGroundNavigator extends PathNavigate {
     private int getPathablePosY() {
         if (this.entity.isInWater() && this.getCanSwim()) {
             int i = (int) this.entity.getEntityBoundingBox().minY;
-            Block block = this.world.getBlockState(new BlockPos(MathHelper.floor(this.entity.posX), i, MathHelper.floor(this.entity.posZ))).getBlock();
+            Block block = this.world.getBlockState(new BlockPos(Mth.floor(this.entity.posX), i, Mth.floor(this.entity.posZ))).getBlock();
             int j = 0;
 
             while (block == Blocks.FLOWING_WATER || block == Blocks.WATER) {
                 ++i;
-                block = this.world.getBlockState(new BlockPos(MathHelper.floor(this.entity.posX), i, MathHelper.floor(this.entity.posZ))).getBlock();
+                block = this.world.getBlockState(new BlockPos(Mth.floor(this.entity.posX), i, Mth.floor(this.entity.posZ))).getBlock();
                 ++j;
 
                 if (j > 16) {
@@ -121,7 +121,7 @@ public class ModGroundNavigator extends PathNavigate {
 
         if (this.shouldAvoidSun) {
             if (this.world
-                    .canSeeSky(new BlockPos(MathHelper.floor(this.entity.posX), (int) (this.entity.getEntityBoundingBox().minY + 0.5D), MathHelper.floor(this.entity.posZ)))) {
+                    .canSeeSky(new BlockPos(Mth.floor(this.entity.posX), (int) (this.entity.getEntityBoundingBox().minY + 0.5D), Mth.floor(this.entity.posZ)))) {
                 return;
             }
 
@@ -140,9 +140,9 @@ public class ModGroundNavigator extends PathNavigate {
      * Checks if the specified entity can safely walk to the specified location.
      */
     @Override
-    protected boolean isDirectPathBetweenPoints(Vec3d posVec31, Vec3d posVec32, int sizeX, int sizeY, int sizeZ) {
-        int i = MathHelper.floor(posVec31.x);
-        int j = MathHelper.floor(posVec31.z);
+    protected boolean isDirectPathBetweenPoints(Vec3 posVec31, Vec3 posVec32, int sizeX, int sizeY, int sizeZ) {
+        int i = Mth.floor(posVec31.x);
+        int j = Mth.floor(posVec31.z);
         double d0 = posVec32.x - posVec31.x;
         double d1 = posVec32.z - posVec31.z;
         double d2 = d0 * d0 + d1 * d1;
@@ -154,7 +154,7 @@ public class ModGroundNavigator extends PathNavigate {
             d1 = d1 * d3;
             sizeX = sizeX + 2;
             sizeZ = sizeZ + 2;
-            if (!this.isSafeToStandAt(i, MathHelper.floor(posVec31.y), j, sizeX, sizeY, sizeZ, posVec31, d0, d1)) {
+            if (!this.isSafeToStandAt(i, Mth.floor(posVec31.y), j, sizeX, sizeY, sizeZ, posVec31, d0, d1)) {
                 return false;
             } else {
                 sizeX = sizeX - 2;
@@ -175,8 +175,8 @@ public class ModGroundNavigator extends PathNavigate {
                 d7 = d7 / d1;
                 int k = d0 < 0.0D ? -1 : 1;
                 int l = d1 < 0.0D ? -1 : 1;
-                int i1 = MathHelper.floor(posVec32.x);
-                int j1 = MathHelper.floor(posVec32.z);
+                int i1 = Mth.floor(posVec32.x);
+                int j1 = Mth.floor(posVec32.z);
                 int k1 = i1 - i;
                 int l1 = j1 - j;
 
@@ -191,7 +191,7 @@ public class ModGroundNavigator extends PathNavigate {
                         l1 = j1 - j;
                     }
 
-                    if (!this.isSafeToStandAt(i, MathHelper.floor(posVec31.y), j, sizeX, sizeY, sizeZ, posVec31, d0, d1)) {
+                    if (!this.isSafeToStandAt(i, Mth.floor(posVec31.y), j, sizeX, sizeY, sizeZ, posVec31, d0, d1)) {
                         return false;
                     }
                 }
@@ -205,7 +205,7 @@ public class ModGroundNavigator extends PathNavigate {
      * Returns true when an entity could stand at a position, including solid blocks
      * under the entire entity.
      */
-    private boolean isSafeToStandAt(int x, int y, int z, int sizeX, int sizeY, int sizeZ, Vec3d vec31, double p_179683_8_, double p_179683_10_) {
+    private boolean isSafeToStandAt(int x, int y, int z, int sizeX, int sizeY, int sizeZ, Vec3 vec31, double p_179683_8_, double p_179683_10_) {
         int i = x - sizeX / 2;
         int j = z - sizeZ / 2;
         if (!this.isPositionClear(i, y, j, sizeX, sizeY, sizeZ, vec31, p_179683_8_, p_179683_10_)) {
@@ -250,7 +250,7 @@ public class ModGroundNavigator extends PathNavigate {
      * Returns true if an entity does not collide with any solid blocks at the
      * position.
      */
-    private boolean isPositionClear(int x, int y, int z, int sizeX, int sizeY, int sizeZ, Vec3d p_179692_7_, double p_179692_8_, double p_179692_10_) {
+    private boolean isPositionClear(int x, int y, int z, int sizeX, int sizeY, int sizeZ, Vec3 p_179692_7_, double p_179692_8_, double p_179692_10_) {
         for (BlockPos blockpos : BlockPos.getAllInBox(new BlockPos(x, y, z), new BlockPos(x + sizeX - 1, y + sizeY - 1, z + sizeZ - 1))) {
             double d0 = blockpos.getX() + 0.5D - p_179692_7_.x;
             double d1 = blockpos.getZ() + 0.5D - p_179692_7_.z;

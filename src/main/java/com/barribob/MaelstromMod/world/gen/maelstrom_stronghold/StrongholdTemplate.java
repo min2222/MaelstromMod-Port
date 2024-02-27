@@ -14,11 +14,11 @@ import com.barribob.MaelstromMod.util.handlers.LevelHandler;
 import com.barribob.MaelstromMod.util.handlers.LootTableHandler;
 import com.barribob.MaelstromMod.world.gen.ModStructureTemplate;
 import com.barribob.MaelstromMod.world.gen.WorldGenMaelstrom;
-import net.minecraft.tileentity.TileEntity;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.tileentity.TileEntityChest;
 import net.minecraft.util.Rotation;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.gen.structure.StructureBoundingBox;
 import net.minecraft.world.gen.structure.template.TemplateManager;
 
@@ -39,13 +39,13 @@ public class StrongholdTemplate extends ModStructureTemplate {
      * Loads structure block data markers and handles them by their name
      */
     @Override
-    protected void handleDataMarker(String function, BlockPos pos, World worldIn, Random rand, StructureBoundingBox sbb) {
+    protected void handleDataMarker(String function, BlockPos pos, Level worldIn, Random rand, StructureBoundingBox sbb) {
         if (function.startsWith("chest")) {
             worldIn.setBlockToAir(pos);
             BlockPos blockpos = pos.down();
 
             if (sbb.isVecInside(blockpos)) {
-                TileEntity tileentity = worldIn.getTileEntity(blockpos);
+                BlockEntity tileentity = worldIn.getTileEntity(blockpos);
 
                 if (tileentity instanceof TileEntityChest) {
                     ((TileEntityChest) tileentity).setLootTable(LootTableHandler.AZURE_FORTRESS, rand.nextLong());
@@ -68,7 +68,7 @@ public class StrongholdTemplate extends ModStructureTemplate {
 
             if (worldIn.rand.nextFloat() < 0.25f) {
                 if (sbb.isVecInside(blockpos)) {
-                    TileEntity tileentity = worldIn.getTileEntity(blockpos);
+                    BlockEntity tileentity = worldIn.getTileEntity(blockpos);
 
                     if (tileentity instanceof TileEntityChest) {
                         ((TileEntityChest) tileentity).setLootTable(LootTableHandler.AZURE_FORTRESS, rand.nextLong());
@@ -82,7 +82,7 @@ public class StrongholdTemplate extends ModStructureTemplate {
             BlockPos blockpos = pos.down();
 
             if (sbb.isVecInside(blockpos)) {
-                TileEntity tileentity = worldIn.getTileEntity(blockpos);
+                BlockEntity tileentity = worldIn.getTileEntity(blockpos);
 
                 if (tileentity instanceof TileEntityChest) {
                     ((TileEntityChest) tileentity).setLootTable(LootTableHandler.STRONGHOLD_KEY_CHEST, rand.nextLong());
@@ -90,7 +90,7 @@ public class StrongholdTemplate extends ModStructureTemplate {
             }
         } else if (function.startsWith("enemy")) {
             worldIn.setBlockState(pos, ModBlocks.DISAPPEARING_SPAWNER.getDefaultState(), 2);
-            TileEntity tileentity = worldIn.getTileEntity(pos);
+            BlockEntity tileentity = worldIn.getTileEntity(pos);
 
             if (tileentity instanceof TileEntityMobSpawner) {
                 ((TileEntityMobSpawner) tileentity).getSpawnerBaseLogic().setData(
@@ -106,7 +106,7 @@ public class StrongholdTemplate extends ModStructureTemplate {
             }
         } else if (function.startsWith("boss")) {
             worldIn.setBlockState(pos, ModBlocks.BOSS_SPAWNER.getDefaultState(), 2);
-            TileEntity tileentity = worldIn.getTileEntity(pos);
+            BlockEntity tileentity = worldIn.getTileEntity(pos);
 
             if (tileentity instanceof TileEntityMobSpawner) {
                 ((TileEntityMobSpawner) tileentity).getSpawnerBaseLogic().setData(ModEntities.getID(EntityMaelstromBeast.class), 1, LevelHandler.AZURE_ENDGAME, 16);

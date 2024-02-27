@@ -11,15 +11,15 @@ import com.barribob.MaelstromMod.util.ModColors;
 import com.barribob.MaelstromMod.util.ModUtils;
 import com.barribob.MaelstromMod.util.handlers.ParticleManager;
 import com.typesafe.config.Config;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.SharedMonsterAttributes;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.init.MobEffects;
-import net.minecraft.item.Item;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.item.Item;
 import net.minecraft.potion.PotionEffect;
-import net.minecraft.util.EnumHand;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.event.entity.living.LivingEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -35,10 +35,10 @@ public class ItemEventHandler {
 
     @SubscribeEvent
     public static void onLivingUpdateEvent(LivingEvent.LivingUpdateEvent event) {
-        if (event.getEntity() instanceof EntityPlayer) {
-            EntityPlayer player = (EntityPlayer) event.getEntity();
-            Item heldItem = player.getHeldItem(EnumHand.MAIN_HAND).getItem();
-            Item offhandItem = player.getHeldItem(EnumHand.OFF_HAND).getItem();
+        if (event.getEntity() instanceof Player) {
+            Player player = (Player) event.getEntity();
+            Item heldItem = player.getHeldItem(InteractionHand.MAIN_HAND).getItem();
+            Item offhandItem = player.getHeldItem(InteractionHand.OFF_HAND).getItem();
 
             Item helmet = player.inventory.armorInventory.get(3).getItem();
             Item chestplate = player.inventory.armorInventory.get(2).getItem();
@@ -51,12 +51,12 @@ public class ItemEventHandler {
                 player.addPotionEffect(new PotionEffect(MobEffects.STRENGTH, 20, 1));
             }
 
-            if (!player.world.isRemote && player instanceof EntityPlayerMP && (heldItem.equals(ModItems.CROSS_OF_AQUA) || offhandItem.equals(ModItems.CROSS_OF_AQUA))) {
+            if (!player.world.isRemote && player instanceof ServerPlayer && (heldItem.equals(ModItems.CROSS_OF_AQUA) || offhandItem.equals(ModItems.CROSS_OF_AQUA))) {
                 IMana mana = player.getCapability(ManaProvider.MANA, null);
                 if (!mana.isLocked() && mana.getMana() > 0) {
                     if (!player.capabilities.isCreativeMode && player.ticksExisted % 40 == 0) {
                         mana.consume(1);
-                        Main.network.sendTo(new MessageMana(mana.getMana()), (EntityPlayerMP) player);
+                        Main.network.sendTo(new MessageMana(mana.getMana()), (ServerPlayer) player);
                     }
                     player.addPotionEffect(new PotionEffect(ModPotions.water_strider, 40));
                 }
@@ -68,7 +68,7 @@ public class ItemEventHandler {
                     leggings.equals(ModItems.NYAN_LEGGINGS) &&
                     boots.equals(ModItems.NYAN_BOOTS) && player.isSprinting()) {
                 Entity particle = new ParticleSpawnerRainbow(player.world);
-                Vec3d pos = player.getPositionVector().subtract(new Vec3d(player.getLookVec().x, 0, player.getLookVec().z));
+                Vec3 pos = player.getPositionVector().subtract(new Vec3(player.getLookVec().x, 0, player.getLookVec().z));
                 particle.setPosition(pos.x, pos.y, pos.z);
                 player.world.spawnEntity(particle);
             }
@@ -125,11 +125,11 @@ public class ItemEventHandler {
                         chestplate.equals(ModItems.FADESTEEL_CHESTPLATE) &&
                         leggings.equals(ModItems.FADESTEEL_LEGGINGS) &&
                         boots.equals(ModItems.FADESTEEL_BOOTS)) {
-                    player.getEntityAttribute(SharedMonsterAttributes.KNOCKBACK_RESISTANCE).setBaseValue(0.357);
+                    player.getEntityAttribute(Attributes.KNOCKBACK_RESISTANCE).setBaseValue(0.357);
                 }
                 // Using 0.357 as a value unlikely to be chosen by modders, so I can expect to enable and disable this without conflicting
-                else if (player.getEntityAttribute(SharedMonsterAttributes.KNOCKBACK_RESISTANCE).getAttributeValue() == 0.357) {
-                    player.getEntityAttribute(SharedMonsterAttributes.KNOCKBACK_RESISTANCE).setBaseValue(0);
+                else if (player.getEntityAttribute(Attributes.KNOCKBACK_RESISTANCE).getAttributeValue() == 0.357) {
+                    player.getEntityAttribute(Attributes.KNOCKBACK_RESISTANCE).setBaseValue(0);
                 }
 
                 if (bonusConfig.getBoolean("elysium") &&
@@ -145,9 +145,9 @@ public class ItemEventHandler {
             }
 
             if (player.world.isRemote && chestplate.equals(ModItems.ELYSIUM_WINGS) && player.isElytraFlying()) {
-                double speed = Math.max(0.1, Math.min(1, new Vec3d(player.motionX, 0, player.motionZ).lengthVector() + player.motionY));
-                ParticleManager.spawnFirework(player.world, player.getPositionEyes(1).add(ModUtils.getRelativeOffset(player, new Vec3d(0, 0, -speed))), ModColors.RED);
-                ParticleManager.spawnFirework(player.world, player.getPositionEyes(1).add(ModUtils.getRelativeOffset(player, new Vec3d(0, 0, speed))), ModColors.RED);
+                double speed = Math.max(0.1, Math.min(1, new Vec3(player.motionX, 0, player.motionZ).lengthVector() + player.motionY));
+                ParticleManager.spawnFirework(player.world, player.getPositionEyes(1).add(ModUtils.getRelativeOffset(player, new Vec3(0, 0, -speed))), ModColors.RED);
+                ParticleManager.spawnFirework(player.world, player.getPositionEyes(1).add(ModUtils.getRelativeOffset(player, new Vec3(0, 0, speed))), ModColors.RED);
             }
         }
     }

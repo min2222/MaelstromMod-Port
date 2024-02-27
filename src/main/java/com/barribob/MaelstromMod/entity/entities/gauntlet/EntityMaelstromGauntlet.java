@@ -5,9 +5,9 @@ import com.barribob.MaelstromMod.entity.projectile.Projectile;
 import com.barribob.MaelstromMod.entity.projectile.ProjectileMegaFireball;
 import com.barribob.MaelstromMod.util.ModRandom;
 import com.barribob.MaelstromMod.util.ModUtils;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.level.Level;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.function.Supplier;
 
 public class EntityMaelstromGauntlet extends EntityAbstractMaelstromGauntlet {
-    Supplier<Vec3d> position = () -> getAttackTarget() == null ? null : getAttackTarget().getPositionVector();
+    Supplier<Vec3> position = () -> getAttackTarget() == null ? null : getAttackTarget().getPositionVector();
     private final IGauntletAction punchAttack = new PunchAction("gauntlet.punch", position, () -> {
     }, this, fist);
     private final IGauntletAction laserAttack = new LaserAction(this, stopLazerByte, (vec3d) -> {
@@ -26,7 +26,7 @@ public class EntityMaelstromGauntlet extends EntityAbstractMaelstromGauntlet {
     private final double lazerHealth = getMobConfig().getDouble("use_lazer_at_health");
     private final double spawnHealth = getMobConfig().getDouble("use_spawning_at_health");
 
-    public EntityMaelstromGauntlet(World worldIn) {
+    public EntityMaelstromGauntlet(Level worldIn) {
         super(worldIn);
     }
 
@@ -41,7 +41,7 @@ public class EntityMaelstromGauntlet extends EntityAbstractMaelstromGauntlet {
     }
 
     @Override
-    protected IGauntletAction getNextAttack(EntityLivingBase target, float distanceSq, IGauntletAction previousAction) {
+    protected IGauntletAction getNextAttack(LivingEntity target, float distanceSq, IGauntletAction previousAction) {
         List<IGauntletAction> attacks = new ArrayList<>(Arrays.asList(punchAttack, laserAttack, summonAttack, fireballAttack));
         int numMinions = (int) ModUtils.getEntitiesInBox(this, getEntityBoundingBox().grow(20, 10, 20)).stream().filter(EntityMaelstromMob::isMaelstromMob).count();
 

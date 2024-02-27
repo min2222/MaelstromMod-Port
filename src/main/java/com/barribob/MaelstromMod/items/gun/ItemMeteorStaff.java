@@ -4,18 +4,18 @@ import com.barribob.MaelstromMod.config.ModConfig;
 import com.barribob.MaelstromMod.entity.projectile.Projectile;
 import com.barribob.MaelstromMod.entity.projectile.ProjectileMeteorSpawner;
 import com.barribob.MaelstromMod.util.ModUtils;
-import net.minecraft.client.util.ITooltipFlag;
-import net.minecraft.creativetab.CreativeTabs;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.EnumHand;
-import net.minecraft.util.text.TextFormatting;
-import net.minecraft.world.World;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.ChatFormatting;
+import net.minecraft.world.level.Level;
 
 import java.util.List;
 
 public class ItemMeteorStaff extends ItemStaff {
-    public ItemMeteorStaff(String name, int useTime, float level, CreativeTabs tab) {
+    public ItemMeteorStaff(String name, int useTime, float level, CreativeModeTab tab) {
         super(name, useTime, level, tab);
     }
 
@@ -24,7 +24,7 @@ public class ItemMeteorStaff extends ItemStaff {
     }
 
     @Override
-    protected void shoot(World world, EntityPlayer player, EnumHand handIn, ItemStack stack) {
+    protected void shoot(Level world, Player player, InteractionHand handIn, ItemStack stack) {
         float inaccuracy = 0.0f;
         float velocity = 3f;
 
@@ -36,10 +36,10 @@ public class ItemMeteorStaff extends ItemStaff {
     }
 
     @Override
-    public void addInformation(ItemStack stack, World worldIn, List<String> tooltip, ITooltipFlag flagIn) {
+    public void addInformation(ItemStack stack, Level worldIn, List<String> tooltip, TooltipFlag flagIn) {
         super.addInformation(stack, worldIn, tooltip, flagIn);
         tooltip.add(ModUtils.getDamageTooltip(ModUtils.getEnchantedDamage(stack, this.getLevel(), getBaseDamage())));
-        tooltip.add(TextFormatting.GRAY + ModUtils.translateDesc("meteor_staff"));
+        tooltip.add(ChatFormatting.GRAY + ModUtils.translateDesc("meteor_staff"));
     }
 
     @Override

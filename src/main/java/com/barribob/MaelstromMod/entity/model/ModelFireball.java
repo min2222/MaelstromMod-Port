@@ -5,8 +5,8 @@ import net.minecraft.client.model.ModelBase;
 import net.minecraft.client.model.ModelBox;
 import net.minecraft.client.model.ModelRenderer;
 import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.entity.Entity;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.phys.Vec3;
 
 // Made with Blockbench
 
@@ -41,8 +41,8 @@ public class ModelFireball extends ModelBase {
     @Override
     public void setRotationAngles(float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch, float scaleFactor, Entity entityIn) {
         // Do some rotations
-        Vec3d lookVec = entityIn.getLookVec();
-        Vec3d direction = ModUtils.rotateVector(lookVec, lookVec.crossProduct(new Vec3d(0, 1, 0)), (ageInTicks / 10) % 360);
+        Vec3 lookVec = entityIn.getLookVec();
+        Vec3 direction = ModUtils.rotateVector(lookVec, lookVec.crossProduct(new Vec3(0, 1, 0)), (ageInTicks / 10) % 360);
         bone.rotateAngleX = (float) ModUtils.toPitch(direction);
         super.setRotationAngles(limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch, scaleFactor, entityIn);
     }

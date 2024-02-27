@@ -3,9 +3,9 @@ package com.barribob.MaelstromMod.packets;
 import com.barribob.MaelstromMod.event_handlers.ServerElytraEventHandler;
 import com.barribob.MaelstromMod.init.ModItems;
 import io.netty.buffer.ByteBuf;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.inventory.EntityEquipmentSlot;
-import net.minecraft.item.ItemStack;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
@@ -32,12 +32,12 @@ public class MessageStartElytraFlying implements IMessage {
     public static class Handler implements IMessageHandler<MessageStartElytraFlying, IMessage> {
         @Override
         public IMessage onMessage(MessageStartElytraFlying message, MessageContext ctx) {
-            final EntityPlayerMP player = ctx.getServerHandler().player;
+            final ServerPlayer player = ctx.getServerHandler().player;
 
             player.getServer().addScheduledTask(() -> {
                 boolean canFly = false;
                 if (!player.onGround && player.motionY < 0.0D && !player.isElytraFlying() && !player.isInWater()) {
-                    ItemStack itemstack = player.getItemStackFromSlot(EntityEquipmentSlot.CHEST);
+                    ItemStack itemstack = player.getItemStackFromSlot(EquipmentSlot.CHEST);
                     // Hardcoded for security reasons. If an instanceof check is used, someone could extend and add a new elytra item to hack on the client
                     canFly = itemstack.getItem() == ModItems.ELYSIUM_WINGS;
                 }

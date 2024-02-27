@@ -1,10 +1,10 @@
 package com.barribob.MaelstromMod.world.gen.foliage;
 
 import com.barribob.MaelstromMod.init.ModBlocks;
-import net.minecraft.block.Block;
-import net.minecraft.init.Blocks;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.gen.feature.WorldGenerator;
 
 import java.util.Random;
@@ -20,7 +20,7 @@ public class WorldGenAzureVineBridge extends WorldGenerator {
     private int maxVineLength = 6;
 
     @Override
-    public boolean generate(World worldIn, Random rand, BlockPos position) {
+    public boolean generate(Level worldIn, Random rand, BlockPos position) {
         // Can only generate if the position is air, and there is an anchor
         while (worldIn.getBlockState(position).getBlock() != Blocks.AIR || !canGenerateVines(worldIn, position)) {
             position = position.down();
@@ -51,7 +51,7 @@ public class WorldGenAzureVineBridge extends WorldGenerator {
     }
 
     // Checks to see if there is air space between to generate the vines
-    public int getVineLength(World worldIn, BlockPos position, BlockPos direction) {
+    public int getVineLength(Level worldIn, BlockPos position, BlockPos direction) {
         int emptySpace = 0;
         BlockPos newPos = position;
         while (worldIn.getBlockState(newPos).getBlock() == Blocks.AIR && worldIn.getBlockState(newPos.down()).getBlock() == Blocks.AIR) {
@@ -75,7 +75,7 @@ public class WorldGenAzureVineBridge extends WorldGenerator {
      * @param position
      * @return
      */
-    public boolean canGenerateVines(World worldIn, BlockPos position) {
+    public boolean canGenerateVines(Level worldIn, BlockPos position) {
         boolean foundAnchor = false;
         for (BlockPos direction : directions) {
             if (worldIn.getBlockState(direction.add(position)).getBlock() == ModBlocks.DARK_AZURE_STONE) {

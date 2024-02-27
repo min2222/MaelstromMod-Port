@@ -4,18 +4,18 @@ import com.barribob.MaelstromMod.entity.entities.Herobrine;
 import com.barribob.MaelstromMod.init.ModProfessions;
 import net.minecraft.entity.IMerchant;
 import net.minecraft.entity.passive.EntityVillager;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.core.BlockPos;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.village.MerchantRecipe;
 import net.minecraft.village.MerchantRecipeList;
-import net.minecraft.world.World;
+import net.minecraft.world.level.Level;
 
 public class StateCrimsonKey extends HerobrineState implements IMerchant {
     protected final MerchantRecipeList buyingList = new MerchantRecipeList();
-    protected EntityPlayer buyingPlayer;
+    protected Player buyingPlayer;
     protected boolean gtfo = false;
     private boolean leftClickMessage = false;
 
@@ -32,7 +32,7 @@ public class StateCrimsonKey extends HerobrineState implements IMerchant {
     }
 
     @Override
-    public void rightClick(EntityPlayer player) {
+    public void rightClick(Player player) {
         if (!this.gtfo) {
             this.messageToPlayers.accept("herobrine_crimson_0");
             this.gtfo = true;
@@ -53,17 +53,17 @@ public class StateCrimsonKey extends HerobrineState implements IMerchant {
     }
 
     @Override
-    public void setCustomer(EntityPlayer player) {
+    public void setCustomer(Player player) {
         this.buyingPlayer = player;
     }
 
     @Override
-    public EntityPlayer getCustomer() {
+    public Player getCustomer() {
         return this.buyingPlayer;
     }
 
     @Override
-    public MerchantRecipeList getRecipes(EntityPlayer player) {
+    public MerchantRecipeList getRecipes(Player player) {
         return this.buyingList;
     }
 
@@ -89,7 +89,7 @@ public class StateCrimsonKey extends HerobrineState implements IMerchant {
     }
 
     @Override
-    public World getWorld() {
+    public Level getWorld() {
         return this.world;
     }
 

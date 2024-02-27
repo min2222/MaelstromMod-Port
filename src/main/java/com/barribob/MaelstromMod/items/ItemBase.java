@@ -4,14 +4,14 @@ import com.barribob.MaelstromMod.Main;
 import com.barribob.MaelstromMod.init.ModCreativeTabs;
 import com.barribob.MaelstromMod.init.ModItems;
 import com.barribob.MaelstromMod.util.IHasModel;
-import net.minecraft.creativetab.CreativeTabs;
-import net.minecraft.item.Item;
+import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.Item;
 
 /**
  * The base class for basic mod foods
  */
 public class ItemBase extends Item implements IHasModel {
-    public ItemBase(String name, CreativeTabs tab) {
+    public ItemBase(String name, CreativeModeTab tab) {
         setUnlocalizedName(name);
         setRegistryName(name);
         if (tab != null) {

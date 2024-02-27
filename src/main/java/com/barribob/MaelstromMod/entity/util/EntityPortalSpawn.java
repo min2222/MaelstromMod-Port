@@ -1,12 +1,12 @@
 package com.barribob.MaelstromMod.entity.util;
 
-import net.minecraft.block.Block;
-import net.minecraft.entity.Entity;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
+import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.api.distmarker.Dist;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,13 +36,13 @@ public abstract class EntityPortalSpawn extends Entity {
 
     protected abstract Block getPortalBlock();
 
-    public EntityPortalSpawn(World worldIn) {
+    public EntityPortalSpawn(Level worldIn) {
         super(worldIn);
         this.setNoGravity(true);
         portal = getPortal();
     }
 
-    public EntityPortalSpawn(World worldIn, double x, double y, double z) {
+    public EntityPortalSpawn(Level worldIn, double x, double y, double z) {
         this(worldIn);
         this.setPosition(x, y, z);
     }
@@ -98,7 +98,7 @@ public abstract class EntityPortalSpawn extends Entity {
     }
 
     @Override
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public void handleStatusUpdate(byte id) {
         if (id == this.PARTICLE_BYTE) {
             this.spawnParticles();
@@ -111,14 +111,14 @@ public abstract class EntityPortalSpawn extends Entity {
     }
 
     @Override
-    protected void readEntityFromNBT(NBTTagCompound compound) {
+    protected void readEntityFromNBT(CompoundTag compound) {
         if (compound.hasKey("counter")) {
             counter = compound.getInteger("counter");
         }
     }
 
     @Override
-    protected void writeEntityToNBT(NBTTagCompound compound) {
+    protected void writeEntityToNBT(CompoundTag compound) {
         compound.setInteger("counter", counter);
     }
 }

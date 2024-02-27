@@ -2,8 +2,8 @@ package com.barribob.MaelstromMod.entity.model;
 
 import net.minecraft.client.model.ModelBox;
 import net.minecraft.client.model.ModelRenderer;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 
 public class ModelChaosKnight extends ModelBBAnimated {
     public final ModelRenderer root;
@@ -416,7 +416,7 @@ public class ModelChaosKnight extends ModelBBAnimated {
     }
 
     @Override
-    public void setLivingAnimations(EntityLivingBase entity, float limbSwing, float limbSwingAmount, float partialTickTime) {
+    public void setLivingAnimations(LivingEntity entity, float limbSwing, float limbSwingAmount, float partialTickTime) {
         super.setLivingAnimations(entity, limbSwing, limbSwingAmount, partialTickTime);
 
         float limbSwingFactor = 1.0f;

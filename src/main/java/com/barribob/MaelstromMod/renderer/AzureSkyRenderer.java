@@ -2,8 +2,7 @@ package com.barribob.MaelstromMod.renderer;
 
 import com.barribob.MaelstromMod.util.Reference;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.multiplayer.WorldClient;
-import net.minecraft.client.renderer.*;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.chunk.IRenderChunkFactory;
 import net.minecraft.client.renderer.chunk.ListChunkFactory;
 import net.minecraft.client.renderer.chunk.VboChunkFactory;
@@ -13,9 +12,9 @@ import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.client.renderer.vertex.VertexBuffer;
 import net.minecraft.client.renderer.vertex.VertexFormat;
 import net.minecraft.client.renderer.vertex.VertexFormatElement;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Mth;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.Random;
 
@@ -28,7 +27,7 @@ public class AzureSkyRenderer {
     private final Minecraft mc;
     private final TextureManager renderEngine;
     private final RenderManager renderManager;
-    private WorldClient world;
+    private ClientLevel world;
     /**
      * The star GL Call list
      */
@@ -49,7 +48,7 @@ public class AzureSkyRenderer {
     private ChunkRenderContainer renderContainer;
     IRenderChunkFactory renderChunkFactory;
 
-    public AzureSkyRenderer(Minecraft mcIn, WorldClient world) {
+    public AzureSkyRenderer(Minecraft mcIn, ClientLevel world) {
         this.world = world;
         this.mc = mcIn;
         this.renderManager = mcIn.getRenderManager();
@@ -231,7 +230,7 @@ public class AzureSkyRenderer {
 
     public void renderSky(float partialTicks, int pass) {
         GlStateManager.disableTexture2D();
-        Vec3d vec3d = this.world.getSkyColor(this.mc.getRenderViewEntity(), partialTicks);
+        Vec3 vec3d = this.world.getSkyColor(this.mc.getRenderViewEntity(), partialTicks);
         float f = (float) vec3d.x;
         float f1 = (float) vec3d.y;
         float f2 = (float) vec3d.z;
@@ -276,7 +275,7 @@ public class AzureSkyRenderer {
             GlStateManager.shadeModel(7425);
             GlStateManager.pushMatrix();
             GlStateManager.rotate(90.0F, 1.0F, 0.0F, 0.0F);
-            GlStateManager.rotate(MathHelper.sin(this.world.getCelestialAngleRadians(partialTicks)) < 0.0F ? 180.0F : 0.0F, 0.0F, 0.0F, 1.0F);
+            GlStateManager.rotate(Mth.sin(this.world.getCelestialAngleRadians(partialTicks)) < 0.0F ? 180.0F : 0.0F, 0.0F, 0.0F, 1.0F);
             GlStateManager.rotate(90.0F, 0.0F, 0.0F, 1.0F);
             float f6 = afloat[0];
             float f7 = afloat[1];
@@ -297,8 +296,8 @@ public class AzureSkyRenderer {
 
             for (int j2 = 0; j2 <= 16; ++j2) {
                 float f21 = (float) j2 * ((float) Math.PI * 2F) / 16.0F;
-                float f12 = MathHelper.sin(f21);
-                float f13 = MathHelper.cos(f21);
+                float f12 = Mth.sin(f21);
+                float f13 = Mth.cos(f21);
                 bufferbuilder.pos((double) (f12 * 120.0F), (double) (f13 * 120.0F), (double) (-f13 * 40.0F * afloat[3])).color(afloat[0], afloat[1], afloat[2], 0.0F)
                         .endVertex();
             }

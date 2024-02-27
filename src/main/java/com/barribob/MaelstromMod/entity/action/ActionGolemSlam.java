@@ -4,14 +4,14 @@ import com.barribob.MaelstromMod.entity.entities.EntityLeveledMob;
 import com.barribob.MaelstromMod.entity.projectile.ProjectileQuake;
 import com.barribob.MaelstromMod.util.ModDamageSource;
 import com.barribob.MaelstromMod.util.ModUtils;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.phys.Vec3;
 
 public class ActionGolemSlam implements IAction {
     @Override
-    public void performAction(EntityLeveledMob actor, EntityLivingBase target) {
-        Vec3d offset = actor.getPositionVector().add(ModUtils.getRelativeOffset(actor, new Vec3d(2, 1, 0)));
+    public void performAction(EntityLeveledMob actor, LivingEntity target) {
+        Vec3 offset = actor.getPositionVector().add(ModUtils.getRelativeOffset(actor, new Vec3(2, 1, 0)));
         ModUtils.handleAreaImpact(2, (e) -> actor.getAttack(), actor, offset, ModDamageSource.causeElementalMeleeDamage(actor, actor.getElement()), 0.5f, 0, true);
 
         float inaccuracy = 0.0f;

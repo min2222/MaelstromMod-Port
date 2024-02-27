@@ -1,8 +1,8 @@
 package com.barribob.MaelstromMod.entity.tileentity;
 
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.play.server.SPacketUpdateTileEntity;
-import net.minecraft.tileentity.TileEntity;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.util.ITickable;
 
 import javax.annotation.Nullable;
@@ -14,15 +14,15 @@ import javax.annotation.Nullable;
  * NOTE: Because mincraft uses .newInstance() to instantiate the tile entities,
  * contructors with arguments don't work :(
  */
-public abstract class TileEntityMobSpawner extends TileEntity implements ITickable {
+public abstract class TileEntityMobSpawner extends BlockEntity implements ITickable {
     private final MobSpawnerLogic spawnerLogic = this.getSpawnerLogic();
 
-    public void readFromNBT(NBTTagCompound compound) {
+    public void readFromNBT(CompoundTag compound) {
         super.readFromNBT(compound);
         this.spawnerLogic.readFromNBT(compound);
     }
 
-    public NBTTagCompound writeToNBT(NBTTagCompound compound) {
+    public CompoundTag writeToNBT(CompoundTag compound) {
         super.writeToNBT(compound);
         this.spawnerLogic.writeToNBT(compound);
         return compound;
@@ -40,8 +40,8 @@ public abstract class TileEntityMobSpawner extends TileEntity implements ITickab
         return new SPacketUpdateTileEntity(this.pos, 1, this.getUpdateTag());
     }
 
-    public NBTTagCompound getUpdateTag() {
-        NBTTagCompound nbttagcompound = this.writeToNBT(new NBTTagCompound());
+    public CompoundTag getUpdateTag() {
+        CompoundTag nbttagcompound = this.writeToNBT(new CompoundTag());
         nbttagcompound.removeTag("SpawnPotentials");
         return nbttagcompound;
     }

@@ -8,16 +8,16 @@ import com.barribob.MaelstromMod.util.Element;
 import com.barribob.MaelstromMod.util.IElement;
 import com.barribob.MaelstromMod.util.ModUtils;
 import com.typesafe.config.Config;
-import net.minecraft.client.util.ITooltipFlag;
-import net.minecraft.creativetab.CreativeTabs;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.ActionResult;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.util.EnumActionResult;
-import net.minecraft.util.EnumHand;
-import net.minecraft.world.World;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraft.world.level.Level;
+import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.api.distmarker.Dist;
 
 import java.util.List;
 
@@ -25,7 +25,7 @@ public abstract class ItemStaff extends ItemBase implements ILeveledItem, IEleme
     private final float level;
     private Element element = Element.NONE;
 
-    public ItemStaff(String name, float useTime, float level, CreativeTabs tab) {
+    public ItemStaff(String name, float useTime, float level, CreativeModeTab tab) {
         super(name, tab);
         this.maxStackSize = 1;
         this.level = level;
@@ -43,17 +43,17 @@ public abstract class ItemStaff extends ItemBase implements ILeveledItem, IEleme
     }
 
     @Override
-    public ActionResult<ItemStack> onItemRightClick(World worldIn, EntityPlayer playerIn, EnumHand handIn) {
+    public InteractionResultHolder<ItemStack> onItemRightClick(Level worldIn, Player playerIn, InteractionHand handIn) {
         ItemStack itemStack = playerIn.getHeldItem(handIn);
         if(!worldIn.isRemote) {
             itemStack.damageItem(1, playerIn);
             shoot(worldIn, playerIn, handIn, itemStack);
         }
-        return new ActionResult<>(EnumActionResult.SUCCESS, itemStack);
+        return new InteractionResultHolder<>(EnumActionResult.SUCCESS, itemStack);
     }
 
     @Override
-    public void addInformation(ItemStack stack, World worldIn, List<String> tooltip, ITooltipFlag flagIn) {
+    public void addInformation(ItemStack stack, Level worldIn, List<String> tooltip, TooltipFlag flagIn) {
         if(!ModConfig.gui.disableMaelstromArmorItemTooltips) {
             tooltip.add(ModUtils.getDisplayLevel(this.level));
         }
@@ -75,7 +75,7 @@ public abstract class ItemStaff extends ItemBase implements ILeveledItem, IEleme
      * Returns True is the item is renderer in full 3D when hold.
      */
     @Override
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public boolean isFull3D() {
         return true;
     }
@@ -95,5 +95,5 @@ public abstract class ItemStaff extends ItemBase implements ILeveledItem, IEleme
         return this;
     }
 
-    protected abstract void shoot(World world, EntityPlayer player, EnumHand handIn, ItemStack stack);
+    protected abstract void shoot(Level world, Player player, InteractionHand handIn, ItemStack stack);
 }

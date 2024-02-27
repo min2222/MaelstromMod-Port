@@ -3,28 +3,28 @@ package com.barribob.MaelstromMod.entity.projectile;
 import com.barribob.MaelstromMod.util.ModColors;
 import com.barribob.MaelstromMod.util.ModUtils;
 import com.barribob.MaelstromMod.util.handlers.ParticleManager;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.init.SoundEvents;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.DamageSource;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.util.math.RayTraceResult;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.level.Level;
 
 public class ProjectileBrownstoneCannon extends ProjectileGun {
     private static final int PARTICLE_AMOUNT = 1;
     private static final int IMPACT_PARTICLE_AMOUNT = 20;
     private static final int EXPOSION_AREA_FACTOR = 2;
 
-    public ProjectileBrownstoneCannon(World worldIn, EntityLivingBase throwerIn, float baseDamage, ItemStack stack) {
+    public ProjectileBrownstoneCannon(Level worldIn, LivingEntity throwerIn, float baseDamage, ItemStack stack) {
         super(worldIn, throwerIn, baseDamage, stack);
     }
 
-    public ProjectileBrownstoneCannon(World worldIn) {
+    public ProjectileBrownstoneCannon(Level worldIn) {
         super(worldIn);
     }
 
-    public ProjectileBrownstoneCannon(World worldIn, double x, double y, double z) {
+    public ProjectileBrownstoneCannon(Level worldIn, double x, double y, double z) {
         super(worldIn, x, y, z);
     }
 
@@ -44,7 +44,7 @@ public class ProjectileBrownstoneCannon extends ProjectileGun {
     protected void spawnImpactParticles() {
         ModUtils.circleCallback(EXPOSION_AREA_FACTOR, 9, (pos) -> {
             ModUtils.circleCallback((float) (pos.x), 32, (pos2) -> {
-                ParticleManager.spawnSplit(world, new Vec3d(pos2.x, pos.y, pos2.y).add(getPositionVector()), ModColors.BROWNSTONE, Vec3d.ZERO);
+                ParticleManager.spawnSplit(world, new Vec3(pos2.x, pos.y, pos2.y).add(getPositionVector()), ModColors.BROWNSTONE, Vec3.ZERO);
             });
         });
     }

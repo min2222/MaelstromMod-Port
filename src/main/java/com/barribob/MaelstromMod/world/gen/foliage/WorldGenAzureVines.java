@@ -1,11 +1,11 @@
 package com.barribob.MaelstromMod.world.gen.foliage;
 
 import com.barribob.MaelstromMod.init.ModBlocks;
-import net.minecraft.block.BlockVine;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.world.level.block.VineBlock;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.gen.feature.WorldGenerator;
 
 import java.util.Random;
@@ -14,14 +14,14 @@ import java.util.Random;
  * Generates azure vines in a row until the conditions are broken, then generates a new row.
  */
 public class WorldGenAzureVines extends WorldGenerator {
-    public boolean generate(World worldIn, Random rand, BlockPos position) {
+    public boolean generate(Level worldIn, Random rand, BlockPos position) {
         int maxY = position.getY() + rand.nextInt(25) + 5;
         BlockPos newPos = position;
         for (; newPos.getY() < maxY; newPos = newPos.up()) {
             if (worldIn.isAirBlock(newPos)) {
-                for (EnumFacing enumfacing : EnumFacing.Plane.HORIZONTAL.facings()) {
+                for (Direction enumfacing : Direction.Plane.HORIZONTAL.facings()) {
                     if (ModBlocks.AZURE_VINES.canPlaceBlockOnSide(worldIn, newPos, enumfacing)) {
-                        IBlockState iblockstate = ModBlocks.AZURE_VINES.getDefaultState().withProperty(BlockVine.SOUTH, Boolean.valueOf(enumfacing == EnumFacing.NORTH)).withProperty(BlockVine.WEST, Boolean.valueOf(enumfacing == EnumFacing.EAST)).withProperty(BlockVine.NORTH, Boolean.valueOf(enumfacing == EnumFacing.SOUTH)).withProperty(BlockVine.EAST, Boolean.valueOf(enumfacing == EnumFacing.WEST));
+                        BlockState iblockstate = ModBlocks.AZURE_VINES.getDefaultState().withProperty(VineBlock.SOUTH, Boolean.valueOf(enumfacing == Direction.NORTH)).withProperty(VineBlock.WEST, Boolean.valueOf(enumfacing == Direction.EAST)).withProperty(VineBlock.NORTH, Boolean.valueOf(enumfacing == Direction.SOUTH)).withProperty(VineBlock.EAST, Boolean.valueOf(enumfacing == Direction.WEST));
                         worldIn.setBlockState(newPos, iblockstate, 2);
                         break;
                     }

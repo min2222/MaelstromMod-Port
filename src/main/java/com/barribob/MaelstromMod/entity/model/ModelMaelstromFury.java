@@ -6,8 +6,8 @@ import com.barribob.MaelstromMod.entity.util.IAcceleration;
 import com.barribob.MaelstromMod.util.ModUtils;
 import net.minecraft.client.model.ModelBox;
 import net.minecraft.client.model.ModelRenderer;
-import net.minecraft.entity.Entity;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.phys.Vec3;
 
 import javax.annotation.Nonnull;
 
@@ -197,7 +197,7 @@ public class ModelMaelstromFury extends ModelBBAnimated {
 		this.head.rotateAngleX = headPitch * 0.017453292F;
 
 		if (entity instanceof IAcceleration) {
-			Vec3d acceleration = ((IAcceleration) entity).getAcceleration();
+			Vec3 acceleration = ((IAcceleration) entity).getAcceleration();
 			this.root.rotateAngleX = (float) Math.toRadians(90 - ModUtils.toPitch(acceleration.add(entity.getLookVec().scale(0.1))));
 		}
 	}

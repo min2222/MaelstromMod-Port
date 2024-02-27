@@ -8,7 +8,7 @@ import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.client.renderer.entity.layers.LayerRenderer;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.resources.ResourceLocation;
 
 public class RenderStatueOfNirvana extends RenderModEntity<EntityGoldenBoss> {
     private final ResourceLocation STATUE = new ResourceLocation(Reference.MOD_ID, "textures/entity/statue.png");

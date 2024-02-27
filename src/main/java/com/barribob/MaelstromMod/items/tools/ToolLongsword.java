@@ -4,10 +4,10 @@ import com.barribob.MaelstromMod.items.IExtendedReach;
 import com.barribob.MaelstromMod.items.ISweepAttackOverride;
 import com.barribob.MaelstromMod.util.ModUtils;
 import com.google.common.collect.Multimap;
-import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.entity.ai.attributes.AttributeModifier;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.inventory.EntityEquipmentSlot;
+import net.minecraft.world.entity.player.Player;
 
 import java.util.UUID;
 
@@ -31,7 +31,7 @@ public class ToolLongsword extends ToolSword implements IExtendedReach, ISweepAt
      * Increased sweep attack
      */
     @Override
-    public void doSweepAttack(EntityPlayer player, EntityLivingBase target) {
+    public void doSweepAttack(Player player, LivingEntity target) {
         float maxDistanceSq = (float) Math.pow(this.reach, 2);
         ModUtils.doSweepAttack(player, target, getElement(), (e) -> {
         }, maxDistanceSq, 1);
@@ -42,11 +42,11 @@ public class ToolLongsword extends ToolSword implements IExtendedReach, ISweepAt
      * damage.
      */
     @Override
-    public Multimap<String, AttributeModifier> getItemAttributeModifiers(EntityEquipmentSlot equipmentSlot) {
+    public Multimap<String, AttributeModifier> getItemAttributeModifiers(EquipmentSlot equipmentSlot) {
         Multimap<String, AttributeModifier> multimap = super.getItemAttributeModifiers(equipmentSlot);
 
-        if (equipmentSlot == EntityEquipmentSlot.MAINHAND) {
-            multimap.put(EntityPlayer.REACH_DISTANCE.getName(), new AttributeModifier(REACH_MODIFIER, "Extended Reach Modifier", this.reach - 3.0D, 0).setSaved(false));
+        if (equipmentSlot == EquipmentSlot.MAINHAND) {
+            multimap.put(Player.REACH_DISTANCE.getName(), new AttributeModifier(REACH_MODIFIER, "Extended Reach Modifier", this.reach - 3.0D, 0).setSaved(false));
         }
         return multimap;
     }

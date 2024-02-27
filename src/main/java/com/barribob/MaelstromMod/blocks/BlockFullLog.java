@@ -1,8 +1,8 @@
 package com.barribob.MaelstromMod.blocks;
 
-import net.minecraft.block.Block;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.item.Item;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.item.Item;
 
 import java.util.Random;
 
@@ -18,7 +18,7 @@ public class BlockFullLog extends BlockLogBase {
     }
 
     @Override
-    public Item getItemDropped(IBlockState state, Random rand, int fortune) {
+    public Item getItemDropped(BlockState state, Random rand, int fortune) {
         return Item.getItemFromBlock(log);
     }
 }

@@ -5,13 +5,13 @@ import com.barribob.MaelstromMod.gui.GuiModDownloadTerrain;
 import com.barribob.MaelstromMod.util.Reference;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiDownloadTerrain;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.GuiOpenEvent;
 import net.minecraftforge.fml.client.FMLClientHandler;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraftforge.api.distmarker.OnlyIn;
 
 @Mod.EventBusSubscriber()
 public class DimensionScreenHandler {
@@ -19,7 +19,7 @@ public class DimensionScreenHandler {
      * Adds a new loading screen (credit to twilight forest mod for this idea)
      * https://github.com/TeamTwilight/twilightforest/blob/1.12.x/src/main/java/twilightforest/client/LoadingScreenListener.java
      */
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     @SubscribeEvent
     public static void onGuiOpenEvent(GuiOpenEvent event) {
         Minecraft mc = FMLClientHandler.instance().getClient();

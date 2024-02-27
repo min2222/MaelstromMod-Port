@@ -8,14 +8,14 @@ import com.barribob.MaelstromMod.init.ModEntities;
 import com.barribob.MaelstromMod.util.Element;
 import com.barribob.MaelstromMod.util.handlers.LevelHandler;
 import com.barribob.MaelstromMod.world.gen.WorldGenStructure;
-import net.minecraft.init.Items;
-import net.minecraft.item.ItemStack;
-import net.minecraft.tileentity.TileEntity;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.tileentity.TileEntityLockableLoot;
 import net.minecraft.util.Rotation;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextComponentTranslation;
-import net.minecraft.world.World;
+import net.minecraft.world.level.Level;
 
 import java.util.Random;
 
@@ -25,23 +25,23 @@ public class WorldGenDarkNexus extends WorldGenStructure {
     }
 
     @Override
-    public boolean generate(World worldIn, Random rand, BlockPos position) {
+    public boolean generate(Level worldIn, Random rand, BlockPos position) {
         this.generateStructure(worldIn, position, Rotation.NONE);
         return true;
     }
 
     @Override
-    protected void handleDataMarker(String function, BlockPos pos, World worldIn, Random rand) {
+    protected void handleDataMarker(String function, BlockPos pos, Level worldIn, Random rand) {
         worldIn.setBlockToAir(pos);
         if (function.startsWith("herobrine")) {
             worldIn.setBlockState(pos, ModBlocks.BOSS_SPAWNER.getDefaultState(), 2);
-            TileEntity tileentity = worldIn.getTileEntity(pos);
+            BlockEntity tileentity = worldIn.getTileEntity(pos);
 
             if (tileentity instanceof TileEntityMobSpawner) {
                 ((TileEntityMobSpawner) tileentity).getSpawnerBaseLogic().setData(new MobSpawnData(ModEntities.getID(Herobrine.class), Element.NONE), 1, LevelHandler.INVASION, 20);
             }
         } else if (function.startsWith("cookie_stash")) {
-            TileEntity tileentity = worldIn.getTileEntity(pos.down());
+            BlockEntity tileentity = worldIn.getTileEntity(pos.down());
 
             if (tileentity instanceof TileEntityLockableLoot) {
                 ItemStack herobrinesCookies = new ItemStack(Items.COOKIE, 13);

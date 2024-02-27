@@ -3,20 +3,20 @@ package com.barribob.MaelstromMod.world.gen;
 import com.barribob.MaelstromMod.init.ModBlocks;
 import com.barribob.MaelstromMod.util.ModRandom;
 import net.minecraft.block.BlockStone;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.init.Blocks;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.gen.feature.WorldGenerator;
 
 import java.util.Random;
 
 public class WorldGenLongVein extends WorldGenerator {
-    private final IBlockState block;
+    private final BlockState block;
 
     public WorldGenLongVein() {
-        IBlockState stone = Blocks.STONE.getDefaultState();
-        this.block = ModRandom.choice(new IBlockState[]{
+        BlockState stone = Blocks.STONE.getDefaultState();
+        this.block = ModRandom.choice(new BlockState[]{
                 stone,
                 ModBlocks.RED_CLIFF_STONE.getDefaultState(),
                 stone.withProperty(BlockStone.VARIANT, BlockStone.EnumType.DIORITE),
@@ -25,7 +25,7 @@ public class WorldGenLongVein extends WorldGenerator {
     }
 
     @Override
-    public boolean generate(World worldIn, Random rand, BlockPos pos) {
+    public boolean generate(Level worldIn, Random rand, BlockPos pos) {
         int size = 200;
         for (int y = 0; y < size; y++) {
             for (int x = -1; x <= 1; x++) {

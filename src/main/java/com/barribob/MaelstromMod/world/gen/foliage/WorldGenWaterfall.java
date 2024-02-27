@@ -1,9 +1,9 @@
 package com.barribob.MaelstromMod.world.gen.foliage;
 
-import net.minecraft.block.Block;
-import net.minecraft.init.Blocks;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.gen.feature.WorldGenerator;
 
 import java.util.Arrays;
@@ -18,7 +18,7 @@ public class WorldGenWaterfall extends WorldGenerator {
     }
 
     @Override
-    public boolean generate(World worldIn, Random rand, BlockPos position) {
+    public boolean generate(Level worldIn, Random rand, BlockPos position) {
         while (!this.isAirNearby(worldIn, position)) {
             position = position.up();
         }
@@ -30,7 +30,7 @@ public class WorldGenWaterfall extends WorldGenerator {
         return true;
     }
 
-    private boolean isAirNearby(World world, BlockPos pos) {
+    private boolean isAirNearby(Level world, BlockPos pos) {
         for (BlockPos dir : Arrays.asList(pos.east(), pos.west(), pos.north(), pos.south())) {
             if (world.getBlockState(dir).getBlock() == Blocks.AIR) {
                 return true;

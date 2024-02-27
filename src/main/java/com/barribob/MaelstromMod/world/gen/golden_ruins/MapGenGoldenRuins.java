@@ -3,8 +3,8 @@ package com.barribob.MaelstromMod.world.gen.golden_ruins;
 import com.barribob.MaelstromMod.world.dimension.cliff.ChunkGeneratorCliff;
 import com.barribob.MaelstromMod.world.gen.MapGenModStructure;
 import net.minecraft.util.Rotation;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.gen.structure.StructureStart;
 
 import java.util.Random;
@@ -36,13 +36,13 @@ public class MapGenGoldenRuins extends MapGenModStructure {
         public Start() {
         }
 
-        public Start(World worldIn, Random random, int chunkX, int chunkZ, ChunkGeneratorCliff provider) {
+        public Start(Level worldIn, Random random, int chunkX, int chunkZ, ChunkGeneratorCliff provider) {
             super(chunkX, chunkZ);
             this.provider = provider;
             this.create(worldIn, random, chunkX, chunkZ);
         }
 
-        private void create(World worldIn, Random rnd, int chunkX, int chunkZ) {
+        private void create(Level worldIn, Random rnd, int chunkX, int chunkZ) {
             Random random = new Random(chunkX + chunkZ * 10387313);
             int rand = random.nextInt(Rotation.values().length);
 

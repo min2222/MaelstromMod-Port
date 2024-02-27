@@ -5,15 +5,15 @@ import com.barribob.MaelstromMod.init.ModProfessions;
 import com.barribob.MaelstromMod.items.gun.ItemGun;
 import com.barribob.MaelstromMod.util.ModUtils;
 import com.barribob.MaelstromMod.util.TimedMessager;
-import net.minecraft.entity.SharedMonsterAttributes;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.entity.ai.EntityAIWatchClosest2;
 import net.minecraft.entity.passive.EntityVillager.ITradeList;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.util.DamageSource;
-import net.minecraft.util.EnumParticleTypes;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.village.MerchantRecipe;
-import net.minecraft.world.World;
+import net.minecraft.world.level.Level;
 
 import java.util.List;
 
@@ -23,7 +23,7 @@ public class NexusGunTrader extends EntityTrader {
     private static final String[] GUN_EXPLANATION = {"gun_1", "gun_2", "gun_3", "gun_4", "gun_5", "gun_6", "gun_7", ""};
     private static final int[] MESSAGE_TIMES = {50, 150, 250, 350, 450, 550, 650, 750};
 
-    public NexusGunTrader(World worldIn) {
+    public NexusGunTrader(Level worldIn) {
         super(worldIn);
         this.setImmovable(true);
         this.setNoGravity(true);
@@ -41,7 +41,7 @@ public class NexusGunTrader extends EntityTrader {
 
     @Override
     protected void initEntityAI() {
-        this.tasks.addTask(9, new EntityAIWatchClosest2(this, EntityPlayer.class, 5.0F, 1.0F));
+        this.tasks.addTask(9, new EntityAIWatchClosest2(this, Player.class, 5.0F, 1.0F));
     }
 
     @Override
@@ -59,12 +59,12 @@ public class NexusGunTrader extends EntityTrader {
     public void handleStatusUpdate(byte id) {
         if (id == smoke) {
             // Positions smoke particles right above the smoking pipe
-            Vec3d look = this.getVectorForRotation(this.rotationPitch, this.rotationYawHead);
-            Vec3d pos = ModUtils.entityPos(this).add(new Vec3d(0, this.getEyeHeight(), 0));
-            Vec3d side = look.scale(0.25).rotateYaw((float) Math.PI * -0.5f);
-            Vec3d offset = pos.add(look.scale(0.5f)).add(side).add(new Vec3d(0, 0.1, 0));
+            Vec3 look = this.getVectorForRotation(this.rotationPitch, this.rotationYawHead);
+            Vec3 pos = ModUtils.entityPos(this).add(new Vec3(0, this.getEyeHeight(), 0));
+            Vec3 side = look.scale(0.25).rotateYaw((float) Math.PI * -0.5f);
+            Vec3 offset = pos.add(look.scale(0.5f)).add(side).add(new Vec3(0, 0.1, 0));
 
-            world.spawnParticle(EnumParticleTypes.SMOKE_NORMAL, offset.x, offset.y, offset.z, 0, 0.0f, 0);
+            world.spawnParticle(ParticleTypes.SMOKE_NORMAL, offset.x, offset.y, offset.z, 0, 0.0f, 0);
         } else {
             super.handleStatusUpdate(id);
         }
@@ -88,6 +88,6 @@ public class NexusGunTrader extends EntityTrader {
     @Override
     protected void applyEntityAttributes() {
         super.applyEntityAttributes();
-        this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(20);
+        this.getEntityAttribute(Attributes.MAX_HEALTH).setBaseValue(20);
     }
 }

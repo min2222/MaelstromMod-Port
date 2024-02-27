@@ -1,11 +1,11 @@
 package com.barribob.MaelstromMod.world.gen.foliage;
 
 import com.barribob.MaelstromMod.init.ModBlocks;
-import net.minecraft.block.BlockLeaves;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.init.Blocks;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.world.level.block.LeavesBlock;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.gen.feature.WorldGenAbstractTree;
 
 import java.util.Random;
@@ -14,22 +14,22 @@ import java.util.Random;
  * Tree structure based on the Canopy Tree
  */
 public class WorldGenAzureTree extends WorldGenAbstractTree {
-    private static final IBlockState AZURE_LOG = ModBlocks.AZURE_LOG.getDefaultState();
-    private static final IBlockState AZURE_LEAVES = ModBlocks.AZURE_LEAVES.getDefaultState().withProperty(BlockLeaves.CHECK_DECAY, Boolean.valueOf(false));
+    private static final BlockState AZURE_LOG = ModBlocks.AZURE_LOG.getDefaultState();
+    private static final BlockState AZURE_LEAVES = ModBlocks.AZURE_LEAVES.getDefaultState().withProperty(LeavesBlock.CHECK_DECAY, Boolean.valueOf(false));
 
     public WorldGenAzureTree(boolean notify) {
         super(notify);
     }
 
-    private void placeLogAt(World worldIn, BlockPos pos) {
+    private void placeLogAt(Level worldIn, BlockPos pos) {
         if (this.canGrowInto(worldIn.getBlockState(pos).getBlock())) {
             this.setBlockAndNotifyAdequately(worldIn, pos, AZURE_LOG);
         }
     }
 
-    private void placeLeafAt(World worldIn, int x, int y, int z) {
+    private void placeLeafAt(Level worldIn, int x, int y, int z) {
         BlockPos blockpos = new BlockPos(x, y, z);
-        IBlockState state = worldIn.getBlockState(blockpos);
+        BlockState state = worldIn.getBlockState(blockpos);
 
         if (state.getBlock().isAir(state, worldIn, blockpos)) {
             this.setBlockAndNotifyAdequately(worldIn, blockpos, AZURE_LEAVES);
@@ -37,7 +37,7 @@ public class WorldGenAzureTree extends WorldGenAbstractTree {
     }
 
     @Override
-    public boolean generate(World worldIn, Random rand, BlockPos position) {
+    public boolean generate(Level worldIn, Random rand, BlockPos position) {
         int relativeHeight = rand.nextInt(5) + 7;
         int leafHeight = rand.nextInt(2) + 2;
         int maxLeafWidth = 1 + rand.nextInt(leafHeight + 1);
@@ -77,7 +77,7 @@ public class WorldGenAzureTree extends WorldGenAbstractTree {
                 return false;
             } else {
                 BlockPos down = position.down();
-                IBlockState state = worldIn.getBlockState(down);
+                BlockState state = worldIn.getBlockState(down);
                 boolean isSoil = state.getBlock() == Blocks.GRASS;
 
                 // Make sure there is soil
@@ -122,7 +122,7 @@ public class WorldGenAzureTree extends WorldGenAbstractTree {
      * @param position
      * @param state
      */
-    private void generateTreeSegment(int relativeHeight, int leafHeight, int maxLeafWidth, World worldIn, Random rand, BlockPos position, IBlockState state) {
+    private void generateTreeSegment(int relativeHeight, int leafHeight, int maxLeafWidth, Level worldIn, Random rand, BlockPos position, BlockState state) {
         int leafWidth = 0;
 
         // Generate the leaves

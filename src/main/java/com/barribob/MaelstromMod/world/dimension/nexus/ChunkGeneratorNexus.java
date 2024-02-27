@@ -2,10 +2,10 @@ package com.barribob.MaelstromMod.world.dimension.nexus;
 
 import net.minecraft.block.BlockFalling;
 import net.minecraft.entity.EnumCreatureType;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkPos;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.world.World;
+import net.minecraft.util.Mth;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.WorldType;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.chunk.Chunk;
@@ -21,7 +21,7 @@ import java.util.Random;
  */
 public class ChunkGeneratorNexus implements IChunkGenerator {
     private final Random rand;
-    private final World world;
+    private final Level world;
     private final boolean mapFeaturesEnabled;
     private final WorldType terrainType;
     private final float[] biomeWeights;
@@ -30,7 +30,7 @@ public class ChunkGeneratorNexus implements IChunkGenerator {
 
     private Biome[] biomesForGeneration;
 
-    public ChunkGeneratorNexus(World worldIn, long seed, boolean mapFeaturesEnabledIn, String generatorOptions) {
+    public ChunkGeneratorNexus(Level worldIn, long seed, boolean mapFeaturesEnabledIn, String generatorOptions) {
         this.world = worldIn;
         this.mapFeaturesEnabled = mapFeaturesEnabledIn;
         this.terrainType = worldIn.getWorldInfo().getTerrainType();
@@ -42,7 +42,7 @@ public class ChunkGeneratorNexus implements IChunkGenerator {
          */
         for (int i = -2; i <= 2; ++i) {
             for (int j = -2; j <= 2; ++j) {
-                float f = 10.0F / MathHelper.sqrt(i * i + j * j + 0.2F);
+                float f = 10.0F / Mth.sqrt(i * i + j * j + 0.2F);
                 this.biomeWeights[i + 2 + (j + 2) * 5] = f;
             }
         }
@@ -111,7 +111,7 @@ public class ChunkGeneratorNexus implements IChunkGenerator {
     }
 
     @Override
-    public BlockPos getNearestStructurePos(World worldIn, String structureName, BlockPos position, boolean findUnexplored) {
+    public BlockPos getNearestStructurePos(Level worldIn, String structureName, BlockPos position, boolean findUnexplored) {
         return null;
     }
 
@@ -121,7 +121,7 @@ public class ChunkGeneratorNexus implements IChunkGenerator {
     }
 
     @Override
-    public boolean isInsideStructure(World worldIn, String structureName, BlockPos pos) {
+    public boolean isInsideStructure(Level worldIn, String structureName, BlockPos pos) {
         return false;
     }
 }

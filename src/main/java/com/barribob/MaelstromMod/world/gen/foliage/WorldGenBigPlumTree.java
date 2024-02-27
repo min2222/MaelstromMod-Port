@@ -2,14 +2,14 @@ package com.barribob.MaelstromMod.world.gen.foliage;
 
 import com.barribob.MaelstromMod.init.ModBlocks;
 import com.google.common.collect.Lists;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockLeaves;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.block.BlockLog;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.init.Blocks;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.util.Mth;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.gen.feature.WorldGenAbstractTree;
 
 import java.util.List;
@@ -20,7 +20,7 @@ import java.util.Random;
  */
 public class WorldGenBigPlumTree extends WorldGenAbstractTree {
     private Random rand;
-    private World world;
+    private Level world;
     private BlockPos basePos = BlockPos.ORIGIN;
     int heightLimit;
     int height;
@@ -37,8 +37,8 @@ public class WorldGenBigPlumTree extends WorldGenAbstractTree {
     int leafDistanceLimit = 4;
     List<WorldGenBigPlumTree.FoliageCoordinates> foliageCoords;
 
-    private static IBlockState leaf = ModBlocks.PLUM_LEAVES.getDefaultState().withProperty(BlockLeaves.CHECK_DECAY, Boolean.valueOf(false));
-    private static IBlockState plum = ModBlocks.PLUM_FILLED_LEAVES.getDefaultState().withProperty(BlockLeaves.CHECK_DECAY, Boolean.valueOf(false));
+    private static BlockState leaf = ModBlocks.PLUM_LEAVES.getDefaultState().withProperty(LeavesBlock.CHECK_DECAY, Boolean.valueOf(false));
+    private static BlockState plum = ModBlocks.PLUM_FILLED_LEAVES.getDefaultState().withProperty(LeavesBlock.CHECK_DECAY, Boolean.valueOf(false));
 
     public WorldGenBigPlumTree(boolean notify) {
         super(notify);
@@ -94,14 +94,14 @@ public class WorldGenBigPlumTree extends WorldGenAbstractTree {
         }
     }
 
-    void crosSection(BlockPos pos, float p_181631_2_, IBlockState leaf, Boolean generatePlumLeaves) {
+    void crosSection(BlockPos pos, float p_181631_2_, BlockState leaf, Boolean generatePlumLeaves) {
         int i = (int) (p_181631_2_ + 0.618D);
 
         for (int j = -i; j <= i; ++j) {
             for (int k = -i; k <= i; ++k) {
                 if (Math.pow(Math.abs(j) + 0.5D, 2.0D) + Math.pow(Math.abs(k) + 0.5D, 2.0D) <= p_181631_2_ * p_181631_2_) {
                     BlockPos blockpos = pos.add(j, 0, k);
-                    IBlockState state = this.world.getBlockState(blockpos);
+                    BlockState state = this.world.getBlockState(blockpos);
 
                     if (state.getBlock().isAir(state, world, blockpos) || state.getBlock().isLeaves(state, world, blockpos)) {
                         if (generatePlumLeaves && rand.nextInt(WorldGenPlumTree.plumLeafDensity) == 0) {
@@ -124,7 +124,7 @@ public class WorldGenBigPlumTree extends WorldGenAbstractTree {
         } else {
             float f = this.heightLimit / 2.0F;
             float f1 = f - y;
-            float f2 = MathHelper.sqrt(f * f - f1 * f1);
+            float f2 = Mth.sqrt(f * f - f1 * f1);
 
             if (f1 == 0.0F) {
                 f2 = f;
@@ -171,9 +171,9 @@ public class WorldGenBigPlumTree extends WorldGenAbstractTree {
      * Returns the absolute greatest distance in the BlockPos object.
      */
     private int getGreatestDistance(BlockPos posIn) {
-        int i = MathHelper.abs(posIn.getX());
-        int j = MathHelper.abs(posIn.getY());
-        int k = MathHelper.abs(posIn.getZ());
+        int i = Mth.abs(posIn.getX());
+        int j = Mth.abs(posIn.getY());
+        int k = Mth.abs(posIn.getZ());
 
         if (k > i && k > j) {
             return k;
@@ -281,7 +281,7 @@ public class WorldGenBigPlumTree extends WorldGenAbstractTree {
     }
 
     @Override
-    public boolean generate(World worldIn, Random rand, BlockPos position) {
+    public boolean generate(Level worldIn, Random rand, BlockPos position) {
         boolean generateLeaves = rand.nextInt(WorldGenPlumTree.plumLeafChance) == 0 ? true : false;
         this.world = worldIn;
         this.basePos = position;
@@ -310,7 +310,7 @@ public class WorldGenBigPlumTree extends WorldGenAbstractTree {
      */
     private boolean validTreeLocation() {
         BlockPos down = this.basePos.down();
-        net.minecraft.block.state.IBlockState state = this.world.getBlockState(down);
+        BlockState state = this.world.getBlockState(down);
         boolean isSoil = state.getBlock() == Blocks.GRASS;
 
         if (!isSoil) {

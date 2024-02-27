@@ -9,18 +9,18 @@ import com.barribob.MaelstromMod.util.ModRandom;
 import com.barribob.MaelstromMod.util.ModUtils;
 import com.barribob.MaelstromMod.util.handlers.LootTableHandler;
 import com.barribob.MaelstromMod.util.handlers.ParticleManager;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.init.SoundEvents;
-import net.minecraft.util.DamageSource;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.SoundEvent;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.level.Level;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 
 public class EntityGoldenPillar extends EntityMaelstromMob implements IAttack {
-    public EntityGoldenPillar(World worldIn) {
+    public EntityGoldenPillar(Level worldIn) {
         super(worldIn);
         this.setSize(1.4f, 3.2f);
         this.setNoGravity(true);
@@ -40,21 +40,21 @@ public class EntityGoldenPillar extends EntityMaelstromMob implements IAttack {
     }
 
     @Override
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public void handleStatusUpdate(byte id) {
         if (id == ModUtils.PARTICLE_BYTE) {
             // Spawn particles as the eyes
             ModUtils.performNTimes(3, (i) -> {
-                Vec3d look = this.getVectorForRotation(0, this.renderYawOffset + (i * 120)).scale(0.5f);
-                Vec3d pos = this.getPositionVector().add(new Vec3d(0, this.getEyeHeight(), 0));
+                Vec3 look = this.getVectorForRotation(0, this.renderYawOffset + (i * 120)).scale(0.5f);
+                Vec3 pos = this.getPositionVector().add(new Vec3(0, this.getEyeHeight(), 0));
                 ParticleManager.spawnEffect(world, pos.add(look), ModColors.YELLOW);
             });
         }
         else if (id == ModUtils.SECOND_PARTICLE_BYTE) {
             ParticleManager.spawnFirework(world,
-                    this.getPositionVector().add(new Vec3d(ModRandom.getFloat(0.25f), 1, ModRandom.getFloat(0.25f))),
+                    this.getPositionVector().add(new Vec3(ModRandom.getFloat(0.25f), 1, ModRandom.getFloat(0.25f))),
                     ModColors.YELLOW,
-                    new Vec3d(0, 0.15, 0));
+                    new Vec3(0, 0.15, 0));
         }
         super.handleStatusUpdate(id);
     }
@@ -74,7 +74,7 @@ public class EntityGoldenPillar extends EntityMaelstromMob implements IAttack {
         return LootTableHandler.GOLDEN_MAELSTROM;
     }
 
-    private Runnable getRune(Vec3d target) {
+    private Runnable getRune(Vec3 target) {
         return () -> {
             Projectile projectile = new EntityGoldenRune(world, this, this.getAttack());
             projectile.setTravelRange(30);
@@ -84,15 +84,15 @@ public class EntityGoldenPillar extends EntityMaelstromMob implements IAttack {
     }
 
     @Override
-    public int startAttack(EntityLivingBase target, float distanceSq, boolean strafingBackwards) {
+    public int startAttack(LivingEntity target, float distanceSq, boolean strafingBackwards) {
 
         /*
         Oscillate attacks between attack, and to the side
          */
 
         addEvent(() -> {
-            Vec3d centerTarget = target.getPositionEyes(1);
-            Vec3d offset = centerTarget
+            Vec3 centerTarget = target.getPositionEyes(1);
+            Vec3 offset = centerTarget
                     .subtract(getPositionEyes(1))
                     .crossProduct(ModUtils.yVec(1))
                     .normalize()
@@ -111,6 +111,6 @@ public class EntityGoldenPillar extends EntityMaelstromMob implements IAttack {
     }
 
     @Override
-    public void attackEntityWithRangedAttack(EntityLivingBase target, float distanceFactor) {
+    public void attackEntityWithRangedAttack(LivingEntity target, float distanceFactor) {
     }
 }

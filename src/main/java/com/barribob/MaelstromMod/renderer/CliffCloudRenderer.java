@@ -4,17 +4,16 @@ import com.barribob.MaelstromMod.event_handlers.FogHandler;
 import com.barribob.MaelstromMod.util.ModColors;
 import com.barribob.MaelstromMod.util.Reference;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.multiplayer.WorldClient;
-import net.minecraft.client.renderer.*;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.client.renderer.vertex.VertexBuffer;
 import net.minecraft.client.renderer.vertex.VertexFormat;
 import net.minecraft.client.resources.IResourceManager;
-import net.minecraft.entity.Entity;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.util.Mth;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.client.IRenderHandler;
 import net.minecraftforge.client.resource.IResourceType;
 import net.minecraftforge.client.resource.ISelectiveResourceReloadListener;
@@ -45,7 +44,7 @@ public class CliffCloudRenderer extends IRenderHandler implements ISelectiveReso
     private DynamicTexture COLOR_TEX = null;
 
     @Override
-    public void render(float partialTicks, WorldClient world, Minecraft mc) {
+    public void render(float partialTicks, ClientLevel world, Minecraft mc) {
         Entity entity = mc.getRenderViewEntity();
         GlStateManager.alphaFunc(GL11.GL_GREATER, 0.0f);
 
@@ -55,7 +54,7 @@ public class CliffCloudRenderer extends IRenderHandler implements ISelectiveReso
             double entityHeight = entity.getPositionEyes(partialTicks).y;
             double distanceFromPlane = entityHeight - (y + entity.getEyeHeight());
             // As the player approaches the plane, fade it out
-            double alpha = maxAlpha * MathHelper.clamp(distanceFromPlane / FogHandler.SWAMP_FOG_FADE_START, 0, 1);
+            double alpha = maxAlpha * Mth.clamp(distanceFromPlane / FogHandler.SWAMP_FOG_FADE_START, 0, 1);
 
             this.renderPlane(partialTicks, world, mc, y, ModColors.SWAMP_FOG.scale(255), (int) alpha);
         }
@@ -63,7 +62,7 @@ public class CliffCloudRenderer extends IRenderHandler implements ISelectiveReso
         GlStateManager.alphaFunc(GL11.GL_GREATER, 0.1f);
     }
 
-    public void renderPlane(float partialTicks, WorldClient world, Minecraft mc, float height, Vec3d colorTweak, int alpha) {
+    public void renderPlane(float partialTicks, ClientLevel world, Minecraft mc, float height, Vec3 colorTweak, int alpha) {
         if (!isBuilt()) {
             reloadTextures();
         }
@@ -257,7 +256,7 @@ public class CliffCloudRenderer extends IRenderHandler implements ISelectiveReso
 
     private float ceilToScale(float value) {
         float scale = getScale();
-        return MathHelper.ceil(value / scale) * scale;
+        return Mth.ceil(value / scale) * scale;
     }
 
     private void vertices(BufferBuilder buffer) {

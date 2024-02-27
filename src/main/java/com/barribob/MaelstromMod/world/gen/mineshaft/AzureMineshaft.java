@@ -1,10 +1,10 @@
 package com.barribob.MaelstromMod.world.gen.mineshaft;
 
 import com.google.common.collect.Lists;
+import net.minecraft.core.BlockPos;
 import net.minecraft.util.Rotation;
 import net.minecraft.util.Tuple;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.gen.structure.StructureComponent;
 import net.minecraft.world.gen.structure.template.TemplateManager;
 
@@ -39,7 +39,7 @@ public class AzureMineshaft {
     /**
      * Starts the mineshaft growing in four directions
      */
-    public static void startMineshaft(World world, TemplateManager manager, BlockPos pos, Rotation rot, List<StructureComponent> components) {
+    public static void startMineshaft(Level world, TemplateManager manager, BlockPos pos, Rotation rot, List<StructureComponent> components) {
         AzureMineshaftTemplate template = new AzureMineshaftTemplate(manager, "start", pos, rot, 0, true);
         components.add(template);
         for (Tuple<Rotation, BlockPos> tuple : START_POS) {
@@ -51,7 +51,7 @@ public class AzureMineshaft {
     /*
      * Generate a rail with a structure attached
      */
-    private static boolean structureRail(World world, TemplateManager manager, AzureMineshaftTemplate parent, BlockPos pos, Rotation rot, List<StructureComponent> components) {
+    private static boolean structureRail(Level world, TemplateManager manager, AzureMineshaftTemplate parent, BlockPos pos, Rotation rot, List<StructureComponent> components) {
         AzureMineshaftTemplate template = addAdjustedPiece(manager, parent, pos, "rail_structure", rot, true);
 
         if (template.isCollidingExcParent(manager, parent, components)) {
@@ -72,7 +72,7 @@ public class AzureMineshaft {
     /**
      * Generates the side structure
      */
-    private static boolean generateSide(World world, TemplateManager manager, AzureMineshaftTemplate parent, BlockPos pos, Rotation rot, List<StructureComponent> components) {
+    private static boolean generateSide(Level world, TemplateManager manager, AzureMineshaftTemplate parent, BlockPos pos, Rotation rot, List<StructureComponent> components) {
         String[] types = {"house", "double_house", "log_pile", "ore_pile"};
         String type = types[world.rand.nextInt(types.length)];
         AzureMineshaftTemplate template = addAdjustedPiece(manager, parent, pos, type, rot, true);
@@ -86,7 +86,7 @@ public class AzureMineshaft {
         return true;
     }
 
-    private static boolean turnRight(World world, TemplateManager manager, AzureMineshaftTemplate parent, BlockPos pos, Rotation rot, List<StructureComponent> components) {
+    private static boolean turnRight(Level world, TemplateManager manager, AzureMineshaftTemplate parent, BlockPos pos, Rotation rot, List<StructureComponent> components) {
         AzureMineshaftTemplate template = addAdjustedPiece(manager, parent, pos, "turn_right", rot, true);
 
         if (template.isCollidingExcParent(manager, parent, components)) {
@@ -104,7 +104,7 @@ public class AzureMineshaft {
         return true;
     }
 
-    private static boolean turnLeft(World world, TemplateManager manager, AzureMineshaftTemplate parent, BlockPos pos, Rotation rot, List<StructureComponent> components) {
+    private static boolean turnLeft(Level world, TemplateManager manager, AzureMineshaftTemplate parent, BlockPos pos, Rotation rot, List<StructureComponent> components) {
         AzureMineshaftTemplate template = addAdjustedPiece(manager, parent, pos, "turn_left", rot, true);
 
         if (template.isCollidingExcParent(manager, parent, components)) {
@@ -118,7 +118,7 @@ public class AzureMineshaft {
         return true;
     }
 
-    private static boolean generateStairs(World world, TemplateManager manager, AzureMineshaftTemplate parent, BlockPos pos, Rotation rot, List<StructureComponent> components) {
+    private static boolean generateStairs(Level world, TemplateManager manager, AzureMineshaftTemplate parent, BlockPos pos, Rotation rot, List<StructureComponent> components) {
         AzureMineshaftTemplate template = addAdjustedPiece(manager, parent, pos, "rail_stairs", rot, true);
 
         if (template.isCollidingExcParent(manager, parent, components)) {
@@ -136,7 +136,7 @@ public class AzureMineshaft {
         return true;
     }
 
-    private static boolean endRail(World world, TemplateManager manager, AzureMineshaftTemplate parent, BlockPos pos, Rotation rot, List<StructureComponent> components) {
+    private static boolean endRail(Level world, TemplateManager manager, AzureMineshaftTemplate parent, BlockPos pos, Rotation rot, List<StructureComponent> components) {
         AzureMineshaftTemplate template = addAdjustedPiece(manager, parent, pos, "rail_end", rot, true);
 
         if (template.isCollidingExcParent(manager, parent, components)) {
@@ -151,7 +151,7 @@ public class AzureMineshaft {
     /**
      * Generates new rails from the parent
      */
-    private static boolean generateRail(World world, TemplateManager manager, AzureMineshaftTemplate parent, String railType, BlockPos pos, Rotation rot,
+    private static boolean generateRail(Level world, TemplateManager manager, AzureMineshaftTemplate parent, String railType, BlockPos pos, Rotation rot,
                                         List<StructureComponent> components) {
         AzureMineshaftTemplate template = addAdjustedPiece(manager, parent, pos, railType, rot, true);
 

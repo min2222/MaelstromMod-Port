@@ -1,7 +1,11 @@
 package com.barribob.MaelstromMod.blocks;
 
-import net.minecraft.block.SoundType;
-import net.minecraft.block.material.Material;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.material.Material;
+import net.minecraft.world.level.block.state.BlockState;
 
 public class BlockRedstoneBrick extends BlockBase {
     public BlockRedstoneBrick(String name, Material material, float hardness, float resistance, SoundType soundType) {
@@ -9,14 +13,14 @@ public class BlockRedstoneBrick extends BlockBase {
     }
 
     @Override
-    public boolean canProvidePower(net.minecraft.block.state.IBlockState state) {
+    public boolean canProvidePower(BlockState state) {
         return true;
     }
 
     ;
 
     @Override
-    public int getWeakPower(net.minecraft.block.state.IBlockState blockState, net.minecraft.world.IBlockAccess blockAccess, net.minecraft.util.math.BlockPos pos, net.minecraft.util.EnumFacing side) {
+    public int getWeakPower(BlockState blockState, BlockGetter blockAccess, BlockPos pos, Direction side) {
         return 15;
     }
 

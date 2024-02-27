@@ -5,31 +5,31 @@ import com.barribob.MaelstromMod.entity.entities.gauntlet.EntityCrimsonCrystal;
 import com.barribob.MaelstromMod.util.ModRandom;
 import com.barribob.MaelstromMod.util.ModUtils;
 import com.barribob.MaelstromMod.util.handlers.ParticleManager;
-import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.util.math.RayTraceResult;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.level.Level;
 
 import javax.annotation.Nullable;
 
 public class ProjectileCrimsonWanderer extends Projectile {
     private static final int AGE = 20 * 4;
 
-    public ProjectileCrimsonWanderer(World worldIn, EntityLivingBase throwerIn, float baseDamage) {
+    public ProjectileCrimsonWanderer(Level worldIn, LivingEntity throwerIn, float baseDamage) {
         super(worldIn, throwerIn, baseDamage);
     }
 
-    public ProjectileCrimsonWanderer(World worldIn) {
+    public ProjectileCrimsonWanderer(Level worldIn) {
         super(worldIn);
     }
 
-    public ProjectileCrimsonWanderer(World worldIn, double x, double y, double z) {
+    public ProjectileCrimsonWanderer(Level worldIn, double x, double y, double z) {
         super(worldIn, x, y, z);
     }
 
     @Override
     public void onUpdate() {
-        Vec3d prevVel = ModUtils.getEntityVelocity(this);
+        Vec3 prevVel = ModUtils.getEntityVelocity(this);
         super.onUpdate();
         ModUtils.setEntityVelocity(this, prevVel);
 
@@ -66,7 +66,7 @@ public class ProjectileCrimsonWanderer extends Projectile {
 
             ParticleManager.spawnSplit(world,
                     getPositionVector().add(ModRandom.randVec().scale(0.25)),
-                    new Vec3d(1, colorAge, colorAge), Vec3d.ZERO);
+                    new Vec3(1, colorAge, colorAge), Vec3.ZERO);
         }
     }
 }

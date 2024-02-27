@@ -3,7 +3,7 @@ package com.barribob.MaelstromMod.entity.animation;
 import com.barribob.MaelstromMod.Main;
 import com.barribob.MaelstromMod.init.ModBBAnimations;
 import com.barribob.MaelstromMod.packets.MessageLoopAnimationUpdate;
-import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
@@ -22,7 +22,7 @@ import java.util.Map.Entry;
  */
 @Mod.EventBusSubscriber
 public class AnimationManagerServer {
-    private static Map<EntityLivingBase, Map<String, Integer>> loopingAnimations = new HashMap<EntityLivingBase, Map<String, Integer>>();
+    private static Map<LivingEntity, Map<String, Integer>> loopingAnimations = new HashMap<LivingEntity, Map<String, Integer>>();
     /**
      * How often the server should send updates of an animation to the client. The reason why we need the server to periodically update all clients is because if an animation is added before a client
      * joins the world (is especially problematic for looping animations) or a more interesting problem where going out of the "tracking range" of an enemy will cause that enemy to effectively be
@@ -30,7 +30,7 @@ public class AnimationManagerServer {
      */
     private static final int REFRESH_RATE = 20;
 
-    public static void updateLooping(EntityLivingBase entity, String animationId, boolean remove) {
+    public static void updateLooping(LivingEntity entity, String animationId, boolean remove) {
         if (remove) {
             if (loopingAnimations.containsKey(entity)) {
                 if (loopingAnimations.get(entity).containsKey(animationId)) {
@@ -57,9 +57,9 @@ public class AnimationManagerServer {
     @SubscribeEvent
     public static void onServerTick(TickEvent.WorldTickEvent event) {
         if (event.phase == Phase.END) {
-            List<EntityLivingBase> entitiesToRemove = new ArrayList<EntityLivingBase>();
-            for (Entry<EntityLivingBase, Map<String, Integer>> entry : loopingAnimations.entrySet()) {
-                EntityLivingBase entity = entry.getKey();
+            List<LivingEntity> entitiesToRemove = new ArrayList<LivingEntity>();
+            for (Entry<LivingEntity, Map<String, Integer>> entry : loopingAnimations.entrySet()) {
+                LivingEntity entity = entry.getKey();
 
                 if (!entity.isAddedToWorld() && entity.isDead) {
                     entitiesToRemove.add(entity);
@@ -75,7 +75,7 @@ public class AnimationManagerServer {
             }
 
             // Remove entities not in this world anymore
-            for (EntityLivingBase entity : entitiesToRemove) {
+            for (LivingEntity entity : entitiesToRemove) {
                 loopingAnimations.remove(entity);
             }
         }

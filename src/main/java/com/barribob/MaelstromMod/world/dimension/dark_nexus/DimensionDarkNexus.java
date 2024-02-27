@@ -3,15 +3,16 @@ package com.barribob.MaelstromMod.world.dimension.dark_nexus;
 import com.barribob.MaelstromMod.init.BiomeInit;
 import com.barribob.MaelstromMod.init.ModDimensions;
 import com.barribob.MaelstromMod.world.dimension.nexus.ChunkGeneratorNexus;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.DimensionType;
 import net.minecraft.world.WorldProvider;
 import net.minecraft.world.biome.BiomeProviderSingle;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.gen.IChunkGenerator;
 import net.minecraftforge.client.IRenderHandler;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 
 import javax.annotation.Nullable;
 
@@ -42,21 +43,21 @@ public class DimensionDarkNexus extends WorldProvider {
     }
 
     @Override
-    public WorldSleepResult canSleepAt(net.minecraft.entity.player.EntityPlayer player, BlockPos pos) {
+    public WorldSleepResult canSleepAt(Player player, BlockPos pos) {
         return WorldSleepResult.DENY;
     }
 
     @Override
-    public Vec3d getFogColor(float time, float p_76562_2_) {
+    public Vec3 getFogColor(float time, float p_76562_2_) {
         float f1 = 100 / 255f;
         float f2 = 100 / 255F;
         float f3 = 100 / 255f;
-        return new Vec3d(0, 0, 0);
+        return new Vec3(0, 0, 0);
     }
 
     @Override
     @Nullable
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public float[] calcSunriseSunsetColors(float celestialAngle, float partialTicks) {
         return null;
     }

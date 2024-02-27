@@ -2,20 +2,20 @@ package com.barribob.MaelstromMod.entity.ai;
 
 import com.barribob.MaelstromMod.util.ModRandom;
 import com.barribob.MaelstromMod.util.ModUtils;
-import net.minecraft.entity.EntityLiving;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.entity.ai.EntityAIBase;
 import net.minecraft.pathfinding.NodeProcessor;
 import net.minecraft.pathfinding.PathNodeType;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.phys.Vec3;
 
 public class AIJumpAtTarget extends EntityAIBase {
-    private final EntityLiving entity;
+    private final Mob entity;
     private final float horzVel;
     private final float yVel;
     private int ticksAirborne = 0;
 
-    public AIJumpAtTarget(EntityLiving entity, float horzVel, float yVel) {
+    public AIJumpAtTarget(Mob entity, float horzVel, float yVel) {
         this.entity = entity;
         this.horzVel = horzVel;
         this.yVel = yVel;
@@ -40,8 +40,8 @@ public class AIJumpAtTarget extends EntityAIBase {
             return true;
         } else {
             if (this.entity.getNavigator() != null && this.entity.getNavigator().noPath() && this.entity.onGround) {
-                Vec3d jumpDirection = entity.getAttackTarget().getPositionVector().subtract(entity.getPositionVector()).normalize();
-                Vec3d jumpPos = entity.getPositionVector().add(jumpDirection);
+                Vec3 jumpDirection = entity.getAttackTarget().getPositionVector().subtract(entity.getPositionVector()).normalize();
+                Vec3 jumpPos = entity.getPositionVector().add(jumpDirection);
 
                 if (!ModUtils.isAirBelow(entity.world, new BlockPos(jumpPos), 3)) {
                     return false;

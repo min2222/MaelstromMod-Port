@@ -8,10 +8,10 @@ import com.barribob.MaelstromMod.util.ModDamageSource;
 import com.barribob.MaelstromMod.util.ModRandom;
 import com.barribob.MaelstromMod.util.ModUtils;
 import com.barribob.MaelstromMod.util.handlers.SoundsHandler;
-import net.minecraft.entity.Entity;
-import net.minecraft.util.DamageSource;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.util.math.RayTraceResult;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.function.Consumer;
 
@@ -22,9 +22,9 @@ public class LaserAction implements IGauntletAction{
     private final float laserExplosionSize;
     int beamLag;
     private final byte stopLaserByte;
-    private final Consumer<Vec3d> onLaserImpact;
+    private final Consumer<Vec3> onLaserImpact;
 
-    public LaserAction(EntityLeveledMob entity, byte stopLaserByte, Consumer<Vec3d> onLaserImpact) {
+    public LaserAction(EntityLeveledMob entity, byte stopLaserByte, Consumer<Vec3> onLaserImpact) {
         this.entity = entity;
         maxLaserDistance = entity.getMobConfig().getDouble("max_laser_distance");
         beamLag = entity.getMobConfig().getInt("beam_lag");
@@ -54,12 +54,12 @@ public class LaserAction implements IGauntletAction{
     public void update() {
         if (this.isShootingLazer) {
             if (entity.getAttackTarget() != null) {
-                Vec3d laserShootPos = entity.getAttackTarget().getPositionVector();
+                Vec3 laserShootPos = entity.getAttackTarget().getPositionVector();
                 entity.addEvent(() -> {
 
                     // Extend shooting beyond the target position up to 40 blocks
-                    Vec3d laserDirection = laserShootPos.subtract(entity.getPositionEyes(1)).normalize();
-                    Vec3d lazerPos = laserShootPos.add(laserDirection.scale(maxLaserDistance));
+                    Vec3 laserDirection = laserShootPos.subtract(entity.getPositionEyes(1)).normalize();
+                    Vec3 lazerPos = laserShootPos.add(laserDirection.scale(maxLaserDistance));
                     // Ray trace both blocks and entities
                     RayTraceResult raytraceresult = entity.world.rayTraceBlocks(entity.getPositionEyes(1), lazerPos, false, true, false);
                     if (raytraceresult != null) {
@@ -88,8 +88,8 @@ public class LaserAction implements IGauntletAction{
         }
     }
 
-    private Vec3d onLaserImpact(RayTraceResult raytraceresult) {
-        Vec3d hitPos = raytraceresult.hitVec;
+    private Vec3 onLaserImpact(RayTraceResult raytraceresult) {
+        Vec3 hitPos = raytraceresult.hitVec;
         if(laserExplosionSize > 0) {
             entity.world.createExplosion(entity, hitPos.x, hitPos.y, hitPos.z, laserExplosionSize, ModUtils.mobGriefing(entity.world, entity));
         }

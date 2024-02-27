@@ -5,14 +5,14 @@ import com.barribob.MaelstromMod.entity.entities.EntityMaelstromMob;
 import com.barribob.MaelstromMod.init.ModEnchantments;
 import com.barribob.MaelstromMod.util.Element;
 import com.barribob.MaelstromMod.util.IElement;
-import net.minecraft.enchantment.EnchantmentHelper;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.EnumParticleTypes;
-import net.minecraft.world.World;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 
 /**
  * A helper class to record enchantments from the gun stack
@@ -24,12 +24,12 @@ public class ProjectileGun extends Projectile {
     private boolean isCritical;
     private static final byte CRITICAL_BYTE = 5;
 
-    public ProjectileGun(World worldIn, EntityLivingBase throwerIn, float baseDamage, ItemStack stack, Element element) {
+    public ProjectileGun(Level worldIn, LivingEntity throwerIn, float baseDamage, ItemStack stack, Element element) {
         this(worldIn, throwerIn, baseDamage, stack);
         this.setElement(element);
     }
 
-    public ProjectileGun(World worldIn, EntityLivingBase throwerIn, float baseDamage, ItemStack stack) {
+    public ProjectileGun(Level worldIn, LivingEntity throwerIn, float baseDamage, ItemStack stack) {
         super(worldIn, throwerIn, baseDamage);
 
         if (stack != null) {
@@ -72,20 +72,20 @@ public class ProjectileGun extends Projectile {
     }
 
     @Override
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public void handleStatusUpdate(byte id) {
         if (id == this.CRITICAL_BYTE) {
-            world.spawnParticle(EnumParticleTypes.REDSTONE, this.posX, this.posY, this.posZ, 0, 0, 0);
+            world.spawnParticle(ParticleTypes.REDSTONE, this.posX, this.posY, this.posZ, 0, 0, 0);
         } else {
             super.handleStatusUpdate(id);
         }
     }
 
-    public ProjectileGun(World worldIn) {
+    public ProjectileGun(Level worldIn) {
         super(worldIn);
     }
 
-    public ProjectileGun(World worldIn, double x, double y, double z) {
+    public ProjectileGun(Level worldIn, double x, double y, double z) {
         super(worldIn, x, y, z);
     }
 }

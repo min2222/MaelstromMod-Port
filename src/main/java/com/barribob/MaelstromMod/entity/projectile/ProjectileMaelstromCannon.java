@@ -4,12 +4,12 @@ import com.barribob.MaelstromMod.util.ModDamageSource;
 import com.barribob.MaelstromMod.util.ModRandom;
 import com.barribob.MaelstromMod.util.ModUtils;
 import com.barribob.MaelstromMod.util.handlers.ParticleManager;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.init.SoundEvents;
-import net.minecraft.item.ItemStack;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.util.math.RayTraceResult;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.level.Level;
 
 /**
  * The projectile for the maelstrom cannon item
@@ -19,15 +19,15 @@ public class ProjectileMaelstromCannon extends ProjectileGun {
     private static final int IMPACT_PARTICLE_AMOUNT = 20;
     private static final int EXPOSION_AREA_FACTOR = 2;
 
-    public ProjectileMaelstromCannon(World worldIn, EntityLivingBase throwerIn, float baseDamage, ItemStack stack) {
+    public ProjectileMaelstromCannon(Level worldIn, LivingEntity throwerIn, float baseDamage, ItemStack stack) {
         super(worldIn, throwerIn, baseDamage, stack);
     }
 
-    public ProjectileMaelstromCannon(World worldIn) {
+    public ProjectileMaelstromCannon(Level worldIn) {
         super(worldIn);
     }
 
-    public ProjectileMaelstromCannon(World worldIn, double x, double y, double z) {
+    public ProjectileMaelstromCannon(Level worldIn, double x, double y, double z) {
         super(worldIn, x, y, z);
     }
 
@@ -39,14 +39,14 @@ public class ProjectileMaelstromCannon extends ProjectileGun {
     @Override
     protected void spawnParticles() {
         for (int i = 0; i < this.PARTICLE_AMOUNT; i++) {
-            ParticleManager.spawnMaelstromSmoke(world, rand, new Vec3d(this.posX, this.posY, this.posZ), true);
+            ParticleManager.spawnMaelstromSmoke(world, rand, new Vec3(this.posX, this.posY, this.posZ), true);
         }
     }
 
     @Override
     protected void spawnImpactParticles() {
         for (int i = 0; i < this.IMPACT_PARTICLE_AMOUNT; i++) {
-            Vec3d vec1 = ModRandom.randVec().scale(EXPOSION_AREA_FACTOR * 0.25).add(getPositionVector());
+            Vec3 vec1 = ModRandom.randVec().scale(EXPOSION_AREA_FACTOR * 0.25).add(getPositionVector());
             ParticleManager.spawnMaelstromExplosion(world, rand, vec1);
         }
     }

@@ -1,7 +1,7 @@
 package com.barribob.MaelstromMod.entity.ai;
 
 import net.minecraft.entity.EntityCreature;
-import net.minecraft.entity.IRangedAttackMob;
+import net.minecraft.world.entity.monster.RangedAttackMob;
 import net.minecraft.entity.ai.EntityAIAttackMelee;
 import net.minecraft.entity.ai.EntityAIBase;
 
@@ -10,7 +10,7 @@ import net.minecraft.entity.ai.EntityAIBase;
  *
  * @param <T> The entity getting the ai
  */
-public class AIMeleeAndRange<T extends EntityCreature & IRangedAttackMob> extends EntityAIBase {
+public class AIMeleeAndRange<T extends EntityCreature & RangedAttackMob> extends EntityAIBase {
     private int switchUpdateTime;
     private float switchChance;
 

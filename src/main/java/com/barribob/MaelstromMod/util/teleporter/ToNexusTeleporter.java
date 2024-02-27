@@ -3,14 +3,14 @@ package com.barribob.MaelstromMod.util.teleporter;
 import com.barribob.MaelstromMod.config.ModConfig;
 import com.barribob.MaelstromMod.world.dimension.nexus.DimensionNexus;
 import com.barribob.MaelstromMod.world.gen.WorldGenCustomStructures;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.util.Mth;
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.Teleporter;
-import net.minecraft.world.World;
-import net.minecraft.world.WorldServer;
+import net.minecraft.world.level.Level;
+import net.minecraft.server.level.ServerLevel;
 
 /**
  * Finds a portal in the nexus dimension, or builds one Uses known offsets to
@@ -20,7 +20,7 @@ public class ToNexusTeleporter extends Teleporter {
     private BlockPos portalOffset;
     private int spacing;
 
-    public ToNexusTeleporter(WorldServer worldIn, BlockPos portalOffset) {
+    public ToNexusTeleporter(ServerLevel worldIn, BlockPos portalOffset) {
         super(worldIn);
         if (this.world.provider.getDimensionType().getId() != ModConfig.world.nexus_dimension_id) {
             System.err.println("The overworld to nexus teleporter is being used for the wrong dimension!");
@@ -39,12 +39,12 @@ public class ToNexusTeleporter extends Teleporter {
      */
     @Override
     public boolean placeInExistingPortal(Entity entityIn, float rotationYaw) {
-        int x = MathHelper.floor(entityIn.posX / spacing) * spacing + portalOffset.getX();
-        int z = MathHelper.floor(entityIn.posZ / spacing) * spacing + portalOffset.getZ();
+        int x = Mth.floor(entityIn.posX / spacing) * spacing + portalOffset.getX();
+        int z = Mth.floor(entityIn.posZ / spacing) * spacing + portalOffset.getZ();
         int y = portalOffset.getY();
-        Vec3d entityOffset = new Vec3d(2.5, 1, -0.5);
+        Vec3 entityOffset = new Vec3(2.5, 1, -0.5);
 
-        if (entityIn instanceof EntityPlayerMP) {
+        if (entityIn instanceof ServerPlayer) {
             BlockPos pos = new BlockPos(x, y, z);
 
             if (!this.world.isChunkGeneratedAt(x >> 4, z >> 4)) {
@@ -53,7 +53,7 @@ public class ToNexusTeleporter extends Teleporter {
                 int chunkZ = Math.floorDiv((z >> 4), DimensionNexus.NexusStructureSpacing) * DimensionNexus.NexusStructureSpacing;
                 WorldGenCustomStructures.NEXUS.generate(world, random, new BlockPos(chunkX * 16 + 8, 50, chunkZ * 16 + 8));
             }
-            ((EntityPlayerMP) entityIn).connection.setPlayerLocation(x + entityOffset.x, y + entityOffset.y, z + entityOffset.z, entityIn.rotationYaw, entityIn.rotationPitch);
+            ((ServerPlayer) entityIn).connection.setPlayerLocation(x + entityOffset.x, y + entityOffset.y, z + entityOffset.z, entityIn.rotationYaw, entityIn.rotationPitch);
         } else {
             entityIn.setLocationAndAngles(x + entityOffset.x, y + entityOffset.y, z + entityOffset.z, entityIn.rotationYaw, entityIn.rotationPitch);
         }
@@ -61,8 +61,8 @@ public class ToNexusTeleporter extends Teleporter {
     }
 
     @Override
-    public void placeEntity(World world, Entity entity, float yaw) {
-        if (entity instanceof EntityPlayerMP)
+    public void placeEntity(Level world, Entity entity, float yaw) {
+        if (entity instanceof ServerPlayer)
             placeInPortal(entity, yaw);
         else
             placeInExistingPortal(entity, yaw);

@@ -3,7 +3,7 @@ package com.barribob.MaelstromMod.entity.adjustment;
 import com.barribob.MaelstromMod.entity.util.IEntityAdjustment;
 import com.barribob.MaelstromMod.util.ModRandom;
 import com.barribob.MaelstromMod.util.ModUtils;
-import net.minecraft.entity.Entity;
+import net.minecraft.world.entity.Entity;
 
 public class RandomRuneAdjustment implements IEntityAdjustment {
     private final Entity target;

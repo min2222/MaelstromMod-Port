@@ -8,9 +8,9 @@ import com.google.gson.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.IResource;
 import net.minecraft.client.util.JsonException;
-import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.util.JsonUtils;
-import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.crafting.CraftingHelper;
 import net.minecraftforge.common.crafting.JsonContext;
 import net.minecraftforge.fml.common.Loader;
@@ -46,7 +46,7 @@ public class ModBBAnimations {
      *
      * @param animationId
      */
-    public static void animation(EntityLivingBase entity, String animationId, boolean remove) {
+    public static void animation(LivingEntity entity, String animationId, boolean remove) {
         Main.network.sendToAllTracking(new MessageBBAnimation(ModBBAnimations.getAnimationId(animationId), entity.getEntityId(), remove), entity);
         JsonObject animation = ModBBAnimations.getAnimation(animationId);
         if (animation.has("loop")) {

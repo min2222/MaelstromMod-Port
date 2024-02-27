@@ -1,39 +1,39 @@
 package com.barribob.MaelstromMod.entity.entities;
 
 import com.barribob.MaelstromMod.entity.entities.herobrine_state.*;
-import net.minecraft.entity.SharedMonsterAttributes;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.entity.ai.EntityAIWatchClosest;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.DamageSource;
-import net.minecraft.util.EnumHand;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.BossInfo;
-import net.minecraft.world.BossInfoServer;
-import net.minecraft.world.World;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.BossEvent;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.server.level.ServerBossEvent;
+import net.minecraft.world.level.Level;
 
 /*
  * Controls the herobrine fight, with dialogue and ending
  */
 public class Herobrine extends EntityLeveledMob {
-    public final BossInfoServer bossInfo = (new BossInfoServer(this.getDisplayName(), BossInfo.Color.PURPLE, BossInfo.Overlay.NOTCHED_20));
+    public final ServerBossEvent bossInfo = (new ServerBossEvent(this.getDisplayName(), BossEvent.Color.PURPLE, BossEvent.Overlay.NOTCHED_20));
     private static final String nbtState = "herobrine_state";
     public HerobrineState state;
 
     @Override
     protected void applyEntityAttributes() {
         super.applyEntityAttributes();
-        this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(20);
+        this.getEntityAttribute(Attributes.MAX_HEALTH).setBaseValue(20);
     }
 
     @Override
     protected void initEntityAI() {
         super.initEntityAI();
-        this.tasks.addTask(7, new EntityAIWatchClosest(this, EntityPlayer.class, 20.0F));
+        this.tasks.addTask(7, new EntityAIWatchClosest(this, Player.class, 20.0F));
     }
 
-    public Herobrine(World worldIn) {
+    public Herobrine(Level worldIn) {
         super(worldIn);
         state = new StateEnderPearls(this);
         this.setSize(0.5f, 2.0f);
@@ -47,7 +47,7 @@ public class Herobrine extends EntityLeveledMob {
     }
 
     @Override
-    protected boolean processInteract(EntityPlayer player, EnumHand hand) {
+    protected boolean processInteract(Player player, InteractionHand hand) {
         if (!world.isRemote) {
             state.rightClick(player);
         }
@@ -62,7 +62,7 @@ public class Herobrine extends EntityLeveledMob {
 
     @Override
     public boolean attackEntityFrom(DamageSource source, float amount) {
-        if (source.getTrueSource() instanceof EntityPlayer) {
+        if (source.getTrueSource() instanceof Player) {
             state.leftClick(this);
         }
         return false;
@@ -80,19 +80,19 @@ public class Herobrine extends EntityLeveledMob {
     }
 
     @Override
-    public void addTrackingPlayer(EntityPlayerMP player) {
+    public void addTrackingPlayer(ServerPlayer player) {
         super.addTrackingPlayer(player);
         this.bossInfo.addPlayer(player);
     }
 
     @Override
-    public void removeTrackingPlayer(EntityPlayerMP player) {
+    public void removeTrackingPlayer(ServerPlayer player) {
         super.removeTrackingPlayer(player);
         this.bossInfo.removePlayer(player);
     }
 
     @Override
-    public void readEntityFromNBT(NBTTagCompound compound) {
+    public void readEntityFromNBT(CompoundTag compound) {
         if (compound.hasKey(nbtState)) {
             if (compound.getString(nbtState).equals(new StateCliffKey(this).getNbtString())) {
                 state = new StateCliffKey(this);
@@ -108,7 +108,7 @@ public class Herobrine extends EntityLeveledMob {
     }
 
     public void teleportOutside() {
-        this.setImmovablePosition(new Vec3d(posX, posY, posZ - 5));
+        this.setImmovablePosition(new Vec3(posX, posY, posZ - 5));
         if (!world.isRemote) {
             world.setEntityState(this, (byte) 4);
         }
@@ -123,7 +123,7 @@ public class Herobrine extends EntityLeveledMob {
     }
 
     @Override
-    public void writeEntityToNBT(NBTTagCompound compound) {
+    public void writeEntityToNBT(CompoundTag compound) {
         compound.setString(nbtState, state.getNbtString());
         super.writeEntityToNBT(compound);
     }

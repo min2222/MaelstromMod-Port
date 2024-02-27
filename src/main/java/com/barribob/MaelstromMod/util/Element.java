@@ -1,8 +1,8 @@
 package com.barribob.MaelstromMod.util;
 
 import com.google.common.collect.Maps;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.text.TextFormatting;
+import net.minecraft.ChatFormatting;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.Map;
 
@@ -10,19 +10,19 @@ import java.util.Map;
  * The data for the elemental system
  */
 public enum Element {
-    AZURE(new Vec3d(0.5, 0.5, 1.0), ModColors.AZURE, "\u03A6", TextFormatting.AQUA, 0),
-    GOLDEN(new Vec3d(1.0, 1.0, 0.5), ModColors.YELLOW, "\u03A9", TextFormatting.YELLOW, 1),
-    CRIMSON(new Vec3d(1.0, 0.5, 0.5), ModColors.RED, "\u03A3", TextFormatting.RED, 2),
-    NONE(ModColors.WHITE, ModColors.MAELSTROM, " ", TextFormatting.WHITE, 3);
+    AZURE(new Vec3(0.5, 0.5, 1.0), ModColors.AZURE, "\u03A6", ChatFormatting.AQUA, 0),
+    GOLDEN(new Vec3(1.0, 1.0, 0.5), ModColors.YELLOW, "\u03A9", ChatFormatting.YELLOW, 1),
+    CRIMSON(new Vec3(1.0, 0.5, 0.5), ModColors.RED, "\u03A3", ChatFormatting.RED, 2),
+    NONE(ModColors.WHITE, ModColors.MAELSTROM, " ", ChatFormatting.WHITE, 3);
 
-    public Vec3d sweepColor;
-    public Vec3d particleColor;
+    public Vec3 sweepColor;
+    public Vec3 particleColor;
     public String symbol;
-    public TextFormatting textColor;
+    public ChatFormatting textColor;
     public int id;
     private static final Map<Integer, Element> FROM_ID = Maps.<Integer, Element>newHashMap();
 
-    private Element(Vec3d sweepColor, Vec3d particleColor, String symbol, TextFormatting textColor, int id) {
+    private Element(Vec3 sweepColor, Vec3 particleColor, String symbol, ChatFormatting textColor, int id) {
         this.sweepColor = sweepColor;
         this.particleColor = particleColor;
         this.symbol = symbol;

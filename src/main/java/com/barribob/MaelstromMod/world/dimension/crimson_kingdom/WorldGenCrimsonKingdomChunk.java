@@ -13,14 +13,14 @@ import com.barribob.MaelstromMod.util.ModUtils;
 import com.barribob.MaelstromMod.util.handlers.LevelHandler;
 import com.barribob.MaelstromMod.util.handlers.LootTableHandler;
 import com.barribob.MaelstromMod.world.gen.WorldGenStructure;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.tileentity.TileEntity;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.tileentity.TileEntityLockableLoot;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Rotation;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.storage.loot.LootTableList;
 
 import java.util.Random;
@@ -32,20 +32,20 @@ public class WorldGenCrimsonKingdomChunk extends WorldGenStructure {
     }
 
     @Override
-    public boolean generate(World worldIn, Random rand, BlockPos position) {
+    public boolean generate(Level worldIn, Random rand, BlockPos position) {
         generateStructure(worldIn, position, Rotation.NONE);
         return true;
     }
 
     @Override
-    protected void handleDataMarker(String function, BlockPos pos, World worldIn, Random rand) {
+    protected void handleDataMarker(String function, BlockPos pos, Level worldIn, Random rand) {
         super.handleDataMarker(function, pos, worldIn, rand);
         int spawnRange = 25;
         worldIn.setBlockToAir(pos);
         if (function.startsWith("enemy 4") || function.startsWith("enemy 5") | function.startsWith("enemy 6")) {
             int level = ModUtils.tryParseInt(function.split(" ")[1], 5);
             worldIn.setBlockState(pos, ModBlocks.BOSS_SPAWNER.getDefaultState(), 2);
-            TileEntity tileentity = worldIn.getTileEntity(pos);
+            BlockEntity tileentity = worldIn.getTileEntity(pos);
             if (tileentity instanceof TileEntityMobSpawner) {
                 ((TileEntityMobSpawner) tileentity).getSpawnerBaseLogic().setData(
                         new MobSpawnData[]{
@@ -61,7 +61,7 @@ public class WorldGenCrimsonKingdomChunk extends WorldGenStructure {
         } else if (function.startsWith("ranger 5") || function.startsWith("ranger 6")) {
             int level = ModUtils.tryParseInt(function.split(" ")[1], 5);
             worldIn.setBlockState(pos, ModBlocks.BOSS_SPAWNER.getDefaultState(), 2);
-            TileEntity tileentity = worldIn.getTileEntity(pos);
+            BlockEntity tileentity = worldIn.getTileEntity(pos);
             if (tileentity instanceof TileEntityMobSpawner) {
                 ((TileEntityMobSpawner) tileentity).getSpawnerBaseLogic().setData(
                         new MobSpawnData(ModEntities.getID(EntityMaelstromMage.class), new Element[]{Element.CRIMSON, Element.NONE}, new int[]{1, 2}, 1),
@@ -71,7 +71,7 @@ public class WorldGenCrimsonKingdomChunk extends WorldGenStructure {
             }
         } else if (function.startsWith("miniboss")) {
             worldIn.setBlockState(pos, ModBlocks.BOSS_SPAWNER.getDefaultState(), 2);
-            TileEntity tileentity = worldIn.getTileEntity(pos);
+            BlockEntity tileentity = worldIn.getTileEntity(pos);
             if (tileentity instanceof TileEntityMobSpawner) {
                 ((TileEntityMobSpawner) tileentity).getSpawnerBaseLogic().setData(
                         new MobSpawnData(ModEntities.getID(EntityIronShade.class), Element.CRIMSON),
@@ -81,7 +81,7 @@ public class WorldGenCrimsonKingdomChunk extends WorldGenStructure {
             }
         } else if (function.startsWith("beast")) {
             worldIn.setBlockState(pos, ModBlocks.BOSS_SPAWNER.getDefaultState(), 2);
-            TileEntity tileentity = worldIn.getTileEntity(pos);
+            BlockEntity tileentity = worldIn.getTileEntity(pos);
             if (tileentity instanceof TileEntityMobSpawner) {
                 ((TileEntityMobSpawner) tileentity).getSpawnerBaseLogic().setData(
                         new MobSpawnData(ModEntities.getID(EntityBeast.class), Element.CRIMSON),
@@ -92,7 +92,7 @@ public class WorldGenCrimsonKingdomChunk extends WorldGenStructure {
         } else if (function.startsWith("healer")) {
             int level = ModUtils.tryParseInt(function.split(" ")[1], 5);
             worldIn.setBlockState(pos, ModBlocks.BOSS_SPAWNER.getDefaultState(), 2);
-            TileEntity tileentity = worldIn.getTileEntity(pos);
+            BlockEntity tileentity = worldIn.getTileEntity(pos);
             if (tileentity instanceof TileEntityMobSpawner) {
                 ((TileEntityMobSpawner) tileentity).getSpawnerBaseLogic().setData(
                         new MobSpawnData(ModEntities.getID(EntityMaelstromHealer.class), Element.NONE),
@@ -101,13 +101,13 @@ public class WorldGenCrimsonKingdomChunk extends WorldGenStructure {
                         spawnRange);
             }
         } else if (function.startsWith("chest minecart")) {
-            TileEntity tileentity = worldIn.getTileEntity(pos.down());
+            BlockEntity tileentity = worldIn.getTileEntity(pos.down());
 
             if (tileentity instanceof TileEntityLockableLoot) {
                 ((TileEntityLockableLoot) tileentity).setLootTable(LootTableList.CHESTS_ABANDONED_MINESHAFT, rand.nextLong());
             }
         } else if (function.startsWith("garbage")) {
-            TileEntity tileentity = worldIn.getTileEntity(pos.down());
+            BlockEntity tileentity = worldIn.getTileEntity(pos.down());
 
             if (tileentity instanceof TileEntityLockableLoot) {
                 ((TileEntityLockableLoot) tileentity).setLootTable(LootTableList.CHESTS_SPAWN_BONUS_CHEST, rand.nextLong());
@@ -115,35 +115,35 @@ public class WorldGenCrimsonKingdomChunk extends WorldGenStructure {
         } else if (function.startsWith("chest")) {
             int level = ModUtils.tryParseInt(function.split(" ")[1], 5);
             ResourceLocation loot = level == 5 ? LootTableHandler.CRIMSON_5_CHEST : LootTableHandler.CRIMSON_6_CHEST;
-            TileEntity tileentity = worldIn.getTileEntity(pos.down());
+            BlockEntity tileentity = worldIn.getTileEntity(pos.down());
 
             if (tileentity instanceof TileEntityLockableLoot) {
                 ((TileEntityLockableLoot) tileentity).setLootTable(loot, rand.nextLong());
             }
         } else if (function.startsWith("artifact 1")) {
-            TileEntity tileentity = worldIn.getTileEntity(pos.down());
+            BlockEntity tileentity = worldIn.getTileEntity(pos.down());
 
             if (tileentity instanceof TileEntityLockableLoot) {
                 // 13 is the middle of the shulker box
                 ((TileEntityLockableLoot) tileentity).setInventorySlotContents(13, new ItemStack(ModItems.ENERGIZED_CADUCEUS));
             }
         } else if (function.startsWith("artifact 2")) {
-            TileEntity tileentity = worldIn.getTileEntity(pos.down());
+            BlockEntity tileentity = worldIn.getTileEntity(pos.down());
 
             if (tileentity instanceof TileEntityLockableLoot) {
                 ((TileEntityLockableLoot) tileentity).setInventorySlotContents(13, new ItemStack(ModItems.ELYSIUM_WINGS));
             }
         } else if (function.startsWith("artifact 3")) {
-            TileEntity tileentity = worldIn.getTileEntity(pos.down());
+            BlockEntity tileentity = worldIn.getTileEntity(pos.down());
 
             if (tileentity instanceof TileEntityLockableLoot) {
                 ((TileEntityLockableLoot) tileentity).setInventorySlotContents(13, new ItemStack(ModItems.TUNING_FORK));
             }
         } else if (function.startsWith("boss")) {
             worldIn.setBlockState(pos, ModBlocks.BOSS_SPAWNER.getDefaultState(), 2);
-            TileEntity tileentity = worldIn.getTileEntity(pos);
+            BlockEntity tileentity = worldIn.getTileEntity(pos);
             if (tileentity instanceof TileEntityMobSpawner) {
-                NBTTagCompound compound = new NBTTagCompound();
+                CompoundTag compound = new CompoundTag();
                 compound.setString("id", ModEntities.getID(EntityMaelstromGauntlet.class));
                 compound.setBoolean("isImmovable", true);
 

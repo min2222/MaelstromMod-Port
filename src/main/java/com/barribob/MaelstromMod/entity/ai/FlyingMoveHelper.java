@@ -1,9 +1,9 @@
 package com.barribob.MaelstromMod.entity.ai;
 
-import net.minecraft.entity.EntityLiving;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.entity.ai.EntityMoveHelper;
-import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.util.Mth;
 
 /**
  * Taken from the ghast. I believe all this does is check if the area it wants
@@ -11,10 +11,10 @@ import net.minecraft.util.math.MathHelper;
  * often
  */
 public class FlyingMoveHelper extends EntityMoveHelper {
-    private final EntityLiving parentEntity;
+    private final Mob parentEntity;
     private int courseChangeCooldown;
 
-    public FlyingMoveHelper(EntityLiving e) {
+    public FlyingMoveHelper(Mob e) {
         super(e);
         this.parentEntity = e;
     }
@@ -29,7 +29,7 @@ public class FlyingMoveHelper extends EntityMoveHelper {
 
             if (this.courseChangeCooldown-- <= 0) {
                 this.courseChangeCooldown += this.parentEntity.getRNG().nextInt(5) + 2;
-                d3 = MathHelper.sqrt(d3);
+                d3 = Mth.sqrt(d3);
 
                 if (this.isNotColliding(this.posX, this.posY, this.posZ, d3)) {
                     this.parentEntity.motionX += d0 / d3 * 0.1D;
@@ -46,7 +46,7 @@ public class FlyingMoveHelper extends EntityMoveHelper {
         double d0 = (x - this.parentEntity.posX) / p_179926_7_;
         double d1 = (y - this.parentEntity.posY) / p_179926_7_;
         double d2 = (z - this.parentEntity.posZ) / p_179926_7_;
-        AxisAlignedBB axisalignedbb = this.parentEntity.getEntityBoundingBox();
+        AABB axisalignedbb = this.parentEntity.getEntityBoundingBox();
 
         for (int i = 1; i < p_179926_7_; ++i) {
             axisalignedbb = axisalignedbb.offset(d0, d1, d2);

@@ -1,12 +1,12 @@
 package com.barribob.MaelstromMod.util;
 
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.util.EntityDamageSourceIndirect;
+import net.minecraft.world.damagesource.IndirectEntityDamageSource;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentTranslation;
 
-public class EntityElementalDamageSourceIndirect extends EntityDamageSourceIndirect implements IElement, IShieldArmorDamageSource {
+public class EntityElementalDamageSourceIndirect extends IndirectEntityDamageSource implements IElement, IShieldArmorDamageSource {
     Element element;
     boolean stoppedByArmor;
     boolean disablesShields;
@@ -41,16 +41,16 @@ public class EntityElementalDamageSourceIndirect extends EntityDamageSourceIndir
 
     public Entity getTrueSource()
     {
-        if(super.getTrueSource() instanceof EntityLivingBase) {
+        if(super.getTrueSource() instanceof LivingEntity) {
             return super.getTrueSource();
-        } else if (super.getImmediateSource() instanceof EntityLivingBase) {
+        } else if (super.getImmediateSource() instanceof LivingEntity) {
             return super.getImmediateSource();
         }
         return null;
     }
 
     @Override
-    public ITextComponent getDeathMessage(EntityLivingBase entity)
+    public ITextComponent getDeathMessage(LivingEntity entity)
     {
         ITextComponent itextcomponent = this.getTrueSource() == null ? this.damageSourceEntity.getDisplayName() : this.getTrueSource().getDisplayName();
 

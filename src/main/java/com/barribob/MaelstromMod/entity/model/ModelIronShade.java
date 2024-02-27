@@ -1,7 +1,7 @@
 package com.barribob.MaelstromMod.entity.model;
 
 import net.minecraft.client.model.ModelRenderer;
-import net.minecraft.entity.Entity;
+import net.minecraft.world.entity.Entity;
 
 /**
  * ModelGoldenShade - Barribob

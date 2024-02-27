@@ -6,22 +6,22 @@ import com.barribob.MaelstromMod.entity.entities.EntityDreamElk;
 import com.barribob.MaelstromMod.init.ModBlocks;
 import com.barribob.MaelstromMod.util.ModUtils;
 import com.barribob.MaelstromMod.world.gen.foliage.*;
-import net.minecraft.block.Block;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.block.BlockTallGrass;
-import net.minecraft.block.material.Material;
-import net.minecraft.block.state.IBlockState;
+import net.minecraft.world.level.material.Material;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.entity.passive.EntityPig;
 import net.minecraft.entity.passive.EntitySheep;
-import net.minecraft.init.Blocks;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.chunk.ChunkPrimer;
 import net.minecraft.world.gen.feature.WorldGenAbstractTree;
 import net.minecraft.world.gen.feature.WorldGenBigTree;
 import net.minecraft.world.gen.feature.WorldGenTallGrass;
 import net.minecraft.world.gen.feature.WorldGenerator;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 
 import java.util.Random;
 
@@ -83,7 +83,7 @@ public class BiomeAzure extends BiomeDifferentStone {
     }
 
     @Override
-    public void decorate(World worldIn, Random rand, BlockPos pos) {
+    public void decorate(Level worldIn, Random rand, BlockPos pos) {
         super.decorate(worldIn, rand, pos);
 
         WorldGenAzureVineBridge AZURE_VINES = new WorldGenAzureVineBridge();
@@ -137,23 +137,23 @@ public class BiomeAzure extends BiomeDifferentStone {
     }
 
     @Override
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public int getGrassColorAtPos(BlockPos pos) {
         double d0 = GRASS_COLOR_NOISE.getValue(pos.getX() * 0.0225D, pos.getZ() * 0.0225D);
         return d0 < -0.1D ? 3109474 : 2837034;
     }
 
     @Override
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public int getFoliageColorAtPos(BlockPos pos) {
         return 2837034;
     }
 
     @Override
-    public void generateTopBlocks(World worldIn, Random rand, ChunkPrimer chunkPrimerIn, int x, int z, double noiseVal, Block stoneBlock) {
+    public void generateTopBlocks(Level worldIn, Random rand, ChunkPrimer chunkPrimerIn, int x, int z, double noiseVal, Block stoneBlock) {
         int seaLevel = worldIn.getSeaLevel();
-        IBlockState topBlock = this.topBlock;
-        IBlockState fillerBlock = this.fillerBlock;
+        BlockState topBlock = this.topBlock;
+        BlockState fillerBlock = this.fillerBlock;
         int j = -1;
         int noise = (int) (noiseVal / 3.0D + 3.0D + rand.nextDouble() * 0.25D);
         int xPos = x & 15;
@@ -165,7 +165,7 @@ public class BiomeAzure extends BiomeDifferentStone {
             if (y <= rand.nextInt(5)) {
                 chunkPrimerIn.setBlockState(zPos, y, xPos, BEDROCK);
             } else {
-                IBlockState currentState = chunkPrimerIn.getBlockState(zPos, y, xPos);
+                BlockState currentState = chunkPrimerIn.getBlockState(zPos, y, xPos);
 
                 if (currentState.getMaterial() == Material.AIR) {
                     j = -1;

@@ -1,27 +1,27 @@
 package com.barribob.MaelstromMod.items.armor;
 
 import com.barribob.MaelstromMod.util.ModUtils;
-import net.minecraft.client.util.ITooltipFlag;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.MobEffects;
-import net.minecraft.inventory.EntityEquipmentSlot;
-import net.minecraft.item.ItemStack;
+import net.minecraft.ChatFormatting;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.potion.PotionEffect;
-import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.translation.I18n;
-import net.minecraft.world.World;
+import net.minecraft.world.level.Level;
 
 import java.util.List;
 
 public class ItemSpeedBoots extends ModArmorBase {
     private PotionEffect wornEffect = new PotionEffect(MobEffects.SPEED, 20, 0);
 
-    public ItemSpeedBoots(String name, ArmorMaterial materialIn, int renderIndex, EntityEquipmentSlot equipmentSlotIn, float maelstrom_armor, String textureName) {
+    public ItemSpeedBoots(String name, ArmorMaterial materialIn, int renderIndex, EquipmentSlot equipmentSlotIn, float maelstrom_armor, String textureName) {
         super(name, materialIn, renderIndex, equipmentSlotIn, maelstrom_armor, textureName);
     }
 
     @Override
-    public void onArmorTick(World world, EntityPlayer player, ItemStack itemStack) {
+    public void onArmorTick(Level world, Player player, ItemStack itemStack) {
         super.onArmorTick(world, player, itemStack);
         if (itemStack != null && itemStack.getItem() == this) {
             wornEffect = new PotionEffect(MobEffects.SPEED, 20, 0);
@@ -30,10 +30,10 @@ public class ItemSpeedBoots extends ModArmorBase {
     }
 
     @Override
-    public void addInformation(ItemStack stack, World worldIn, List<String> tooltip, ITooltipFlag flagIn) {
+    public void addInformation(ItemStack stack, Level worldIn, List<String> tooltip, TooltipFlag flagIn) {
         super.addInformation(stack, worldIn, tooltip, flagIn);
 
-        String potion = TextFormatting.BLUE + I18n.translateToLocal(wornEffect.getEffectName()).trim();
+        String potion = ChatFormatting.BLUE + I18n.translateToLocal(wornEffect.getEffectName()).trim();
         if (wornEffect.getAmplifier() > 0) {
             potion = potion + " " + I18n.translateToLocal("potion.potency." + wornEffect.getAmplifier()).trim();
         }

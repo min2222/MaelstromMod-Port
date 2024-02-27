@@ -8,8 +8,8 @@ import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.entity.RenderLiving;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.client.renderer.tileentity.TileEntityBeaconRenderer;
-import net.minecraft.item.EnumDyeColor;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.DyeColor;
 
 public class RenderWhiteMonolith extends RenderLiving<EntityWhiteMonolith> {
     public ResourceLocation MONOLITH = new ResourceLocation(Reference.MOD_ID + ":textures/entity/monolith_white.png");
@@ -48,7 +48,7 @@ public class RenderWhiteMonolith extends RenderLiving<EntityWhiteMonolith> {
         this.bindTexture(TEXTURE_BEACON_BEAM);
         int beamHeight = NexusToOverworldTeleporter.yPortalOffset - (int) y;
         TileEntityBeaconRenderer.renderBeamSegment(x - 0.5, y, z - 0.5, partialTicks, 1.0f, entity.world.getTotalWorldTime(), 0, beamHeight,
-                EnumDyeColor.WHITE.getColorComponentValues(), 0.5f, 0.75f);
+                DyeColor.WHITE.getColorComponentValues(), 0.5f, 0.75f);
         // GlStateManager.enableFog();
         GlStateManager.popMatrix();
     }

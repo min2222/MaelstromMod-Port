@@ -4,29 +4,29 @@ import com.barribob.MaelstromMod.util.ModColors;
 import com.barribob.MaelstromMod.util.ModRandom;
 import com.barribob.MaelstromMod.util.ModUtils;
 import com.barribob.MaelstromMod.util.handlers.ParticleManager;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.init.SoundEvents;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.DamageSource;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.util.math.RayTraceResult;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.level.Level;
 
 public class ProjectileMeteor extends ProjectileGun {
     private static final int PARTICLE_AMOUNT = 15;
     private static final int EXPOSION_AREA_FACTOR = 6;
 
-    public ProjectileMeteor(World worldIn, EntityLivingBase throwerIn, float baseDamage, ItemStack stack) {
+    public ProjectileMeteor(Level worldIn, LivingEntity throwerIn, float baseDamage, ItemStack stack) {
         super(worldIn, throwerIn, baseDamage, stack);
         this.setNoGravity(true);
     }
 
-    public ProjectileMeteor(World worldIn) {
+    public ProjectileMeteor(Level worldIn) {
         super(worldIn);
         this.setNoGravity(true);
     }
 
-    public ProjectileMeteor(World worldIn, double x, double y, double z) {
+    public ProjectileMeteor(Level worldIn, double x, double y, double z) {
         super(worldIn, x, y, z);
         this.setNoGravity(true);
     }
@@ -47,11 +47,11 @@ public class ProjectileMeteor extends ProjectileGun {
     @Override
     protected void spawnImpactParticles() {
         for (int i = 0; i < 1000; i++) {
-            Vec3d unit = new Vec3d(0, 1, 0);
+            Vec3 unit = new Vec3(0, 1, 0);
             unit = unit.rotatePitch((float) (Math.PI * ModRandom.getFloat(1)));
             unit = unit.rotateYaw((float) (Math.PI * ModRandom.getFloat(1)));
             unit = unit.normalize().scale(this.EXPOSION_AREA_FACTOR);
-            ParticleManager.spawnWisp(world, unit.add(getPositionVector()), ModColors.PURPLE, Vec3d.ZERO);
+            ParticleManager.spawnWisp(world, unit.add(getPositionVector()), ModColors.PURPLE, Vec3.ZERO);
         }
         for (int i = 0; i < 100; i++) {
             ParticleManager.spawnMaelstromExplosion(world, rand, getPositionVector().add(ModRandom.randVec().scale(EXPOSION_AREA_FACTOR)));

@@ -5,20 +5,20 @@ import com.barribob.MaelstromMod.util.ModRandom;
 import com.barribob.MaelstromMod.util.ModUtils;
 import com.barribob.MaelstromMod.util.handlers.ParticleManager;
 import com.barribob.MaelstromMod.world.gen.WorldGenCustomStructures;
-import net.minecraft.entity.Entity;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.level.Level;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 
 public class EntityCrimsonTowerSpawner extends Entity {
-    public EntityCrimsonTowerSpawner(World worldIn) {
+    public EntityCrimsonTowerSpawner(Level worldIn) {
         super(worldIn);
         this.setNoGravity(true);
     }
 
-    public EntityCrimsonTowerSpawner(World worldIn, float x, float y, float z) {
+    public EntityCrimsonTowerSpawner(Level worldIn, float x, float y, float z) {
         this(worldIn);
         this.setPosition(x, y, z);
     }
@@ -48,7 +48,7 @@ public class EntityCrimsonTowerSpawner extends Entity {
     }
 
     @Override
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public void handleStatusUpdate(byte id) {
         if (id == ModUtils.PARTICLE_BYTE) {
             this.spawnParticles();
@@ -57,7 +57,7 @@ public class EntityCrimsonTowerSpawner extends Entity {
     }
 
     protected void spawnParticles() {
-        Vec3d color = this.ticksExisted > 100 ? ModColors.MAELSTROM : ModColors.RED;
+        Vec3 color = this.ticksExisted > 100 ? ModColors.MAELSTROM : ModColors.RED;
         int offset = 0;
         int sectors = 90;
         int degreesPerSector = 360 / sectors;
@@ -66,8 +66,8 @@ public class EntityCrimsonTowerSpawner extends Entity {
             double x = this.posX + 0.5 + Math.cos(i * degreesPerSector) * Math.sin(this.ticksExisted) * size + offset;
             double y = this.posY + 3.5 + Math.sin(i * degreesPerSector) * Math.cos(this.ticksExisted) * size + offset;
             double z = this.posZ + 0.5 + Math.cos(i * degreesPerSector) * Math.sin(this.ticksExisted) * size + offset;
-            ParticleManager.spawnEffect(world, new Vec3d(x, y, this.posZ + 0.5), color);
-            ParticleManager.spawnEffect(world, new Vec3d(this.posX + 0.5, y, z), color);
+            ParticleManager.spawnEffect(world, new Vec3(x, y, this.posZ + 0.5), color);
+            ParticleManager.spawnEffect(world, new Vec3(this.posX + 0.5, y, z), color);
         }
     }
 
@@ -76,10 +76,10 @@ public class EntityCrimsonTowerSpawner extends Entity {
     }
 
     @Override
-    protected void readEntityFromNBT(NBTTagCompound compound) {
+    protected void readEntityFromNBT(CompoundTag compound) {
     }
 
     @Override
-    protected void writeEntityToNBT(NBTTagCompound compound) {
+    protected void writeEntityToNBT(CompoundTag compound) {
     }
 }

@@ -2,8 +2,8 @@ package com.barribob.MaelstromMod.entity.model;
 
 import com.barribob.MaelstromMod.entity.entities.EntityMaelstromMob;
 import net.minecraft.client.model.ModelRenderer;
-import net.minecraft.entity.Entity;
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.util.Mth;
 
 /**
  * ModelMaelstromIllager - Barribob
@@ -107,8 +107,8 @@ public class ModelMaelstromIllager extends ModelAnimated {
         this.arms.rotationPointY = 3.0F;
         this.arms.rotationPointZ = -1.0F;
         this.arms.rotateAngleX = -0.75F;
-        this.leftLeg.rotateAngleX = MathHelper.cos(limbSwing * 0.6662F) * 1.4F * limbSwingAmount * 0.5F;
-        this.rightLeg.rotateAngleX = MathHelper.cos(limbSwing * 0.6662F + (float) Math.PI) * 1.4F * limbSwingAmount * 0.5F;
+        this.leftLeg.rotateAngleX = Mth.cos(limbSwing * 0.6662F) * 1.4F * limbSwingAmount * 0.5F;
+        this.rightLeg.rotateAngleX = Mth.cos(limbSwing * 0.6662F + (float) Math.PI) * 1.4F * limbSwingAmount * 0.5F;
         this.leftLeg.rotateAngleY = 0.0F;
         this.leftLeg.rotateAngleY = 0.0F;
     }

@@ -11,9 +11,9 @@ import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.culling.ICamera;
 import net.minecraft.client.renderer.entity.RenderLiving;
 import net.minecraft.client.renderer.entity.RenderManager;
-import net.minecraft.entity.EntityLiving;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.phys.Vec3;
 import org.lwjgl.opengl.GL11;
 
 import javax.annotation.Nonnull;
@@ -22,7 +22,7 @@ import java.util.Optional;
 /**
  * Renders an entity with a generic type, texture, and model passed in.
  */
-public class RenderModEntity<T extends EntityLiving> extends RenderLiving<T> {
+public class RenderModEntity<T extends Mob> extends RenderLiving<T> {
     public String[] TEXTURES;
     private ResourceLocation DEATH_TEXTURES;
 
@@ -164,10 +164,10 @@ public class RenderModEntity<T extends EntityLiving> extends RenderLiving<T> {
         }
 
         if (livingEntity instanceof ITarget) {
-            Optional<Vec3d> optional = ((ITarget) livingEntity).getTarget();
+            Optional<Vec3> optional = ((ITarget) livingEntity).getTarget();
             if(optional.isPresent()) {
-                Vec3d end = optional.get();
-                Vec3d start = livingEntity.getPositionEyes(1);
+                Vec3 end = optional.get();
+                Vec3 start = livingEntity.getPositionEyes(1);
                 return camera.isBoundingBoxInFrustum(ModUtils.makeBox(start, end));
             }
         }

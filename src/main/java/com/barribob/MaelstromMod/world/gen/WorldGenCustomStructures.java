@@ -27,12 +27,12 @@ import com.barribob.MaelstromMod.world.gen.foliage.WorldGenWaterfall;
 import com.barribob.MaelstromMod.world.gen.maelstrom_castle.WorldGenMaelstromCastle;
 import com.barribob.MaelstromMod.world.gen.nexus.WorldGenCrimsonTower;
 import com.barribob.MaelstromMod.world.gen.nexus.WorldGenNexusIslands;
-import net.minecraft.init.Blocks;
-import net.minecraft.tileentity.TileEntity;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.tileentity.TileEntityChest;
 import net.minecraft.util.Rotation;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.WorldType;
 import net.minecraft.world.chunk.IChunkProvider;
 import net.minecraft.world.gen.IChunkGenerator;
@@ -51,11 +51,11 @@ public class WorldGenCustomStructures implements IWorldGenerator {
 
     public static final WorldGenStructure AZURE_HOUSE_1 = new WorldGenStructure("azure/house_1") {
         @Override
-        protected void handleDataMarker(String function, BlockPos pos, World worldIn, Random rand) {
+        protected void handleDataMarker(String function, BlockPos pos, Level worldIn, Random rand) {
             if (function.startsWith("chest")) {
                 worldIn.setBlockToAir(pos);
                 pos = pos.down();
-                TileEntity tileentity = worldIn.getTileEntity(pos);
+                BlockEntity tileentity = worldIn.getTileEntity(pos);
 
                 if (tileentity instanceof TileEntityChest) {
                     ((TileEntityChest) tileentity).setLootTable(LootTableList.CHESTS_VILLAGE_BLACKSMITH, rand.nextLong());
@@ -68,10 +68,10 @@ public class WorldGenCustomStructures implements IWorldGenerator {
 
     public static final WorldGenStructure WITCH_HUT = new WorldGenStructure("cliff/maelstrom_witch_hut") {
         @Override
-        protected void handleDataMarker(String function, BlockPos pos, World worldIn, Random rand) {
+        protected void handleDataMarker(String function, BlockPos pos, Level worldIn, Random rand) {
             if (function.startsWith("witch")) {
                 worldIn.setBlockState(pos, ModBlocks.BOSS_SPAWNER.getDefaultState(), 2);
-                TileEntity tileentity = worldIn.getTileEntity(pos);
+                BlockEntity tileentity = worldIn.getTileEntity(pos);
 
                 if (tileentity instanceof TileEntityMobSpawner) {
                     ((TileEntityMobSpawner) tileentity).getSpawnerBaseLogic().setData(ModEntities.getID(EntityMaelstromWitch.class), 1, LevelHandler.CLIFF_OVERWORLD, 16);
@@ -83,10 +83,10 @@ public class WorldGenCustomStructures implements IWorldGenerator {
     };
     public static final WorldGenStructure CLIFF_TEMPLE = new WorldGenStructure("cliff/swamp_temple") {
         @Override
-        protected void handleDataMarker(String function, BlockPos pos, World worldIn, Random rand) {
+        protected void handleDataMarker(String function, BlockPos pos, Level worldIn, Random rand) {
             if (function.startsWith("enemy")) {
                 worldIn.setBlockState(pos, ModBlocks.DISAPPEARING_SPAWNER.getDefaultState(), 2);
-                TileEntity tileentity = worldIn.getTileEntity(pos);
+                BlockEntity tileentity = worldIn.getTileEntity(pos);
 
                 if (tileentity instanceof TileEntityMobSpawner) {
                     ((TileEntityMobSpawner) tileentity).getSpawnerBaseLogic().setData(ModEntities.getID(EntityCliffGolem.class), 1, LevelHandler.CLIFF_OVERWORLD, 16);
@@ -98,10 +98,10 @@ public class WorldGenCustomStructures implements IWorldGenerator {
     };
     private static final WorldGenStructure MAELSTROM_RUINS = new WorldGenStructure("cliff/maelstrom_ruins") {
         @Override
-        protected void handleDataMarker(String function, BlockPos pos, World worldIn, Random rand) {
+        protected void handleDataMarker(String function, BlockPos pos, Level worldIn, Random rand) {
             if (function.startsWith("enemy")) {
                 worldIn.setBlockState(pos, ModBlocks.DISAPPEARING_SPAWNER.getDefaultState(), 2);
-                TileEntity tileentity = worldIn.getTileEntity(pos);
+                BlockEntity tileentity = worldIn.getTileEntity(pos);
 
                 if (tileentity instanceof TileEntityMobSpawner) {
                     ((TileEntityMobSpawner) tileentity).getSpawnerBaseLogic().setData(
@@ -117,7 +117,7 @@ public class WorldGenCustomStructures implements IWorldGenerator {
             }
             if (function.startsWith("chest")) {
                 worldIn.setBlockState(pos, Blocks.CHEST.getDefaultState());
-                TileEntity tileentity = worldIn.getTileEntity(pos);
+                BlockEntity tileentity = worldIn.getTileEntity(pos);
 
                 if (tileentity instanceof TileEntityChest) {
                     ((TileEntityChest) tileentity).setLootTable(LootTableHandler.MAELSTROM_RUINS, rand.nextLong());
@@ -129,7 +129,7 @@ public class WorldGenCustomStructures implements IWorldGenerator {
     };
     public static final WorldGenStructure MAELSTROM_PIT = new WorldGenStructure("azure/maelstrom_pit") {
         @Override
-        public boolean generate(World worldIn, Random rand, BlockPos position) {
+        public boolean generate(Level worldIn, Random rand, BlockPos position) {
             if (position.getY() < 12) {
                 return false;
             }
@@ -139,10 +139,10 @@ public class WorldGenCustomStructures implements IWorldGenerator {
         ;
 
         @Override
-        protected void handleDataMarker(String function, BlockPos pos, World worldIn, Random rand) {
+        protected void handleDataMarker(String function, BlockPos pos, Level worldIn, Random rand) {
             if (function.startsWith("boss")) {
                 worldIn.setBlockState(pos, ModBlocks.DISAPPEARING_SPAWNER.getDefaultState(), 2);
-                TileEntity tileentity = worldIn.getTileEntity(pos);
+                BlockEntity tileentity = worldIn.getTileEntity(pos);
 
                 if (tileentity instanceof TileEntityMobSpawner) {
                     ((TileEntityMobSpawner) tileentity).getSpawnerBaseLogic().setData(ModEntities.getID(EntityIronShade.class), 1, LevelHandler.AZURE_ENDGAME, 16);
@@ -156,10 +156,10 @@ public class WorldGenCustomStructures implements IWorldGenerator {
     public static final WorldGenStructure MEDIUM_LEDGE = new WorldGenCliffLedge("cliff/medium_ledge", -10);
     public static final WorldGenStructure MAELSTROM_LEDGE = new WorldGenCliffLedge("cliff/maelstrom_ledge", -15) {
         @Override
-        protected void handleDataMarker(String function, BlockPos pos, World worldIn, Random rand) {
+        protected void handleDataMarker(String function, BlockPos pos, Level worldIn, Random rand) {
             if (function.startsWith("enemy")) {
                 worldIn.setBlockState(pos, ModBlocks.DISAPPEARING_SPAWNER.getDefaultState(), 2);
-                TileEntity tileentity = worldIn.getTileEntity(pos);
+                BlockEntity tileentity = worldIn.getTileEntity(pos);
 
                 if (tileentity instanceof TileEntityMobSpawner) {
                     ((TileEntityMobSpawner) tileentity).getSpawnerBaseLogic().setData(new MobSpawnData(ModEntities.getID(EntityGoldenPillar.class), Element.GOLDEN), 2, LevelHandler.CLIFF_OVERWORLD, 16);
@@ -168,7 +168,7 @@ public class WorldGenCustomStructures implements IWorldGenerator {
             if (function.startsWith("chest")) {
                 worldIn.setBlockToAir(pos);
                 pos = pos.down();
-                TileEntity tileentity = worldIn.getTileEntity(pos);
+                BlockEntity tileentity = worldIn.getTileEntity(pos);
 
                 if (tileentity instanceof TileEntityChest) {
                     ((TileEntityChest) tileentity).setLootTable(LootTableHandler.MAELSTROM_RUINS, rand.nextLong());
@@ -180,7 +180,7 @@ public class WorldGenCustomStructures implements IWorldGenerator {
     };
     public static final WorldGenStructure CLIFF_RUIN_LEDGE = new WorldGenCliffLedge("cliff/xl_boardwalk", -5) {
         @Override
-        protected void handleDataMarker(String function, BlockPos pos, World worldIn, Random rand) {
+        protected void handleDataMarker(String function, BlockPos pos, Level worldIn, Random rand) {
             if (function.startsWith("maelstrom")) {
                 if (rand.nextInt(3) == 0) {
                     new WorldGenMaelstrom(ModBlocks.DECAYING_MAELSTROM, ModBlocks.CLIFF_MAELSTROM_CORE, (tileEntity) -> tileEntity.getSpawnerBaseLogic().setData(
@@ -201,7 +201,7 @@ public class WorldGenCustomStructures implements IWorldGenerator {
                 worldIn.setBlockToAir(pos);
                 if (rand.nextInt(5) == 0) {
                     pos = pos.down();
-                    TileEntity tileentity = worldIn.getTileEntity(pos);
+                    BlockEntity tileentity = worldIn.getTileEntity(pos);
 
                     if (tileentity instanceof TileEntityChest) {
                         ((TileEntityChest) tileentity).setLootTable(LootTableHandler.MAELSTROM_RUINS, rand.nextLong());
@@ -215,7 +215,7 @@ public class WorldGenCustomStructures implements IWorldGenerator {
 
     public static final WorldGenStructure MAELSTROM_CAVE = new WorldGenMaelstromCave();
 
-    public static final boolean canLedgeGenerate(World worldIn, BlockPos center) {
+    public static final boolean canLedgeGenerate(Level worldIn, BlockPos center) {
         if (center.getY() > 70 && center.getY() < 220 && worldIn.isAirBlock(center.up(5)) && worldIn.isAirBlock(center.up(40))
                 && worldIn.getBlockState(center.down()).getBlock() == ModBlocks.CLIFF_STONE) {
             return true;
@@ -233,7 +233,7 @@ public class WorldGenCustomStructures implements IWorldGenerator {
         }
 
         @Override
-        protected void handleDataMarker(String function, BlockPos pos, World worldIn, Random rand) {
+        protected void handleDataMarker(String function, BlockPos pos, Level worldIn, Random rand) {
             if (function.startsWith("maelstrom")) {
                 if (rand.nextInt(3) == 0) {
                     new WorldGenMaelstrom(ModBlocks.DECAYING_MAELSTROM, ModBlocks.CLIFF_MAELSTROM_CORE, (tileEntity) -> tileEntity.getSpawnerBaseLogic().setData(
@@ -254,7 +254,7 @@ public class WorldGenCustomStructures implements IWorldGenerator {
                 worldIn.setBlockToAir(pos);
                 if (rand.nextInt(3) == 0) {
                     pos = pos.down();
-                    TileEntity tileentity = worldIn.getTileEntity(pos);
+                    BlockEntity tileentity = worldIn.getTileEntity(pos);
 
                     if (tileentity instanceof TileEntityChest) {
                         ((TileEntityChest) tileentity).setLootTable(LootTableHandler.MAELSTROM_RUINS, rand.nextLong());
@@ -276,13 +276,13 @@ public class WorldGenCustomStructures implements IWorldGenerator {
 
     public static final WorldGenStructure invasionTower = new WorldGenStructure("invasion/invasion_tower") {
         @Override
-        public boolean generate(World worldIn, Random rand, BlockPos position) {
+        public boolean generate(Level worldIn, Random rand, BlockPos position) {
             this.generateStructure(worldIn, position, Rotation.NONE);
             return true;
         }
 
         @Override
-        protected void handleDataMarker(String function, BlockPos pos, World worldIn, Random rand) {
+        protected void handleDataMarker(String function, BlockPos pos, Level worldIn, Random rand) {
             if (function.startsWith("boss")) {
                 worldIn.setBlockToAir(pos);
                 EntityMonolith entity = new EntityMonolith(worldIn);
@@ -290,7 +290,7 @@ public class WorldGenCustomStructures implements IWorldGenerator {
                 worldIn.spawnEntity(entity);
             } else if (function.startsWith("scout")) {
                 worldIn.setBlockState(pos, ModBlocks.BOSS_SPAWNER.getDefaultState(), 2);
-                TileEntity tileentity = worldIn.getTileEntity(pos);
+                BlockEntity tileentity = worldIn.getTileEntity(pos);
 
                 if (tileentity instanceof TileEntityMobSpawner) {
                     ((TileEntityMobSpawner) tileentity).getSpawnerBaseLogic().setData(new MobSpawnData(ModEntities.getID(EntityShade.class), Element.NONE), 1, LevelHandler.INVASION, 8);
@@ -300,7 +300,7 @@ public class WorldGenCustomStructures implements IWorldGenerator {
     };
 
     @Override
-    public void generate(Random random, int chunkX, int chunkZ, World world, IChunkGenerator chunkGenerator, IChunkProvider chunkProvider) {
+    public void generate(Random random, int chunkX, int chunkZ, Level world, IChunkGenerator chunkGenerator, IChunkProvider chunkProvider) {
         int x = chunkX * 16;
         int z = chunkZ * 16;
         if (world.provider.getDimension() == ModConfig.world.crimson_kingdom_dimension_id) {
@@ -373,7 +373,7 @@ public class WorldGenCustomStructures implements IWorldGenerator {
      * @param classes
      * @return
      */
-    private boolean generateBiomeSpecificStructure(WorldGenStructure generator, World world, Random rand, int x, int z, Class<?>... classes) {
+    private boolean generateBiomeSpecificStructure(WorldGenStructure generator, Level world, Random rand, int x, int z, Class<?>... classes) {
         ArrayList<Class<?>> classesList = new ArrayList<Class<?>>(Arrays.asList(classes));
 
         x += 8;

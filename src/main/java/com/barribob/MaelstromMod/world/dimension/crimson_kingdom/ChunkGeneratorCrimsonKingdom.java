@@ -2,9 +2,9 @@ package com.barribob.MaelstromMod.world.dimension.crimson_kingdom;
 
 import net.minecraft.block.BlockFalling;
 import net.minecraft.entity.EnumCreatureType;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.util.Mth;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.ChunkPrimer;
@@ -16,12 +16,12 @@ import java.util.Random;
 
 public class ChunkGeneratorCrimsonKingdom implements IChunkGenerator {
     private final Random rand;
-    private final World world;
+    private final Level world;
     private final float[] biomeWeights;
     private ChunkGeneratorSettings settings;
     private Biome[] biomesForGeneration;
 
-    public ChunkGeneratorCrimsonKingdom(World worldIn, long seed, boolean mapFeaturesEnabledIn, String generatorOptions) {
+    public ChunkGeneratorCrimsonKingdom(Level worldIn, long seed, boolean mapFeaturesEnabledIn, String generatorOptions) {
         this.world = worldIn;
         this.rand = new Random(seed);
         this.biomeWeights = new float[25];
@@ -31,7 +31,7 @@ public class ChunkGeneratorCrimsonKingdom implements IChunkGenerator {
          */
         for (int i = -2; i <= 2; ++i) {
             for (int j = -2; j <= 2; ++j) {
-                float f = 10.0F / MathHelper.sqrt(i * i + j * j + 0.2F);
+                float f = 10.0F / Mth.sqrt(i * i + j * j + 0.2F);
                 this.biomeWeights[i + 2 + (j + 2) * 5] = f;
             }
         }
@@ -90,7 +90,7 @@ public class ChunkGeneratorCrimsonKingdom implements IChunkGenerator {
     }
 
     @Override
-    public BlockPos getNearestStructurePos(World worldIn, String structureName, BlockPos position, boolean findUnexplored) {
+    public BlockPos getNearestStructurePos(Level worldIn, String structureName, BlockPos position, boolean findUnexplored) {
         return null;
     }
 
@@ -99,7 +99,7 @@ public class ChunkGeneratorCrimsonKingdom implements IChunkGenerator {
     }
 
     @Override
-    public boolean isInsideStructure(World worldIn, String structureName, BlockPos pos) {
+    public boolean isInsideStructure(Level worldIn, String structureName, BlockPos pos) {
         return false;
     }
 }

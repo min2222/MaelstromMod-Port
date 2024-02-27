@@ -1,26 +1,26 @@
 package com.barribob.MaelstromMod.entity.projectile;
 
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.item.ItemStack;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.util.math.RayTraceResult;
-import net.minecraft.world.World;
+import net.minecraft.world.level.Level;
 
 public class ProjectileMeteorSpawner extends ProjectileGun {
     private static final int EXPOSION_AREA_FACTOR = 6;
     private ItemStack stack;
 
-    public ProjectileMeteorSpawner(World worldIn, EntityLivingBase throwerIn, float baseDamage, ItemStack stack) {
+    public ProjectileMeteorSpawner(Level worldIn, LivingEntity throwerIn, float baseDamage, ItemStack stack) {
         super(worldIn, throwerIn, baseDamage, stack);
         this.stack = stack;
         this.setNoGravity(true);
     }
 
-    public ProjectileMeteorSpawner(World worldIn) {
+    public ProjectileMeteorSpawner(Level worldIn) {
         super(worldIn);
         this.setNoGravity(true);
     }
 
-    public ProjectileMeteorSpawner(World worldIn, double x, double y, double z) {
+    public ProjectileMeteorSpawner(Level worldIn, double x, double y, double z) {
         super(worldIn, x, y, z);
         this.setNoGravity(true);
     }

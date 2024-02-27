@@ -1,15 +1,15 @@
 package com.barribob.MaelstromMod.world.dimension.azure_dimension;
 
 import com.barribob.MaelstromMod.init.ModBlocks;
-import net.minecraft.block.Block;
-import net.minecraft.block.material.Material;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.init.Blocks;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.material.Material;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.gen.MapGenCaves;
 
 public class MapGenAzureCaves extends MapGenCaves {
     @Override
-    protected boolean canReplaceBlock(IBlockState state, IBlockState above) {
+    protected boolean canReplaceBlock(BlockState state, BlockState above) {
         if (above.getMaterial().equals(Material.WATER)) {
             return false;
         }

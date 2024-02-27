@@ -1,8 +1,8 @@
 package com.barribob.MaelstromMod.entity.ai;
 
-import net.minecraft.entity.EntityLiving;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.IRangedAttackMob;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.monster.RangedAttackMob;
 import net.minecraft.entity.ai.EntityAIBase;
 
 /**
@@ -11,7 +11,7 @@ import net.minecraft.entity.ai.EntityAIBase;
  *
  * @param <T> The entity to aquire the ai
  */
-public class EntityAIRangedAttack<T extends EntityLiving & IRangedAttackMob> extends EntityAIBase {
+public class EntityAIRangedAttack<T extends Mob & RangedAttackMob> extends EntityAIBase {
     private final T entity;
     private final double moveSpeedAmp;
     private int attackCooldown;
@@ -87,7 +87,7 @@ public class EntityAIRangedAttack<T extends EntityLiving & IRangedAttackMob> ext
      */
     @Override
     public void updateTask() {
-        EntityLivingBase entitylivingbase = this.entity.getAttackTarget();
+        LivingEntity entitylivingbase = this.entity.getAttackTarget();
 
         if (entitylivingbase != null) {
             double d0 = this.entity.getDistanceSq(entitylivingbase.posX, entitylivingbase.getEntityBoundingBox().minY, entitylivingbase.posZ);

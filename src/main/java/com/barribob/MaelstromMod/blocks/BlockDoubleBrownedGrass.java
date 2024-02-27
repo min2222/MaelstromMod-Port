@@ -1,21 +1,21 @@
 package com.barribob.MaelstromMod.blocks;
 
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockDoublePlant;
-import net.minecraft.block.SoundType;
-import net.minecraft.block.material.Material;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.DoublePlantBlock;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.material.Material;
 import net.minecraft.block.properties.IProperty;
-import net.minecraft.block.properties.PropertyEnum;
-import net.minecraft.block.state.BlockStateContainer;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.init.Blocks;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.IBlockAccess;
-import net.minecraft.world.World;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.level.Level;
 
 import java.util.Random;
 
@@ -23,15 +23,15 @@ import java.util.Random;
  * represents a double-block-tall grass block
  */
 public class BlockDoubleBrownedGrass extends BlockModBush {
-    public static final PropertyEnum<BlockDoublePlant.EnumBlockHalf> HALF = PropertyEnum.<BlockDoublePlant.EnumBlockHalf>create("half", BlockDoublePlant.EnumBlockHalf.class);
+    public static final EnumProperty<DoublePlantBlock.EnumBlockHalf> HALF = EnumProperty.<DoublePlantBlock.EnumBlockHalf>create("half", DoublePlantBlock.EnumBlockHalf.class);
 
     public BlockDoubleBrownedGrass(String name, Material material, float hardness, float resistance, SoundType soundType) {
         super(name, material, Blocks.GRASS, hardness, resistance, soundType);
-        this.setDefaultState(this.blockState.getBaseState().withProperty(HALF, BlockDoublePlant.EnumBlockHalf.LOWER));
+        this.setDefaultState(this.blockState.getBaseState().withProperty(HALF, DoublePlantBlock.EnumBlockHalf.LOWER));
     }
 
     @Override
-    public AxisAlignedBB getBoundingBox(IBlockState state, IBlockAccess source, BlockPos pos) {
+    public AABB getBoundingBox(BlockState state, BlockGetter source, BlockPos pos) {
         return FULL_BLOCK_AABB;
     }
 
@@ -39,14 +39,14 @@ public class BlockDoubleBrownedGrass extends BlockModBush {
      * Checks if this block can be placed exactly at the given position.
      */
     @Override
-    public boolean canPlaceBlockAt(World worldIn, BlockPos pos) {
+    public boolean canPlaceBlockAt(Level worldIn, BlockPos pos) {
         return super.canPlaceBlockAt(worldIn, pos) && worldIn.isAirBlock(pos.up());
     }
 
     @Override
-    protected void checkAndDropBlock(World worldIn, BlockPos pos, IBlockState state) {
+    protected void checkAndDropBlock(Level worldIn, BlockPos pos, BlockState state) {
         if (!this.canBlockStay(worldIn, pos, state)) {
-            boolean flag = state.getValue(HALF) == BlockDoublePlant.EnumBlockHalf.UPPER;
+            boolean flag = state.getValue(HALF) == DoublePlantBlock.EnumBlockHalf.UPPER;
             BlockPos blockpos = flag ? pos : pos.up();
             BlockPos blockpos1 = flag ? pos.down() : pos;
             Block block = flag ? this : worldIn.getBlockState(blockpos).getBlock();
@@ -66,21 +66,21 @@ public class BlockDoubleBrownedGrass extends BlockModBush {
     }
 
     @Override
-    public boolean canBlockStay(World worldIn, BlockPos pos, IBlockState state) {
+    public boolean canBlockStay(Level worldIn, BlockPos pos, BlockState state) {
         if (state.getBlock() != this)
             return super.canBlockStay(worldIn, pos, state); // Forge: This function is called during world gen and placement, before this
         // block is set, so if we are not 'here' then assume it's the pre-check.
-        if (state.getValue(HALF) == BlockDoublePlant.EnumBlockHalf.UPPER) {
+        if (state.getValue(HALF) == DoublePlantBlock.EnumBlockHalf.UPPER) {
             return worldIn.getBlockState(pos.down()).getBlock() == this;
         } else {
-            IBlockState iblockstate = worldIn.getBlockState(pos.up());
+            BlockState iblockstate = worldIn.getBlockState(pos.up());
             return iblockstate.getBlock() == this && super.canBlockStay(worldIn, pos, iblockstate);
         }
     }
 
-    public void placeAt(World worldIn, BlockPos lowerPos, int flags) {
-        worldIn.setBlockState(lowerPos, this.getDefaultState().withProperty(HALF, BlockDoublePlant.EnumBlockHalf.LOWER), flags);
-        worldIn.setBlockState(lowerPos.up(), this.getDefaultState().withProperty(HALF, BlockDoublePlant.EnumBlockHalf.UPPER), flags);
+    public void placeAt(Level worldIn, BlockPos lowerPos, int flags) {
+        worldIn.setBlockState(lowerPos, this.getDefaultState().withProperty(HALF, DoublePlantBlock.EnumBlockHalf.LOWER), flags);
+        worldIn.setBlockState(lowerPos.up(), this.getDefaultState().withProperty(HALF, DoublePlantBlock.EnumBlockHalf.UPPER), flags);
     }
 
     /**
@@ -88,30 +88,30 @@ public class BlockDoubleBrownedGrass extends BlockModBush {
      * logic
      */
     @Override
-    public void onBlockPlacedBy(World worldIn, BlockPos pos, IBlockState state, EntityLivingBase placer, ItemStack stack) {
-        worldIn.setBlockState(pos.up(), this.getDefaultState().withProperty(HALF, BlockDoublePlant.EnumBlockHalf.UPPER), 2);
+    public void onBlockPlacedBy(Level worldIn, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack) {
+        worldIn.setBlockState(pos.up(), this.getDefaultState().withProperty(HALF, DoublePlantBlock.EnumBlockHalf.UPPER), 2);
     }
 
     /**
      * Convert the given metadata into a BlockState for this Block
      */
     @Override
-    public IBlockState getStateFromMeta(int meta) {
-        return (meta & 8) > 0 ? this.getDefaultState().withProperty(HALF, BlockDoublePlant.EnumBlockHalf.UPPER)
-                : this.getDefaultState().withProperty(HALF, BlockDoublePlant.EnumBlockHalf.LOWER);
+    public BlockState getStateFromMeta(int meta) {
+        return (meta & 8) > 0 ? this.getDefaultState().withProperty(HALF, DoublePlantBlock.EnumBlockHalf.UPPER)
+                : this.getDefaultState().withProperty(HALF, DoublePlantBlock.EnumBlockHalf.LOWER);
     }
 
     /**
      * Convert the BlockState into the correct metadata value
      */
     @Override
-    public int getMetaFromState(IBlockState state) {
-        return state.getValue(HALF) == BlockDoublePlant.EnumBlockHalf.UPPER ? 8 : 0;
+    public int getMetaFromState(BlockState state) {
+        return state.getValue(HALF) == DoublePlantBlock.EnumBlockHalf.UPPER ? 8 : 0;
     }
 
     @Override
-    protected BlockStateContainer createBlockState() {
-        return new BlockStateContainer(this, new IProperty[]{HALF});
+    protected StateDefinition createBlockState() {
+        return new StateDefinition(this, new IProperty[]{HALF});
     }
 
     /**
@@ -127,7 +127,7 @@ public class BlockDoubleBrownedGrass extends BlockModBush {
      * Get the Item that this Block should drop when harvested.
      */
     @Override
-    public Item getItemDropped(IBlockState state, Random rand, int fortune) {
+    public Item getItemDropped(BlockState state, Random rand, int fortune) {
         return null;
     }
 }

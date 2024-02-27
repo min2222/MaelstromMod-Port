@@ -1,6 +1,6 @@
 package com.barribob.MaelstromMod.util;
 
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.List;
 import java.util.NavigableMap;
@@ -37,19 +37,19 @@ public class ModRandom {
     /**
      * Returns a vector where each value is a random float between -0.5 and 0.5
      */
-    public static Vec3d randVec() {
-        return new Vec3d(getFloat(0.5f), getFloat(0.5f), getFloat(0.5f));
+    public static Vec3 randVec() {
+        return new Vec3(getFloat(0.5f), getFloat(0.5f), getFloat(0.5f));
     }
 
-    public static Vec3d randFlatVec(Vec3d plane) {
+    public static Vec3 randFlatVec(Vec3 plane) {
         return randVec().crossProduct(plane).normalize();
     }
 
     /**
      * Returns a vector where each value is a gaussian of mean 0 and std dev 1
      */
-    public static Vec3d gaussVec() {
-        return new Vec3d(rand.nextGaussian(), rand.nextGaussian(), rand.nextGaussian());
+    public static Vec3 gaussVec() {
+        return new Vec3(rand.nextGaussian(), rand.nextGaussian(), rand.nextGaussian());
     }
 
     /**

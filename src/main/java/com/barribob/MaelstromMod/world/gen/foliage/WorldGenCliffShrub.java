@@ -1,28 +1,28 @@
 package com.barribob.MaelstromMod.world.gen.foliage;
 
 import com.barribob.MaelstromMod.init.ModBlocks;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.init.Blocks;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.gen.feature.WorldGenTrees;
 
 import java.util.Arrays;
 import java.util.Random;
 
 public class WorldGenCliffShrub extends WorldGenTrees {
-    private final IBlockState leavesMetadata;
-    private final IBlockState woodMetadata;
+    private final BlockState leavesMetadata;
+    private final BlockState woodMetadata;
     private static final float upperLeafChance = 0.9f;
 
-    public WorldGenCliffShrub(IBlockState log, IBlockState leaf) {
+    public WorldGenCliffShrub(BlockState log, BlockState leaf) {
         super(false);
         this.woodMetadata = log;
         this.leavesMetadata = leaf;
     }
 
     @Override
-    public boolean generate(World worldIn, Random rand, BlockPos position) {
+    public boolean generate(Level worldIn, Random rand, BlockPos position) {
         // Move the generation until it is at the correct y position
         while (worldIn.getBlockState(position).getBlock() != Blocks.AIR) {
             position = position.up();
@@ -40,7 +40,7 @@ public class WorldGenCliffShrub extends WorldGenTrees {
             return false;
         }
 
-        IBlockState state = worldIn.getBlockState(position);
+        BlockState state = worldIn.getBlockState(position);
 
         if (state.getBlock() == Blocks.AIR && this.isBlockNearby(worldIn, position)) {
             this.setBlockAndNotifyAdequately(worldIn, position, woodMetadata);
@@ -59,7 +59,7 @@ public class WorldGenCliffShrub extends WorldGenTrees {
      * @param rand
      * @param position
      */
-    private void generateLeaves(int maxLeafWidth, World worldIn, Random rand, BlockPos position) {
+    private void generateLeaves(int maxLeafWidth, Level worldIn, Random rand, BlockPos position) {
         for (int x = -maxLeafWidth; x <= maxLeafWidth; ++x) {
             for (int z = -maxLeafWidth; z <= +maxLeafWidth; ++z) {
                 int mattDistance = Math.abs(x) + Math.abs(z);
@@ -78,15 +78,15 @@ public class WorldGenCliffShrub extends WorldGenTrees {
         }
     }
 
-    private void placeLeaf(BlockPos pos, World world) {
-        IBlockState state = world.getBlockState(pos);
+    private void placeLeaf(BlockPos pos, Level world) {
+        BlockState state = world.getBlockState(pos);
 
         if (state.getBlock().canBeReplacedByLeaves(state, world, pos)) {
             this.setBlockAndNotifyAdequately(world, pos, this.leavesMetadata);
         }
     }
 
-    private boolean isBlockNearby(World world, BlockPos pos) {
+    private boolean isBlockNearby(Level world, BlockPos pos) {
         for (BlockPos dir : Arrays.asList(pos.down(), pos.east(), pos.west(), pos.north(), pos.south())) {
             if (world.getBlockState(dir).getBlock() == ModBlocks.CLIFF_STONE) {
                 return true;

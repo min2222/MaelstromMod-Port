@@ -10,20 +10,20 @@ import com.barribob.MaelstromMod.util.ModRandom;
 import com.barribob.MaelstromMod.util.ModUtils;
 import com.barribob.MaelstromMod.util.handlers.LootTableHandler;
 import com.barribob.MaelstromMod.util.handlers.ParticleManager;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.init.MobEffects;
-import net.minecraft.init.SoundEvents;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerBossEvent;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.BossEvent;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.potion.PotionEffect;
-import net.minecraft.util.DamageSource;
-import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvent;
-import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.BossInfo;
-import net.minecraft.world.BossInfoServer;
-import net.minecraft.world.World;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.level.Level;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -31,10 +31,10 @@ import java.util.List;
 import java.util.function.Consumer;
 
 public class EntityMaelstromBeast extends EntityMaelstromMob implements IAttack {
-    private final BossInfoServer bossInfo = (new BossInfoServer(this.getDisplayName(), BossInfo.Color.PURPLE, BossInfo.Overlay.NOTCHED_20));
-    private Consumer<EntityLivingBase> attack;
+    private final ServerBossEvent bossInfo = (new ServerBossEvent(this.getDisplayName(), BossEvent.Color.PURPLE, BossEvent.Overlay.NOTCHED_20));
+    private Consumer<LivingEntity> attack;
 
-    public EntityMaelstromBeast(World worldIn) {
+    public EntityMaelstromBeast(Level worldIn) {
         super(worldIn);
         this.healthScaledAttackFactor = 0.2;
         this.setSize(1.4f, 2.5f);
@@ -60,7 +60,7 @@ public class EntityMaelstromBeast extends EntityMaelstromMob implements IAttack 
         }
 
         if(!world.isRemote && this.isLeaping()) {
-            AxisAlignedBB box = getEntityBoundingBox().grow(0.25, 0.12, 0.25).offset(0, 0.12, 0);
+            AABB box = getEntityBoundingBox().grow(0.25, 0.12, 0.25).offset(0, 0.12, 0);
             ModUtils.destroyBlocksInAABB(box, world, this);
         }
     }
@@ -78,7 +78,7 @@ public class EntityMaelstromBeast extends EntityMaelstromMob implements IAttack 
     }
 
     @Override
-    public int startAttack(EntityLivingBase target, float distanceSq, boolean strafingBackwards) {
+    public int startAttack(LivingEntity target, float distanceSq, boolean strafingBackwards) {
 
         if(target.posY - posY > 3)
         {
@@ -90,7 +90,7 @@ public class EntityMaelstromBeast extends EntityMaelstromMob implements IAttack 
             return 50;
         }
 
-        List<Consumer<EntityLivingBase>> attacks = new ArrayList<>(Arrays.asList(swipe, roar, quake));
+        List<Consumer<LivingEntity>> attacks = new ArrayList<>(Arrays.asList(swipe, roar, quake));
         double[] weights = {
                 Math.sqrt(Math.max(0, Math.pow(5, 2) - distanceSq)),
                 attack != roar ? 0.5 : 0,
@@ -106,12 +106,12 @@ public class EntityMaelstromBeast extends EntityMaelstromMob implements IAttack 
                 new ProjectileBoneQuake(world, this, this.getAttack() * getConfigFloat("bone_hammer_wave_damage")) :
                 new ProjectileBeastQuake(world, this, this.getAttack() * getConfigFloat("hammer_wave_damage"));
 
-        Vec3d projectileOffset = ModUtils.getRelativeOffset(this, new Vec3d(2, -2, 0));
-        Vec3d forwardPos = ModUtils.getRelativeOffset(this, new Vec3d(3, -2, 0)).add(getPositionEyes(1));
+        Vec3 projectileOffset = ModUtils.getRelativeOffset(this, new Vec3(2, -2, 0));
+        Vec3 forwardPos = ModUtils.getRelativeOffset(this, new Vec3(3, -2, 0)).add(getPositionEyes(1));
         ModUtils.throwProjectile(this, forwardPos, projectile, 0, 0.8f, projectileOffset);
     };
 
-    private final Consumer<EntityLivingBase> quake = target -> {
+    private final Consumer<LivingEntity> quake = target -> {
         ModBBAnimations.animation(this, "beast.quake", false);
         ModUtils.leapTowards(this, target.getPositionVector(), 0, 0.5f);
         addEvent(spawnQuake, 20);
@@ -130,12 +130,12 @@ public class EntityMaelstromBeast extends EntityMaelstromMob implements IAttack 
         }
     }
 
-    private final Consumer<EntityLivingBase> swipe = target -> {
+    private final Consumer<LivingEntity> swipe = target -> {
         ModBBAnimations.animation(this, "beast.swipe", false);
 
         addEvent(() -> {
-            Vec3d offset = this.getPositionVector().add(ModUtils.getRelativeOffset(this, new Vec3d(2, 0, 0)));
-            Vec3d offset2 = this.getPositionVector().add(ModUtils.getRelativeOffset(this, new Vec3d(1, 0, 1)));
+            Vec3 offset = this.getPositionVector().add(ModUtils.getRelativeOffset(this, new Vec3(2, 0, 0)));
+            Vec3 offset2 = this.getPositionVector().add(ModUtils.getRelativeOffset(this, new Vec3(1, 0, 1)));
             DamageSource source = ModDamageSource.builder()
                     .type(ModDamageSource.MOB)
                     .directEntity(this)
@@ -149,9 +149,9 @@ public class EntityMaelstromBeast extends EntityMaelstromMob implements IAttack 
 
             double width = getMobConfig().getDouble("swipe_width");
 
-            ModUtils.destroyBlocksInAABB(new AxisAlignedBB(getPosition())
+            ModUtils.destroyBlocksInAABB(new AABB(getPosition())
                     .grow(width, 1, width)
-                    .offset(ModUtils.getRelativeOffset(this, new Vec3d(1, 1, 0))), world, this);
+                    .offset(ModUtils.getRelativeOffset(this, new Vec3(1, 1, 0))), world, this);
 
             if (EntityMaelstromBeast.this.isRaged()) {
                 ModUtils.performNTimes(8, (i) -> spawnBone(world, offset.add(ModRandom.randVec().scale(3)), EntityMaelstromBeast.this));
@@ -160,7 +160,7 @@ public class EntityMaelstromBeast extends EntityMaelstromMob implements IAttack 
         }, 15);
     };
 
-    private final Consumer<EntityLivingBase> roar = target -> {
+    private final Consumer<LivingEntity> roar = target -> {
         ModBBAnimations.animation(this, "beast.roar", false);
 
         addEvent(() -> {
@@ -168,8 +168,8 @@ public class EntityMaelstromBeast extends EntityMaelstromMob implements IAttack 
                 ModUtils.spawnMob(world, getPosition(), getLevel(), getMobConfig().getConfig("spawning_algorithm"));
             } else {
                 ModUtils.handleAreaImpact(20, (e) -> {
-                    if (e instanceof EntityLivingBase) {
-                        ((EntityLivingBase) e).addPotionEffect(new PotionEffect(MobEffects.SLOWNESS, 120, 3));
+                    if (e instanceof LivingEntity) {
+                        ((LivingEntity) e).addPotionEffect(new PotionEffect(MobEffects.SLOWNESS, 120, 3));
                     }
                     return 0.0f;
                 }, this, this.getPositionVector(), ModDamageSource.MAELSTROM_DAMAGE);
@@ -178,7 +178,7 @@ public class EntityMaelstromBeast extends EntityMaelstromMob implements IAttack 
         }, 12);
     };
 
-    public final Consumer<EntityLivingBase> spray = target -> {
+    public final Consumer<LivingEntity> spray = target -> {
         ModUtils.leapTowards(this, target.getPositionVector(), 0, 1.6f);
         ModBBAnimations.animation(this, "beast.leap", false);
 
@@ -186,9 +186,9 @@ public class EntityMaelstromBeast extends EntityMaelstromMob implements IAttack 
             ModBBAnimations.animation(this, "beast.leap", true);
             ModBBAnimations.animation(this, "beast.slam", false);
 
-            Vec3d targetPos = target.getPositionEyes(1);
-            Vec3d dir = getPositionEyes(1).subtract(targetPos);
-            Vec3d axis = ModUtils.rotateVector2(dir.crossProduct(ModUtils.Y_AXIS), dir, 90).normalize().scale(5);
+            Vec3 targetPos = target.getPositionEyes(1);
+            Vec3 dir = getPositionEyes(1).subtract(targetPos);
+            Vec3 axis = ModUtils.rotateVector2(dir.crossProduct(ModUtils.Y_AXIS), dir, 90).normalize().scale(5);
 
             ModUtils.lineCallback(targetPos.add(axis), targetPos.subtract(axis), 5, (pos, i) -> {
                 Projectile projectile = new ProjectileBeastFireball(world, this, this.getAttack() * getConfigFloat("high_leap_fireball_damage"));
@@ -198,7 +198,7 @@ public class EntityMaelstromBeast extends EntityMaelstromMob implements IAttack 
         }, 30);
     };
 
-    private final Consumer<EntityLivingBase> leap = target -> {
+    private final Consumer<LivingEntity> leap = target -> {
         ModBBAnimations.animation(this, "beast.leap", false);
 
         addEvent(() -> {
@@ -207,7 +207,7 @@ public class EntityMaelstromBeast extends EntityMaelstromMob implements IAttack 
         }, 16);
     };
 
-    public static void spawnBone(World world, Vec3d pos, EntityLeveledMob entity) {
+    public static void spawnBone(Level world, Vec3 pos, EntityLeveledMob entity) {
         if (!world.isRemote) {
             ProjectileBone projectile = new ProjectileBone(world, entity, entity.getAttack() * entity.getConfigFloat("bone_projectile_damage"));
             projectile.setPosition(pos.x, pos.y + 1.5, pos.z);
@@ -220,7 +220,7 @@ public class EntityMaelstromBeast extends EntityMaelstromMob implements IAttack 
     }
 
     @Override
-    public void readEntityFromNBT(NBTTagCompound compound) {
+    public void readEntityFromNBT(CompoundTag compound) {
         if (this.hasCustomName()) {
             this.bossInfo.setName(this.getDisplayName());
         }
@@ -241,13 +241,13 @@ public class EntityMaelstromBeast extends EntityMaelstromMob implements IAttack 
     }
 
     @Override
-    public void addTrackingPlayer(EntityPlayerMP player) {
+    public void addTrackingPlayer(ServerPlayer player) {
         super.addTrackingPlayer(player);
         this.bossInfo.addPlayer(player);
     }
 
     @Override
-    public void removeTrackingPlayer(EntityPlayerMP player) {
+    public void removeTrackingPlayer(ServerPlayer player) {
         super.removeTrackingPlayer(player);
         this.bossInfo.removePlayer(player);
     }
@@ -288,6 +288,6 @@ public class EntityMaelstromBeast extends EntityMaelstromMob implements IAttack 
     }
 
     @Override
-    public void attackEntityWithRangedAttack(EntityLivingBase target, float distanceFactor) {
+    public void attackEntityWithRangedAttack(LivingEntity target, float distanceFactor) {
     }
 }

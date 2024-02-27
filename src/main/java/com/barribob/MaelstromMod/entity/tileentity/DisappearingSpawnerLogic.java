@@ -1,10 +1,10 @@
 package com.barribob.MaelstromMod.entity.tileentity;
 
-import net.minecraft.block.Block;
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.util.EntitySelectors;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
 
 import java.util.function.Supplier;
 
@@ -13,7 +13,7 @@ import java.util.function.Supplier;
  * vanilla spawner, except it sets itself to air
  */
 public class DisappearingSpawnerLogic extends MobSpawnerLogic {
-    public DisappearingSpawnerLogic(Supplier<World> world, Supplier<BlockPos> pos, Block block) {
+    public DisappearingSpawnerLogic(Supplier<Level> world, Supplier<BlockPos> pos, Block block) {
         super(world, pos, block);
     }
 
@@ -30,9 +30,9 @@ public class DisappearingSpawnerLogic extends MobSpawnerLogic {
     /**
      * Checks to see if any players (in survival) are in range for spawning
      */
-    private boolean isAnyPlayerWithinRangeAt(World world, double x, double y, double z, double range) {
+    private boolean isAnyPlayerWithinRangeAt(Level world, double x, double y, double z, double range) {
         for (int j2 = 0; j2 < world.playerEntities.size(); ++j2) {
-            EntityPlayer entityplayer = world.playerEntities.get(j2);
+            Player entityplayer = world.playerEntities.get(j2);
 
             if (EntitySelectors.NOT_SPECTATING.apply(entityplayer) && !entityplayer.capabilities.isCreativeMode) {
                 double d0 = entityplayer.getDistanceSq(x, y, z);
@@ -74,7 +74,7 @@ public class DisappearingSpawnerLogic extends MobSpawnerLogic {
         this.onSpawn(world.get(), pos.get());
     }
 
-    protected void onSpawn(World world, BlockPos blockpos) {
+    protected void onSpawn(Level world, BlockPos blockpos) {
         world.setBlockToAir(blockpos);
     }
 }

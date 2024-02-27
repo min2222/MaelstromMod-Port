@@ -2,10 +2,10 @@ package com.barribob.MaelstromMod.world.gen.maelstrom_stronghold;
 
 import com.barribob.MaelstromMod.util.ModRandom;
 import com.google.common.collect.Lists;
+import net.minecraft.core.BlockPos;
 import net.minecraft.util.Rotation;
 import net.minecraft.util.Tuple;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.gen.structure.StructureComponent;
 import net.minecraft.world.gen.structure.template.TemplateManager;
 
@@ -18,7 +18,7 @@ import java.util.List;
  */
 public class MaelstromStronghold {
     private List<StructureComponent> components;
-    private World world;
+    private Level world;
     private TemplateManager manager;
     private int exitsGenerated;
     private static final int MIN_EXITS = 2;
@@ -28,7 +28,7 @@ public class MaelstromStronghold {
     private static final List<Tuple<Rotation, BlockPos>> CROSS_POS = Lists.newArrayList(new Tuple(Rotation.NONE, new BlockPos(0, 0, 0)),
             new Tuple(Rotation.CLOCKWISE_90, new BlockPos(16, 0, 0)), new Tuple(Rotation.COUNTERCLOCKWISE_90, new BlockPos(0, 0, 16)));
 
-    public MaelstromStronghold(World world, TemplateManager manager, List<StructureComponent> components) {
+    public MaelstromStronghold(Level world, TemplateManager manager, List<StructureComponent> components) {
         this.components = components;
         this.world = world;
         this.manager = manager;

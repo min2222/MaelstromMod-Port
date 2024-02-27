@@ -1,9 +1,9 @@
 package com.barribob.MaelstromMod.entity.util;
 
-import net.minecraft.entity.EntityLiving;
-import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.LivingEntity;
 
-public class TimedAttackInitiator<T extends EntityLiving & IAttack> implements IAttackInitiator {
+public class TimedAttackInitiator<T extends Mob & IAttack> implements IAttackInitiator {
     private final T entity;
     private int attackTime;
     private final int attackCooldown;
@@ -15,7 +15,7 @@ public class TimedAttackInitiator<T extends EntityLiving & IAttack> implements I
     }
 
     @Override
-    public void update(EntityLivingBase target) {
+    public void update(LivingEntity target) {
         this.attackTime--;
         if (this.attackTime <= 0) {
             double distSq = entity.getDistanceSq(target);

@@ -3,15 +3,15 @@ package com.barribob.MaelstromMod.entity.ai;
 import com.barribob.MaelstromMod.entity.entities.EntityMaelstromMob;
 import com.barribob.MaelstromMod.util.ModUtils;
 import net.minecraft.entity.EntityCreature;
-import net.minecraft.entity.EntityLiving;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.SharedMonsterAttributes;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.entity.ai.EntityAIBase;
-import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.world.phys.AABB;
 
 public class EntityAIFollowAttackers extends EntityAIBase {
     private final EntityCreature creature;
-    private EntityLivingBase targetEntity;
+    private LivingEntity targetEntity;
     private final double movementSpeed;
 
     public EntityAIFollowAttackers(EntityCreature theCreatureIn, double movementSpeedIn) {
@@ -25,13 +25,13 @@ public class EntityAIFollowAttackers extends EntityAIBase {
      */
     @Override
     public boolean shouldExecute() {
-        EntityLivingBase closestMob = null;
-        double distanceSq = Math.pow(creature.getEntityAttribute(SharedMonsterAttributes.FOLLOW_RANGE).getAttributeValue(), 2);
-        for (EntityLivingBase entity : ModUtils.getEntitiesInBox(creature, new AxisAlignedBB(creature.getPosition()).grow(creature.getEntityAttribute(SharedMonsterAttributes.FOLLOW_RANGE).getAttributeValue()))) {
+        LivingEntity closestMob = null;
+        double distanceSq = Math.pow(creature.getEntityAttribute(Attributes.FOLLOW_RANGE).getAttributeValue(), 2);
+        for (LivingEntity entity : ModUtils.getEntitiesInBox(creature, new AABB(creature.getPosition()).grow(creature.getEntityAttribute(Attributes.FOLLOW_RANGE).getAttributeValue()))) {
             if (!EntityMaelstromMob.CAN_TARGET.apply(entity) &&
                     creature.getAttackTarget() == null &&
-                    entity instanceof EntityLiving &&
-                    ((EntityLiving)entity).getAttackTarget() != null) {
+                    entity instanceof Mob &&
+                    ((Mob)entity).getAttackTarget() != null) {
                 if (entity.getDistanceSq(creature) < distanceSq) {
                     closestMob = entity;
                     distanceSq = entity.getDistanceSq(creature);

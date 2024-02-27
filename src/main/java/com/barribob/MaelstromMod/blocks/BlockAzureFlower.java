@@ -1,12 +1,12 @@
 package com.barribob.MaelstromMod.blocks;
 
-import net.minecraft.block.SoundType;
-import net.minecraft.block.material.Material;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.init.Blocks;
-import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.IBlockAccess;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.material.Material;
+import net.minecraft.world.phys.AABB;
 
 /**
  * Represents azure dimension flowers
@@ -17,7 +17,7 @@ public class BlockAzureFlower extends BlockModBush {
     }
 
     @Override
-    public AxisAlignedBB getBoundingBox(IBlockState state, IBlockAccess source, BlockPos pos) {
-        return super.getBoundingBox(state, source, pos).offset(state.getOffset(source, pos));
+    public AABB getBoundingBox(BlockState state, BlockGetter source, BlockPos pos) {
+        return super.getBoundingBox(state, source, pos).move(state.getOffset(source, pos));
     }
 }

@@ -1,27 +1,18 @@
 package com.barribob.MaelstromMod.test;
 
 import com.barribob.MaelstromMod.Main;
-import com.barribob.MaelstromMod.entity.entities.EntityLeveledMob;
-import com.barribob.MaelstromMod.util.Element;
-import com.barribob.MaelstromMod.util.ModUtils;
 import com.typesafe.config.Config;
 import net.minecraft.command.ICommandSender;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.SharedMonsterAttributes;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
-
-import java.lang.reflect.InvocationTargetException;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.nbt.CompoundTag;
 
 public class TestUtils {
     public static final String getMobString(Entity entity) {
         String mobString = "Name: " + entity.getDisplayName();
-        if(entity instanceof EntityLivingBase) {
-            NBTTagCompound compound = new NBTTagCompound();
-            ((EntityLivingBase)entity).writeEntityToNBT(compound);
+        if(entity instanceof LivingEntity) {
+            CompoundTag compound = new CompoundTag();
+            ((LivingEntity)entity).writeEntityToNBT(compound);
             mobString += "\nNBT: " + compound;
         }
 

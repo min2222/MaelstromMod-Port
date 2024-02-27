@@ -5,18 +5,17 @@ import com.barribob.MaelstromMod.entity.projectile.Projectile;
 import com.barribob.MaelstromMod.items.gun.bullet.BulletFactory;
 import com.barribob.MaelstromMod.items.gun.bullet.MaelstromCannon;
 import com.barribob.MaelstromMod.util.ModUtils;
-import net.minecraft.client.util.ITooltipFlag;
-import net.minecraft.creativetab.CreativeTabs;
-import net.minecraft.enchantment.EnchantmentHelper;
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.ChatFormatting;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.*;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.init.Enchantments;
-import net.minecraft.init.SoundEvents;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.EnumHand;
-import net.minecraft.util.SoundCategory;
-import net.minecraft.util.text.TextFormatting;
-import net.minecraft.world.World;
+import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.level.Level;
 
 import java.util.List;
 
@@ -26,7 +25,7 @@ import java.util.List;
 public class ItemMaelstromCannon extends ItemStaff {
     private BulletFactory factory = new MaelstromCannon();
 
-    public ItemMaelstromCannon(String name, int maxDamage, float level, CreativeTabs tab) {
+    public ItemMaelstromCannon(String name, int maxDamage, float level, CreativeModeTab tab) {
         super(name, maxDamage, level, tab);
     }
 
@@ -38,8 +37,8 @@ public class ItemMaelstromCannon extends ItemStaff {
      * Shoot a single projectile
      */
     @Override
-    protected void shoot(World world, EntityPlayer player, EnumHand handIn, ItemStack stack) {
-        world.playSound((EntityPlayer) null, player.posX, player.posY, player.posZ, SoundEvents.ENTITY_GENERIC_EXPLODE, SoundCategory.NEUTRAL, 0.5F,
+    protected void shoot(Level world, Player player, InteractionHand handIn, ItemStack stack) {
+        world.playSound((Player) null, player.posX, player.posY, player.posZ, SoundEvents.ENTITY_GENERIC_EXPLODE, SoundSource.NEUTRAL, 0.5F,
                 0.6F / (itemRand.nextFloat() * 0.4F + 0.8F));
 
         int power = EnchantmentHelper.getEnchantmentLevel(Enchantments.POWER, stack);
@@ -60,10 +59,10 @@ public class ItemMaelstromCannon extends ItemStaff {
     }
 
     @Override
-    public void addInformation(ItemStack stack, World worldIn, List<String> tooltip, ITooltipFlag flagIn) {
+    public void addInformation(ItemStack stack, Level worldIn, List<String> tooltip, TooltipFlag flagIn) {
         super.addInformation(stack, worldIn, tooltip, flagIn);
         tooltip.add(ModUtils.getDamageTooltip(ModUtils.getEnchantedDamage(stack, this.getLevel(), getBaseDamage())));
-        tooltip.add(TextFormatting.GRAY + ModUtils.translateDesc("maelstrom_cannon"));
+        tooltip.add(ChatFormatting.GRAY + ModUtils.translateDesc("maelstrom_cannon"));
     }
 
     @Override

@@ -3,15 +3,15 @@ package com.barribob.MaelstromMod.entity.ai;
 import com.barribob.MaelstromMod.entity.entities.EntityMaelstromMob;
 import com.barribob.MaelstromMod.util.ModUtils;
 import net.minecraft.entity.EntityCreature;
-import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.entity.ai.EntityAIBase;
 import net.minecraft.entity.ai.RandomPositionGenerator;
-import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 
 public class EntityAIAvoidCrowding extends EntityAIBase {
     private final EntityCreature creature;
-    private Vec3d pos;
+    private Vec3 pos;
     private final double movementSpeed;
 
     public EntityAIAvoidCrowding(EntityCreature theCreatureIn, double movementSpeedIn) {
@@ -25,9 +25,9 @@ public class EntityAIAvoidCrowding extends EntityAIBase {
      */
     @Override
     public boolean shouldExecute() {
-        Vec3d groupCenter = Vec3d.ZERO;
+        Vec3 groupCenter = Vec3.ZERO;
         float numMobs = 0;
-        for (EntityLivingBase entity : ModUtils.getEntitiesInBox(creature, new AxisAlignedBB(creature.getPosition()).grow(1.5f))) {
+        for (LivingEntity entity : ModUtils.getEntitiesInBox(creature, new AABB(creature.getPosition()).grow(1.5f))) {
             if (entity instanceof EntityMaelstromMob) {
                 groupCenter = groupCenter.add(entity.getPositionVector());
                 numMobs += 1;

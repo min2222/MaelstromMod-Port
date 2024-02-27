@@ -3,27 +3,27 @@ package com.barribob.MaelstromMod.entity.projectile;
 import com.barribob.MaelstromMod.util.ModDamageSource;
 import com.barribob.MaelstromMod.util.ModUtils;
 import com.barribob.MaelstromMod.util.handlers.ParticleManager;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.util.Mth;
 import net.minecraft.util.math.RayTraceResult;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.level.Level;
 
 public class ProjectileRuneWisp extends ProjectileGun {
     private static final int PARTICLE_AMOUNT = 6;
     private static final int RADIUS = 2;
 
-    public ProjectileRuneWisp(World worldIn, EntityLivingBase throwerIn, float baseDamage, ItemStack stack) {
+    public ProjectileRuneWisp(Level worldIn, LivingEntity throwerIn, float baseDamage, ItemStack stack) {
         super(worldIn, throwerIn, baseDamage, stack);
         this.setNoGravity(true);
     }
 
-    public ProjectileRuneWisp(World worldIn) {
+    public ProjectileRuneWisp(Level worldIn) {
         super(worldIn);
     }
 
-    public ProjectileRuneWisp(World worldIn, double x, double y, double z) {
+    public ProjectileRuneWisp(Level worldIn, double x, double y, double z) {
         super(worldIn, x, y, z);
     }
 
@@ -31,13 +31,13 @@ public class ProjectileRuneWisp extends ProjectileGun {
     protected void spawnParticles() {
         for (int i = 0; i < PARTICLE_AMOUNT; i++) {
             ModUtils.circleCallback(RADIUS, 30, (pos) -> {
-                Vec3d vel = new Vec3d(this.motionX, this.motionY, this.motionZ).normalize();
+                Vec3 vel = new Vec3(this.motionX, this.motionY, this.motionZ).normalize();
 
                 // Conversion code taken from projectile shoot method
-                float f1 = MathHelper.sqrt(vel.x * vel.x + vel.z * vel.z);
-                Vec3d outer = pos.rotatePitch((float) (MathHelper.atan2(vel.y, f1))).rotateYaw((float) (MathHelper.atan2(vel.x, vel.z))).add(getPositionVector());
-                Vec3d inner = pos.scale(0.85f).rotatePitch((float) (MathHelper.atan2(vel.y, f1))).rotateYaw((float) (MathHelper.atan2(vel.x, vel.z))).add(getPositionVector());
-                ParticleManager.spawnWisp(world, outer, this.getElement().particleColor, Vec3d.ZERO);
+                float f1 = Mth.sqrt(vel.x * vel.x + vel.z * vel.z);
+                Vec3 outer = pos.rotatePitch((float) (Mth.atan2(vel.y, f1))).rotateYaw((float) (Mth.atan2(vel.x, vel.z))).add(getPositionVector());
+                Vec3 inner = pos.scale(0.85f).rotatePitch((float) (Mth.atan2(vel.y, f1))).rotateYaw((float) (Mth.atan2(vel.x, vel.z))).add(getPositionVector());
+                ParticleManager.spawnWisp(world, outer, this.getElement().particleColor, Vec3.ZERO);
                 ParticleManager.spawnEffect(world, inner, getElement().particleColor);
             });
         }

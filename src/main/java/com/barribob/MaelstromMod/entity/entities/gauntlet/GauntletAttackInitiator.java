@@ -1,7 +1,7 @@
 package com.barribob.MaelstromMod.entity.entities.gauntlet;
 
 import com.barribob.MaelstromMod.entity.util.IAttackInitiator;
-import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.world.entity.LivingEntity;
 
 import java.util.function.Function;
 
@@ -9,10 +9,10 @@ public class GauntletAttackInitiator implements IAttackInitiator {
     private int attackTime;
     private final int startingCooldown;
     private int attackCooldown;
-    private final Function<EntityLivingBase, IGauntletAction> attack;
-    private final Function<EntityLivingBase, IGauntletAction> overrideAction;
+    private final Function<LivingEntity, IGauntletAction> attack;
+    private final Function<LivingEntity, IGauntletAction> overrideAction;
 
-    public GauntletAttackInitiator(int startingCooldown, Function<EntityLivingBase, IGauntletAction> attack, Function<EntityLivingBase, IGauntletAction> overrideAction) {
+    public GauntletAttackInitiator(int startingCooldown, Function<LivingEntity, IGauntletAction> attack, Function<LivingEntity, IGauntletAction> overrideAction) {
         this.attack = attack;
         this.overrideAction = overrideAction;
         this.startingCooldown = startingCooldown;
@@ -20,7 +20,7 @@ public class GauntletAttackInitiator implements IAttackInitiator {
     }
 
     @Override
-    public void update(EntityLivingBase target) {
+    public void update(LivingEntity target) {
         attackTime--;
         if (attackTime <= 0) {
             IGauntletAction action = attack.apply(target);

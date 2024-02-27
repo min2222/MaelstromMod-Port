@@ -1,9 +1,9 @@
 package com.barribob.MaelstromMod.renderer;
 
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.Optional;
 
 public interface ITarget {
-    Optional<Vec3d> getTarget();
+    Optional<Vec3> getTarget();
 }

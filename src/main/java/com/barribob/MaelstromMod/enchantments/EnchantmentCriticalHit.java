@@ -2,15 +2,15 @@ package com.barribob.MaelstromMod.enchantments;
 
 import com.barribob.MaelstromMod.items.gun.ItemGun;
 import com.barribob.MaelstromMod.items.gun.ItemStaff;
-import net.minecraft.enchantment.Enchantment;
-import net.minecraft.enchantment.EnumEnchantmentType;
-import net.minecraft.inventory.EntityEquipmentSlot;
-import net.minecraft.item.ItemStack;
+import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.world.item.enchantment.EnchantmentCategory;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.item.ItemStack;
 
 public class EnchantmentCriticalHit extends Enchantment {
-    public EnchantmentCriticalHit(String registryName, Rarity rarityIn, EntityEquipmentSlot[] slots) {
+    public EnchantmentCriticalHit(String registryName, Rarity rarityIn, EquipmentSlot[] slots) {
         // The enum enchantment type doesn't matter here
-        super(rarityIn, EnumEnchantmentType.ALL, slots);
+        super(rarityIn, EnchantmentCategory.ALL, slots);
         this.setRegistryName(registryName);
         this.setName(registryName);
     }

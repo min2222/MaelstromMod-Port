@@ -4,41 +4,41 @@ import com.barribob.MaelstromMod.util.ModDamageSource;
 import com.barribob.MaelstromMod.util.ModRandom;
 import com.barribob.MaelstromMod.util.ModUtils;
 import com.barribob.MaelstromMod.util.handlers.ParticleManager;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.init.SoundEvents;
-import net.minecraft.util.DamageSource;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.math.RayTraceResult;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.level.Level;
 
 public class ProjectileHorrorAttack extends Projectile {
     private static final int PARTICLE_AMOUNT = 1;
     private static final int IMPACT_PARTICLE_AMOUNT = 20;
     private static final int EXPOSION_AREA_FACTOR = 2;
 
-    public ProjectileHorrorAttack(World worldIn, EntityLivingBase throwerIn, float damage) {
+    public ProjectileHorrorAttack(Level worldIn, LivingEntity throwerIn, float damage) {
         super(worldIn, throwerIn, damage);
     }
 
-    public ProjectileHorrorAttack(World worldIn) {
+    public ProjectileHorrorAttack(Level worldIn) {
         super(worldIn);
     }
 
-    public ProjectileHorrorAttack(World worldIn, double x, double y, double z) {
+    public ProjectileHorrorAttack(Level worldIn, double x, double y, double z) {
         super(worldIn, x, y, z);
     }
 
     @Override
     protected void spawnParticles() {
         for (int i = 0; i < this.PARTICLE_AMOUNT; i++) {
-            ParticleManager.spawnColoredSmoke(world, getPositionVector(), getElement().particleColor, new Vec3d(0, 0.1, 0));
+            ParticleManager.spawnColoredSmoke(world, getPositionVector(), getElement().particleColor, new Vec3(0, 0.1, 0));
         }
     }
 
     @Override
     protected void spawnImpactParticles() {
         for (int i = 0; i < this.IMPACT_PARTICLE_AMOUNT; i++) {
-            Vec3d vec1 = ModRandom.randVec().scale(EXPOSION_AREA_FACTOR * 0.25).add(getPositionVector());
+            Vec3 vec1 = ModRandom.randVec().scale(EXPOSION_AREA_FACTOR * 0.25).add(getPositionVector());
             ParticleManager.spawnColoredExplosion(world, vec1, getElement().particleColor);
         }
     }

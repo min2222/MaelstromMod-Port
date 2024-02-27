@@ -2,8 +2,8 @@ package com.barribob.MaelstromMod.entity.model;
 
 import net.minecraft.client.model.ModelRenderer;
 import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.entity.Entity;
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.util.Mth;
 
 /**
  * Created using Tabula 7.0.0
@@ -104,13 +104,13 @@ public class ModelMaelstromWitch extends ModelAnimated {
         this.nose.offsetY = 0.0F;
         this.nose.offsetZ = 0.0F;
         float f = 0.01F * (float) (entityIn.getEntityId() % 10);
-        this.nose.rotateAngleX = MathHelper.sin((float) entityIn.ticksExisted * f) * 4.5F * 0.017453292F;
+        this.nose.rotateAngleX = Mth.sin((float) entityIn.ticksExisted * f) * 4.5F * 0.017453292F;
         this.nose.rotateAngleY = 0.0F;
-        this.nose.rotateAngleZ = MathHelper.cos((float) entityIn.ticksExisted * f) * 2.5F * 0.017453292F;
+        this.nose.rotateAngleZ = Mth.cos((float) entityIn.ticksExisted * f) * 2.5F * 0.017453292F;
         this.head.rotateAngleY = netHeadYaw * 0.017453292F;
         this.head.rotateAngleX = headPitch * 0.017453292F;
-        this.rightLeg.rotateAngleX = MathHelper.cos(limbSwing * 0.6662F) * 1.4F * limbSwingAmount * 0.5F;
-        this.leftLeg.rotateAngleX = MathHelper.cos(limbSwing * 0.6662F + (float) Math.PI) * 1.4F * limbSwingAmount * 0.5F;
+        this.rightLeg.rotateAngleX = Mth.cos(limbSwing * 0.6662F) * 1.4F * limbSwingAmount * 0.5F;
+        this.leftLeg.rotateAngleX = Mth.cos(limbSwing * 0.6662F + (float) Math.PI) * 1.4F * limbSwingAmount * 0.5F;
         this.rightLeg.rotateAngleY = 0.0F;
         this.leftLeg.rotateAngleY = 0.0F;
     }

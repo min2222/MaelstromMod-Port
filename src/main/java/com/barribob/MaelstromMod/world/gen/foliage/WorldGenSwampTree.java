@@ -2,11 +2,11 @@ package com.barribob.MaelstromMod.world.gen.foliage;
 
 import com.barribob.MaelstromMod.init.ModBlocks;
 import com.barribob.MaelstromMod.util.ModRandom;
-import net.minecraft.block.BlockLeaves;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.init.Blocks;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.world.level.block.LeavesBlock;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.gen.feature.WorldGenAbstractTree;
 
 import java.util.Random;
@@ -15,9 +15,9 @@ import java.util.Random;
  * The swamp trees in the cliff dimension
  */
 public class WorldGenSwampTree extends WorldGenAbstractTree {
-    private static final IBlockState LOG = ModBlocks.SWAMP_LOG.getDefaultState();
-    private static final IBlockState FULL_LOG = ModBlocks.FULL_SWAMP_LOG.getDefaultState();
-    private static final IBlockState LEAVES = ModBlocks.SWAMP_LEAVES.getDefaultState().withProperty(BlockLeaves.CHECK_DECAY, Boolean.valueOf(false));
+    private static final BlockState LOG = ModBlocks.SWAMP_LOG.getDefaultState();
+    private static final BlockState FULL_LOG = ModBlocks.FULL_SWAMP_LOG.getDefaultState();
+    private static final BlockState LEAVES = ModBlocks.SWAMP_LEAVES.getDefaultState().withProperty(LeavesBlock.CHECK_DECAY, Boolean.valueOf(false));
     private static final float hangingLeafChance = 0.3f;
     private static final float upperLeafChance = 0.9f;
 
@@ -26,7 +26,7 @@ public class WorldGenSwampTree extends WorldGenAbstractTree {
     }
 
     @Override
-    public boolean generate(World worldIn, Random rand, BlockPos position) {
+    public boolean generate(Level worldIn, Random rand, BlockPos position) {
         int firstTreeHeight = ModRandom.range(2, 6);
         int additionalTrees = ModRandom.range(0, 3);
         int maxLeafWidth = additionalTrees > 0 ? 3 : 2; // Wider leaves for taller trees
@@ -50,7 +50,7 @@ public class WorldGenSwampTree extends WorldGenAbstractTree {
         }
 
         BlockPos down = position.down();
-        IBlockState state = worldIn.getBlockState(down);
+        BlockState state = worldIn.getBlockState(down);
         boolean isSoil = state.getBlock() == Blocks.GRASS || state.getBlock() == Blocks.WATER;
 
         // Make sure there is soil
@@ -84,7 +84,7 @@ public class WorldGenSwampTree extends WorldGenAbstractTree {
         }
     }
 
-    private void generateRoots(World world, BlockPos pos) {
+    private void generateRoots(Level world, BlockPos pos) {
         int rootLengthX = ModRandom.range(1, 5);
         int rootLengthZ = ModRandom.range(1, 5);
 
@@ -105,7 +105,7 @@ public class WorldGenSwampTree extends WorldGenAbstractTree {
     }
 
     // Generate roots down 5 blocks
-    private void generateDownRoots(World world, BlockPos pos) {
+    private void generateDownRoots(Level world, BlockPos pos) {
         for (int y = -1; y > -5; y--) {
             this.setBlockAndNotifyAdequately(world, pos.add(new BlockPos(0, y, 0)), LOG);
         }
@@ -121,7 +121,7 @@ public class WorldGenSwampTree extends WorldGenAbstractTree {
      * @param rand
      * @param position
      */
-    private void generateTreeSegment(int maxLeafWidth, World worldIn, Random rand, BlockPos position, int additonalHeight) {
+    private void generateTreeSegment(int maxLeafWidth, Level worldIn, Random rand, BlockPos position, int additonalHeight) {
         // Generate the trunk
         for (int y = 0; y < additonalHeight; y++) {
             this.setBlockAndNotifyAdequately(worldIn, position.add(new BlockPos(0, y, 0)), LOG);
@@ -151,8 +151,8 @@ public class WorldGenSwampTree extends WorldGenAbstractTree {
         }
     }
 
-    private void placeLeaf(BlockPos pos, World world) {
-        IBlockState state = world.getBlockState(pos);
+    private void placeLeaf(BlockPos pos, Level world) {
+        BlockState state = world.getBlockState(pos);
 
         if (state.getBlock().canBeReplacedByLeaves(state, world, pos)) {
             this.setBlockAndNotifyAdequately(world, pos, LEAVES);

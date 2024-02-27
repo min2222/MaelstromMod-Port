@@ -1,6 +1,6 @@
 package com.barribob.MaelstromMod.entity.util;
 
-import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.world.entity.LivingEntity;
 
 /**
  * Used by {@link #EntityAITimedAttack}
@@ -15,5 +15,5 @@ public interface IAttack {
      * @return The number of seconds before launching another attack (calling this
      * method again)
      */
-    int startAttack(EntityLivingBase target, float distanceSq, boolean strafingBackwards);
+    int startAttack(LivingEntity target, float distanceSq, boolean strafingBackwards);
 }

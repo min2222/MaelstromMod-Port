@@ -3,9 +3,9 @@ package com.barribob.MaelstromMod.blocks.portal;
 import com.barribob.MaelstromMod.config.ModConfig;
 import com.barribob.MaelstromMod.util.teleporter.NexusToOverworldTeleporter;
 import com.barribob.MaelstromMod.util.teleporter.ToNexusTeleporter;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.core.BlockPos;
 import net.minecraft.world.Teleporter;
-import net.minecraft.world.World;
+import net.minecraft.world.level.Level;
 
 /**
  * The portal block for the nexus dimension
@@ -19,12 +19,12 @@ public class BlockNexusPortal extends BlockPortal {
     }
 
     @Override
-    protected Teleporter getEntranceTeleporter(World world) {
+    protected Teleporter getEntranceTeleporter(Level world) {
         return new ToNexusTeleporter(world.getMinecraftServer().getWorld(ModConfig.world.nexus_dimension_id), new BlockPos(70, 80, 103));
     }
 
     @Override
-    protected Teleporter getExitTeleporter(World world) {
+    protected Teleporter getExitTeleporter(Level world) {
         return new NexusToOverworldTeleporter(world.getMinecraftServer().getWorld(0));
     }
 }

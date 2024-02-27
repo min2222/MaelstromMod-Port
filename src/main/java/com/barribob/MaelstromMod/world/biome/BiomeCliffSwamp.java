@@ -6,18 +6,18 @@ import com.barribob.MaelstromMod.entity.entities.EntitySwampCrawler;
 import com.barribob.MaelstromMod.init.ModBlocks;
 import com.barribob.MaelstromMod.world.gen.foliage.WorldGenModFoliage;
 import com.barribob.MaelstromMod.world.gen.foliage.WorldGenSwampTree;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockDoublePlant;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.DoublePlantBlock;
 import net.minecraft.block.BlockTallGrass;
-import net.minecraft.block.material.Material;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.init.Blocks;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.world.level.material.Material;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.chunk.ChunkPrimer;
 import net.minecraft.world.gen.feature.*;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.api.distmarker.Dist;
 
 import java.util.Random;
 
@@ -25,8 +25,8 @@ import java.util.Random;
  * Biome for the lower section of the cliff dimension
  */
 public class BiomeCliffSwamp extends BiomeDifferentStone {
-    public final static IBlockState log = ModBlocks.SWAMP_LOG.getDefaultState();
-    public final static IBlockState leaf = ModBlocks.SWAMP_LEAVES.getDefaultState();
+    public final static BlockState log = ModBlocks.SWAMP_LOG.getDefaultState();
+    public final static BlockState leaf = ModBlocks.SWAMP_LEAVES.getDefaultState();
 
     public BiomeCliffSwamp() {
         super(new BiomeProperties("Cliff Swamp").setBaseHeight(-1.5F).setHeightVariation(0.1F).setTemperature(0.8F).setRainfall(0.9F).setWaterColor(4864285), Blocks.GRASS,
@@ -80,8 +80,8 @@ public class BiomeCliffSwamp extends BiomeDifferentStone {
     }
 
     @Override
-    public void decorate(World worldIn, Random rand, BlockPos pos) {
-        DOUBLE_PLANT_GENERATOR.setPlantType(BlockDoublePlant.EnumPlantType.GRASS);
+    public void decorate(Level worldIn, Random rand, BlockPos pos) {
+        DOUBLE_PLANT_GENERATOR.setPlantType(DoublePlantBlock.EnumPlantType.GRASS);
 
         for (int i = 0; i < 7; ++i) {
             int j = rand.nextInt(16) + 8;
@@ -93,7 +93,7 @@ public class BiomeCliffSwamp extends BiomeDifferentStone {
     }
 
     @Override
-    public void generateTopBlocks(World worldIn, Random rand, ChunkPrimer chunkPrimerIn, int x, int z, double noiseVal, Block stoneBlock) {
+    public void generateTopBlocks(Level worldIn, Random rand, ChunkPrimer chunkPrimerIn, int x, int z, double noiseVal, Block stoneBlock) {
         double d0 = GRASS_COLOR_NOISE.getValue(x * 0.25D, z * 0.25D);
 
         if (d0 > 0.0D) {
@@ -119,14 +119,14 @@ public class BiomeCliffSwamp extends BiomeDifferentStone {
     }
 
     @Override
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public int getGrassColorAtPos(BlockPos pos) {
         double d0 = GRASS_COLOR_NOISE.getValue(pos.getX() * 0.0225D, pos.getZ() * 0.0225D);
         return d0 < -0.1D ? 4605755 : 5325610;
     }
 
     @Override
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public int getFoliageColorAtPos(BlockPos pos) {
         return 6975545;
     }

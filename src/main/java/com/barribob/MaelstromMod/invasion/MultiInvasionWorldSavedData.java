@@ -4,12 +4,12 @@ import com.barribob.MaelstromMod.Main;
 import com.barribob.MaelstromMod.util.ModUtils;
 import com.barribob.MaelstromMod.util.Reference;
 import com.typesafe.config.Config;
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.nbt.NBTBase;
-import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.storage.WorldSavedData;
 
 import java.util.HashSet;
@@ -53,7 +53,7 @@ public class MultiInvasionWorldSavedData extends WorldSavedData {
         return null;
     }
 
-    public void tick(World world) {
+    public void tick(Level world) {
         Config invasion = getCurrentInvasion();
 
         if (invasion == null) {
@@ -71,7 +71,7 @@ public class MultiInvasionWorldSavedData extends WorldSavedData {
 
         if (ticks == invasionTime) {
             if (world.playerEntities.size() > 0) {
-                EntityPlayer player = InvasionUtils.getPlayerClosestToOrigin(world);
+                Player player = InvasionUtils.getPlayerClosestToOrigin(world);
 
                 Optional<BlockPos> spawnedPos = InvasionUtils.trySpawnInvasionTower(player.getPosition(), player.world, spawnedInvasionPositions);
 
@@ -91,27 +91,27 @@ public class MultiInvasionWorldSavedData extends WorldSavedData {
     }
 
     @Override
-    public void readFromNBT(NBTTagCompound nbt) {
+    public void readFromNBT(CompoundTag nbt) {
         this.ticks = nbt.getInteger("ticks");
         this.invasionIndex = nbt.getInteger("integerIndex");
 
         spawnedInvasionPositions.clear();
-        NBTTagList nbtList = nbt.getTagList("spawnedInvasionPositions", new NBTTagCompound().getId());
+        NBTTagList nbtList = nbt.getTagList("spawnedInvasionPositions", new CompoundTag().getId());
         for (NBTBase nbtBase : nbtList) {
-            NBTTagCompound posNbt = (NBTTagCompound) nbtBase;
+            CompoundTag posNbt = (CompoundTag) nbtBase;
             int[] pos = posNbt.getIntArray("pos");
             spawnedInvasionPositions.add(new BlockPos(pos[0], pos[1], pos[2]));
         }
     }
 
     @Override
-    public NBTTagCompound writeToNBT(NBTTagCompound compound) {
+    public CompoundTag writeToNBT(CompoundTag compound) {
         compound.setInteger("ticks", ticks);
         compound.setInteger("integerIndex", invasionIndex);
 
         NBTTagList nbtList = new NBTTagList();
         for (BlockPos pos : spawnedInvasionPositions) {
-            NBTTagCompound posCompound = new NBTTagCompound();
+            CompoundTag posCompound = new CompoundTag();
             posCompound.setIntArray("pos", new int[]{pos.getX(), pos.getY(), pos.getZ()});
             nbtList.appendTag(posCompound);
         }

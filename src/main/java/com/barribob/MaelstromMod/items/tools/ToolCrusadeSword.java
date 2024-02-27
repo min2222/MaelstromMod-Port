@@ -2,14 +2,14 @@ package com.barribob.MaelstromMod.items.tools;
 
 import com.barribob.MaelstromMod.items.ISweepAttackOverride;
 import com.barribob.MaelstromMod.util.ModUtils;
-import net.minecraft.client.util.ITooltipFlag;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.MobEffects;
-import net.minecraft.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.potion.PotionEffect;
-import net.minecraft.util.text.TextFormatting;
-import net.minecraft.world.World;
+import net.minecraft.ChatFormatting;
+import net.minecraft.world.level.Level;
 
 import java.util.List;
 
@@ -19,15 +19,15 @@ public class ToolCrusadeSword extends ToolSword implements ISweepAttackOverride 
     }
 
     @Override
-    public void doSweepAttack(EntityPlayer player, EntityLivingBase target) {
+    public void doSweepAttack(Player player, LivingEntity target) {
         ModUtils.doSweepAttack(player, target, getElement(), (e) -> {
         });
         player.addPotionEffect(new PotionEffect(MobEffects.RESISTANCE, 40, 0));
     }
 
     @Override
-    public void addInformation(ItemStack stack, World worldIn, List<String> tooltip, ITooltipFlag flagIn) {
+    public void addInformation(ItemStack stack, Level worldIn, List<String> tooltip, TooltipFlag flagIn) {
         super.addInformation(stack, worldIn, tooltip, flagIn);
-        tooltip.add(TextFormatting.GRAY + ModUtils.translateDesc("crusade_sword"));
+        tooltip.add(ChatFormatting.GRAY + ModUtils.translateDesc("crusade_sword"));
     }
 }

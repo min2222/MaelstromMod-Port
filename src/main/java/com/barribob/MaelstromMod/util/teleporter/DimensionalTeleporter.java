@@ -1,15 +1,15 @@
 package com.barribob.MaelstromMod.util.teleporter;
 
-import net.minecraft.block.Block;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkPos;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.util.Mth;
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.Teleporter;
-import net.minecraft.world.World;
-import net.minecraft.world.WorldServer;
+import net.minecraft.world.level.Level;
 
 /**
  * Finds a portal in the azure dimension, or builds one
@@ -18,7 +18,7 @@ public class DimensionalTeleporter extends Teleporter {
     private Block rimBlock;
     private Block portalBlock;
 
-    public DimensionalTeleporter(WorldServer worldIn, Block rimBlock, Block portalBlock) {
+    public DimensionalTeleporter(ServerLevel worldIn, Block rimBlock, Block portalBlock) {
         super(worldIn);
         this.rimBlock = rimBlock;
         this.portalBlock = portalBlock;
@@ -38,11 +38,11 @@ public class DimensionalTeleporter extends Teleporter {
     @Override
     public boolean placeInExistingPortal(Entity entityIn, float rotationYaw) {
         int i = 64;
-        int j = MathHelper.floor(entityIn.posX);
-        int k = MathHelper.floor(entityIn.posZ);
+        int j = Mth.floor(entityIn.posX);
+        int k = Mth.floor(entityIn.posZ);
         BlockPos portalPos = BlockPos.ORIGIN;
         long l = ChunkPos.asLong(j, k);
-        Vec3d entityOffset = new Vec3d(1.5, 1, -0.5);
+        Vec3 entityOffset = new Vec3(1.5, 1, -0.5);
 
         if (this.destinationCoordinateCache.containsKey(l)) {
             Teleporter.PortalPosition teleporter$portalposition = this.destinationCoordinateCache.get(l);
@@ -72,8 +72,8 @@ public class DimensionalTeleporter extends Teleporter {
 
         this.destinationCoordinateCache.put(l, new Teleporter.PortalPosition(portalPos, this.world.getTotalWorldTime()));
 
-        if (entityIn instanceof EntityPlayerMP) {
-            ((EntityPlayerMP) entityIn).connection.setPlayerLocation(portalPos.getX() + entityOffset.x, portalPos.getY() + entityOffset.y, portalPos.getZ() + entityOffset.z, entityIn.rotationYaw, entityIn.rotationPitch);
+        if (entityIn instanceof ServerPlayer) {
+            ((ServerPlayer) entityIn).connection.setPlayerLocation(portalPos.getX() + entityOffset.x, portalPos.getY() + entityOffset.y, portalPos.getZ() + entityOffset.z, entityIn.rotationYaw, entityIn.rotationPitch);
         } else {
             entityIn.setLocationAndAngles(portalPos.getX() + entityOffset.x, portalPos.getY() + entityOffset.y, portalPos.getZ() + entityOffset.z, entityIn.rotationYaw, entityIn.rotationPitch);
         }
@@ -86,8 +86,8 @@ public class DimensionalTeleporter extends Teleporter {
      */
     @Override
     public boolean makePortal(Entity entity) {
-        int i = MathHelper.floor(entity.posX);
-        int k = MathHelper.floor(entity.posZ);
+        int i = Mth.floor(entity.posX);
+        int k = Mth.floor(entity.posZ);
 
         int j = world.getActualHeight() - 1;
 
@@ -131,8 +131,8 @@ public class DimensionalTeleporter extends Teleporter {
     }
 
     @Override
-    public void placeEntity(World world, Entity entity, float yaw) {
-        if (entity instanceof EntityPlayerMP)
+    public void placeEntity(Level world, Entity entity, float yaw) {
+        if (entity instanceof ServerPlayer)
             placeInPortal(entity, yaw);
         else
             placeInExistingPortal(entity, yaw);

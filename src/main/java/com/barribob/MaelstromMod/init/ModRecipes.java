@@ -1,7 +1,7 @@
 package com.barribob.MaelstromMod.init;
 
-import net.minecraft.init.Items;
-import net.minecraft.item.ItemStack;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 
 /**

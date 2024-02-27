@@ -2,12 +2,12 @@ package com.barribob.MaelstromMod.entity.action;
 
 import com.barribob.MaelstromMod.entity.entities.EntityLeveledMob;
 import com.barribob.MaelstromMod.entity.projectile.ProjectileMaelstromMissile;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.init.SoundEvents;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.sounds.SoundEvents;
 
 public class ActionDarkMissile implements IAction {
     @Override
-    public void performAction(EntityLeveledMob actor, EntityLivingBase target) {
+    public void performAction(EntityLeveledMob actor, LivingEntity target) {
         float inaccuracy = 4.0f;
         float velocity = 0.5f;
 

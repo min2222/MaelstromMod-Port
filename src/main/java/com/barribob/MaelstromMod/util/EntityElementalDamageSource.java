@@ -1,7 +1,7 @@
 package com.barribob.MaelstromMod.util;
 
-import net.minecraft.entity.Entity;
-import net.minecraft.util.EntityDamageSource;
+import net.minecraft.world.damagesource.EntityDamageSource;
+import net.minecraft.world.entity.Entity;
 
 public class EntityElementalDamageSource extends EntityDamageSource implements IElement {
     Element element;

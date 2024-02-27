@@ -5,26 +5,26 @@ import com.barribob.MaelstromMod.util.Element;
 import com.barribob.MaelstromMod.util.ModDamageSource;
 import com.barribob.MaelstromMod.util.ModUtils;
 import com.barribob.MaelstromMod.util.handlers.ParticleManager;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.util.math.RayTraceResult;
-import net.minecraft.world.World;
+import net.minecraft.world.level.Level;
 
 public class ProjectileBullet extends ProjectileGun {
-    public ProjectileBullet(World worldIn, EntityLivingBase throwerIn, float damage, ItemStack stack, Element element) {
+    public ProjectileBullet(Level worldIn, LivingEntity throwerIn, float damage, ItemStack stack, Element element) {
         super(worldIn, throwerIn, damage, stack, element);
     }
 
-    public ProjectileBullet(World worldIn, EntityLivingBase throwerIn, float damage, ItemStack stack) {
+    public ProjectileBullet(Level worldIn, LivingEntity throwerIn, float damage, ItemStack stack) {
         super(worldIn, throwerIn, damage, stack);
     }
 
-    public ProjectileBullet(World worldIn) {
+    public ProjectileBullet(Level worldIn) {
         super(worldIn);
     }
 
-    public ProjectileBullet(World worldIn, double x, double y, double z) {
+    public ProjectileBullet(Level worldIn, double x, double y, double z) {
         super(worldIn, x, y, z);
     }
 

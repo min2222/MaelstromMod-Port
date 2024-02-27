@@ -4,8 +4,8 @@ import com.barribob.MaelstromMod.entity.entities.EntityLeveledMob;
 import com.barribob.MaelstromMod.entity.projectile.Projectile;
 import com.barribob.MaelstromMod.util.ModRandom;
 import com.barribob.MaelstromMod.util.ModUtils;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.function.Supplier;
 
@@ -19,19 +19,19 @@ public class ActionRayAttack implements IAction {
     }
 
     @Override
-    public void performAction(EntityLeveledMob actor, EntityLivingBase target) {
-        Vec3d targetPos = target.getPositionEyes(1);
-        Vec3d fromTargetToActor = actor.getPositionVector().subtract(targetPos);
+    public void performAction(EntityLeveledMob actor, LivingEntity target) {
+        Vec3 targetPos = target.getPositionEyes(1);
+        Vec3 fromTargetToActor = actor.getPositionVector().subtract(targetPos);
 
-        Vec3d lineDirection = ModUtils.rotateVector2(
+        Vec3 lineDirection = ModUtils.rotateVector2(
                 fromTargetToActor.crossProduct(ModUtils.Y_AXIS),
                 fromTargetToActor,
                 ModRandom.range(0, 180))
                 .normalize()
                 .scale(6);
 
-        Vec3d lineStart = targetPos.subtract(lineDirection);
-        Vec3d lineEnd = targetPos.add(lineDirection);
+        Vec3 lineStart = targetPos.subtract(lineDirection);
+        Vec3 lineEnd = targetPos.add(lineDirection);
 
         ModUtils.lineCallback(lineStart, lineEnd, 10, (pos, i) -> {
             Projectile projectile = projectileSupplier.get();

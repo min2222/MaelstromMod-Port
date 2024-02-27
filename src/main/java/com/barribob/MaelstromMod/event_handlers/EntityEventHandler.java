@@ -15,14 +15,14 @@ import com.barribob.MaelstromMod.util.ModColors;
 import com.barribob.MaelstromMod.util.ModRandom;
 import com.barribob.MaelstromMod.util.ModUtils;
 import com.barribob.MaelstromMod.util.handlers.ParticleManager;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.DyeColor;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.entity.passive.EntitySheep;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.item.EnumDyeColor;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.event.entity.EntityTravelToDimensionEvent;
 import net.minecraftforge.event.entity.living.LivingAttackEvent;
 import net.minecraftforge.event.entity.living.LivingEvent.LivingUpdateEvent;
@@ -41,8 +41,8 @@ import java.util.WeakHashMap;
 @Mod.EventBusSubscriber()
 public class EntityEventHandler {
     // Queues players to receive the wind sound packet
-    private static final Set<EntityPlayerMP> DARK_NEXUS_PLAYERS = Collections.newSetFromMap(new WeakHashMap<>());
-    private static final Map<EntityLivingBase, Integer> FALLING_ENTITIES = new WeakHashMap<>();
+    private static final Set<ServerPlayer> DARK_NEXUS_PLAYERS = Collections.newSetFromMap(new WeakHashMap<>());
+    private static final Map<LivingEntity, Integer> FALLING_ENTITIES = new WeakHashMap<>();
 
     @SubscribeEvent
     public static void onLivingFallEvent(LivingFallEvent event) {
@@ -56,17 +56,17 @@ public class EntityEventHandler {
     // Play wind sound when traveling to the dark nexus dimension
     @SubscribeEvent
     public static void onEntityTravelToDimension(EntityTravelToDimensionEvent event) {
-        if (event.getEntity() instanceof EntityPlayerMP && event.getDimension() == ModDimensions.DARK_NEXUS.getId()) {
-            DARK_NEXUS_PLAYERS.add((EntityPlayerMP) event.getEntity());
+        if (event.getEntity() instanceof ServerPlayer && event.getDimension() == ModDimensions.DARK_NEXUS.getId()) {
+            DARK_NEXUS_PLAYERS.add((ServerPlayer) event.getEntity());
         }
     }
 
     // Play wind sound when logging in and in dark nexus dimension
     @SubscribeEvent
     public static void onWorldLoad(PlayerLoggedInEvent event) {
-        if (event.player instanceof EntityPlayerMP) {
+        if (event.player instanceof ServerPlayer) {
             if (event.player.dimension == ModDimensions.DARK_NEXUS.getId()) {
-                DARK_NEXUS_PLAYERS.add((EntityPlayerMP) event.player);
+                DARK_NEXUS_PLAYERS.add((ServerPlayer) event.player);
             }
         }
     }
@@ -88,8 +88,8 @@ public class EntityEventHandler {
         }
 
             // Play wind sound for players in dark nexus
-        if (event.getEntity() instanceof EntityPlayerMP) {
-            EntityPlayerMP player = ((EntityPlayerMP) event.getEntity());
+        if (event.getEntity() instanceof ServerPlayer) {
+            ServerPlayer player = ((ServerPlayer) event.getEntity());
             if (DARK_NEXUS_PLAYERS.contains(player) && event.getEntity().dimension == ModDimensions.DARK_NEXUS.getId()) {
                 Main.network.sendTo(new MessagePlayDarkNexusWindSound(), player);
                 DARK_NEXUS_PLAYERS.remove(player);
@@ -100,12 +100,12 @@ public class EntityEventHandler {
             ModUtils.walkOnWater(event.getEntityLiving(), event.getEntityLiving().world);
         }
 
-        if (event.getEntity().dimension == ModConfig.world.dark_nexus_dimension_id && event.getEntity() instanceof EntityPlayer) {
-            EntityPlayer player = (EntityPlayer) event.getEntity();
+        if (event.getEntity().dimension == ModConfig.world.dark_nexus_dimension_id && event.getEntity() instanceof Player) {
+            Player player = (Player) event.getEntity();
             if (player.world.isRemote) {
                 ModUtils.performNTimes(15, (i) -> {
-                    Vec3d pos = player.getPositionVector().add(new Vec3d(ModRandom.getFloat(8), ModRandom.getFloat(4), ModRandom.getFloat(4)));
-                    ParticleManager.spawnColoredSmoke(player.world, pos, ModColors.DARK_GREY, new Vec3d(0.8, 0, 0));
+                    Vec3 pos = player.getPositionVector().add(new Vec3(ModRandom.getFloat(8), ModRandom.getFloat(4), ModRandom.getFloat(4)));
+                    ParticleManager.spawnColoredSmoke(player.world, pos, ModColors.DARK_GREY, new Vec3(0.8, 0, 0));
                 });
             }
 
@@ -115,7 +115,7 @@ public class EntityEventHandler {
             for (int x = 0; x < 4; x++) {
                 for (int y = 0; y < 2; y++) {
                     BlockPos pos = new BlockPos(player.getPositionVector()).add(new BlockPos(x - 4, y, 0));
-                    IBlockState block = player.world.getBlockState(pos);
+                    BlockState block = player.world.getBlockState(pos);
                     if (block.isFullBlock() || block.isFullCube() || block.isBlockNormalCube()) {
                         blockage[y] = 1;
                     }
@@ -129,8 +129,8 @@ public class EntityEventHandler {
 
         }
 
-        if (!event.getEntity().world.isRemote && event.getEntity() instanceof EntityPlayerMP) {
-            EntityPlayerMP player = ((EntityPlayerMP) event.getEntity());
+        if (!event.getEntity().world.isRemote && event.getEntity() instanceof ServerPlayer) {
+            ServerPlayer player = ((ServerPlayer) event.getEntity());
             if (event.getEntity().ticksExisted % 35 == 0) {
                 IMana currentMana = player.getCapability(ManaProvider.MANA, null);
                 if (!currentMana.isLocked()) {
@@ -142,7 +142,7 @@ public class EntityEventHandler {
                     }
                 }
             }
-        } else if (event.getEntity().world.isRemote && event.getEntity() instanceof EntityPlayer) {
+        } else if (event.getEntity().world.isRemote && event.getEntity() instanceof Player) {
             InGameGui.updateCounter();
         }
     }
@@ -159,10 +159,10 @@ public class EntityEventHandler {
     public static void onEntitySpawnEvent(LivingSpawnEvent event) {
         if (event.getEntityLiving() instanceof EntitySheep) {
             if (event.getEntityLiving().dimension == ModConfig.world.fracture_dimension_id) {
-                ((EntitySheep) event.getEntityLiving()).setFleeceColor(EnumDyeColor.CYAN);
+                ((EntitySheep) event.getEntityLiving()).setFleeceColor(DyeColor.CYAN);
             }
             if (event.getEntityLiving().dimension == ModConfig.world.cliff_dimension_id) {
-                ((EntitySheep) event.getEntityLiving()).setFleeceColor(EnumDyeColor.GRAY);
+                ((EntitySheep) event.getEntityLiving()).setFleeceColor(DyeColor.GRAY);
             }
         }
     }

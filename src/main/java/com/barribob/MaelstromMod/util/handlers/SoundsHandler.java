@@ -1,7 +1,7 @@
 package com.barribob.MaelstromMod.util.handlers;
 
 import com.barribob.MaelstromMod.util.Reference;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.SoundEvent;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
 

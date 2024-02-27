@@ -2,18 +2,18 @@ package com.barribob.MaelstromMod.world.gen.foliage;
 
 import com.barribob.MaelstromMod.init.ModBlocks;
 import net.minecraft.block.BlockOldLeaf;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.init.Blocks;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.gen.feature.WorldGenAbstractTree;
 
 import java.util.Random;
 
 public class WorldGenPlumTree extends WorldGenAbstractTree {
-    private static final IBlockState LOG = ModBlocks.PLUM_LOG.getDefaultState();
-    private static final IBlockState LEAF = ModBlocks.PLUM_LEAVES.getDefaultState().withProperty(BlockOldLeaf.CHECK_DECAY, Boolean.valueOf(false));
-    private static final IBlockState PLUM = ModBlocks.PLUM_FILLED_LEAVES.getDefaultState().withProperty(BlockOldLeaf.CHECK_DECAY, Boolean.valueOf(false));
+    private static final BlockState LOG = ModBlocks.PLUM_LOG.getDefaultState();
+    private static final BlockState LEAF = ModBlocks.PLUM_LEAVES.getDefaultState().withProperty(BlockOldLeaf.CHECK_DECAY, Boolean.valueOf(false));
+    private static final BlockState PLUM = ModBlocks.PLUM_FILLED_LEAVES.getDefaultState().withProperty(BlockOldLeaf.CHECK_DECAY, Boolean.valueOf(false));
 
     public static final int plumLeafChance = 15;
     public static final int plumLeafDensity = 10;
@@ -26,7 +26,7 @@ public class WorldGenPlumTree extends WorldGenAbstractTree {
     }
 
     @Override
-    public boolean generate(World worldIn, Random rand, BlockPos position) {
+    public boolean generate(Level worldIn, Random rand, BlockPos position) {
         int i = rand.nextInt(3) + 5;
         int generatePlums = rand.nextInt(plumLeafChance);
 
@@ -67,7 +67,7 @@ public class WorldGenPlumTree extends WorldGenAbstractTree {
                 return false;
             } else {
                 BlockPos down = position.down();
-                IBlockState state = worldIn.getBlockState(down);
+                BlockState state = worldIn.getBlockState(down);
                 boolean isSoil = state.getBlock() == Blocks.GRASS;
 
                 if (isSoil && position.getY() < worldIn.getHeight() - i - 1) {
@@ -85,7 +85,7 @@ public class WorldGenPlumTree extends WorldGenAbstractTree {
 
                                 if (Math.abs(j1) != l2 || Math.abs(l1) != l2 || rand.nextInt(2) != 0 && k2 != 0) {
                                     BlockPos blockpos = new BlockPos(i3, i2, k1);
-                                    IBlockState state2 = worldIn.getBlockState(blockpos);
+                                    BlockState state2 = worldIn.getBlockState(blockpos);
 
                                     if (state2.getBlock().isAir(state2, worldIn, blockpos) || state2.getBlock().isAir(state2, worldIn, blockpos)) {
                                         if (generatePlums == 0 && rand.nextInt(plumLeafDensity) == 0) {
@@ -101,7 +101,7 @@ public class WorldGenPlumTree extends WorldGenAbstractTree {
 
                     for (int j2 = 0; j2 < i; ++j2) {
                         BlockPos upN = position.up(j2);
-                        IBlockState state2 = worldIn.getBlockState(upN);
+                        BlockState state2 = worldIn.getBlockState(upN);
 
                         if (state2.getBlock().isAir(state2, worldIn, upN) || state2.getBlock().isLeaves(state2, worldIn, upN)) {
                             this.setBlockAndNotifyAdequately(worldIn, position.up(j2), LOG);

@@ -5,13 +5,13 @@ import com.barribob.MaelstromMod.init.ModProfessions;
 import com.barribob.MaelstromMod.items.armor.ModArmorBase;
 import com.barribob.MaelstromMod.util.ModUtils;
 import com.barribob.MaelstromMod.util.TimedMessager;
-import net.minecraft.entity.SharedMonsterAttributes;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.entity.ai.EntityAIWatchClosest2;
 import net.minecraft.entity.passive.EntityVillager.ITradeList;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.util.DamageSource;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.village.MerchantRecipe;
-import net.minecraft.world.World;
+import net.minecraft.world.level.Level;
 
 import java.util.List;
 
@@ -20,7 +20,7 @@ public class NexusArmorer extends EntityTrader {
     private static final String[] ARMOR_EXPLANATION = {"armor_1", "armor_2", "armor_3", "armor_4", "armor_5", "armor_6", ""};
     private static final int[] MESSAGE_TIMES = {50, 150, 250, 350, 450, 550, 650};
 
-    public NexusArmorer(World worldIn) {
+    public NexusArmorer(Level worldIn) {
         super(worldIn);
         this.setImmovable(true);
         this.setSize(0.8f, 1.2f);
@@ -47,7 +47,7 @@ public class NexusArmorer extends EntityTrader {
 
     @Override
     protected void initEntityAI() {
-        this.tasks.addTask(9, new EntityAIWatchClosest2(this, EntityPlayer.class, 3.0F, 1.0F));
+        this.tasks.addTask(9, new EntityAIWatchClosest2(this, Player.class, 3.0F, 1.0F));
     }
 
     @Override
@@ -68,6 +68,6 @@ public class NexusArmorer extends EntityTrader {
     @Override
     protected void applyEntityAttributes() {
         super.applyEntityAttributes();
-        this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(20);
+        this.getEntityAttribute(Attributes.MAX_HEALTH).setBaseValue(20);
     }
 }

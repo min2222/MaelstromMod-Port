@@ -13,19 +13,19 @@ import com.barribob.MaelstromMod.util.ModRandom;
 import com.barribob.MaelstromMod.util.ModUtils;
 import com.barribob.MaelstromMod.util.handlers.LootTableHandler;
 import com.barribob.MaelstromMod.util.handlers.SoundsHandler;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.init.SoundEvents;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.DamageSource;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.util.SoundEvent;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.world.BossInfo;
-import net.minecraft.world.BossInfoServer;
-import net.minecraft.world.World;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraft.util.Mth;
+import net.minecraft.world.BossEvent;
+import net.minecraft.server.level.ServerBossEvent;
+import net.minecraft.world.level.Level;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,9 +37,9 @@ public class EntityBeast extends EntityMaelstromMob {
     private byte spit = 5;
 
     // Responsible for the boss bar
-    private final BossInfoServer bossInfo = (new BossInfoServer(this.getDisplayName(), BossInfo.Color.PURPLE, BossInfo.Overlay.NOTCHED_20));
+    private final ServerBossEvent bossInfo = (new ServerBossEvent(this.getDisplayName(), BossEvent.Color.PURPLE, BossEvent.Overlay.NOTCHED_20));
 
-    public EntityBeast(World worldIn) {
+    public EntityBeast(Level worldIn) {
         super(worldIn);
         this.setSize(2.8f, 2.2f);
         this.healthScaledAttackFactor = 0.2;
@@ -52,7 +52,7 @@ public class EntityBeast extends EntityMaelstromMob {
                     double d1 = target.posX - actor.posX;
                     double d2 = d0 - projectile.posY;
                     double d3 = target.posZ - actor.posZ;
-                    float f = MathHelper.sqrt(d1 * d1 + d3 * d3) * 0.2F;
+                    float f = Mth.sqrt(d1 * d1 + d3 * d3) * 0.2F;
                     projectile.setElement(getElement());
                     projectile.shoot(d1, d2 + f, d3, 1, 8);
                     actor.playSound(SoundEvents.ENTITY_BLAZE_SHOOT, 1.0F, 1.0F / (actor.getRNG().nextFloat() * 0.4F + 0.8F));
@@ -63,7 +63,7 @@ public class EntityBeast extends EntityMaelstromMob {
     }
 
     @Override
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     protected void initAnimation() {
         List<List<AnimationClip<ModelBeast>>> animationLeap = new ArrayList<List<AnimationClip<ModelBeast>>>();
         List<AnimationClip<ModelBeast>> head = new ArrayList<AnimationClip<ModelBeast>>();
@@ -125,7 +125,7 @@ public class EntityBeast extends EntityMaelstromMob {
     }
 
     @Override
-    public void attackEntityWithRangedAttack(EntityLivingBase target, float distanceFactor) {
+    public void attackEntityWithRangedAttack(LivingEntity target, float distanceFactor) {
         this.attackHandler.getCurrentAttackAction().performAction(this, target);
         if (attackHandler.getCurrentAttack() == leap) {
             setLeaping(true);
@@ -142,7 +142,7 @@ public class EntityBeast extends EntityMaelstromMob {
     }
 
     @Override
-    public void readEntityFromNBT(NBTTagCompound compound) {
+    public void readEntityFromNBT(CompoundTag compound) {
         if (this.hasCustomName()) {
             this.bossInfo.setName(this.getDisplayName());
         }
@@ -163,13 +163,13 @@ public class EntityBeast extends EntityMaelstromMob {
     }
 
     @Override
-    public void addTrackingPlayer(EntityPlayerMP player) {
+    public void addTrackingPlayer(ServerPlayer player) {
         super.addTrackingPlayer(player);
         this.bossInfo.addPlayer(player);
     }
 
     @Override
-    public void removeTrackingPlayer(EntityPlayerMP player) {
+    public void removeTrackingPlayer(ServerPlayer player) {
         super.removeTrackingPlayer(player);
         this.bossInfo.removePlayer(player);
     }
@@ -212,7 +212,7 @@ public class EntityBeast extends EntityMaelstromMob {
     }
 
     @Override
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public void handleStatusUpdate(byte id) {
         if (id == 4 || id == 5) {
             currentAnimation = attackHandler.getAnimation(id);

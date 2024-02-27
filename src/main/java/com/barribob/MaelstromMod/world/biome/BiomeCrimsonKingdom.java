@@ -1,8 +1,8 @@
 package com.barribob.MaelstromMod.world.biome;
 
 import net.minecraft.entity.EnumCreatureType;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.chunk.ChunkPrimer;
 
@@ -22,11 +22,11 @@ public class BiomeCrimsonKingdom extends Biome {
 
     // Don't do generation
     @Override
-    public void genTerrainBlocks(World worldIn, Random rand, ChunkPrimer chunkPrimerIn, int x, int z, double noiseVal) {
+    public void genTerrainBlocks(Level worldIn, Random rand, ChunkPrimer chunkPrimerIn, int x, int z, double noiseVal) {
     }
 
     // Don't decorate
     @Override
-    public void decorate(World worldIn, Random rand, BlockPos pos) {
+    public void decorate(Level worldIn, Random rand, BlockPos pos) {
     }
 }

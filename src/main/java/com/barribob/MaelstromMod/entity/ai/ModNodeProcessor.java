@@ -2,18 +2,20 @@ package com.barribob.MaelstromMod.entity.ai;
 
 import com.google.common.collect.Sets;
 import net.minecraft.block.*;
-import net.minecraft.block.material.Material;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.entity.EntityLiving;
-import net.minecraft.init.Blocks;
+import net.minecraft.world.level.block.FenceBlock;
+import net.minecraft.world.level.material.Material;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.util.Mth;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.pathfinding.NodeProcessor;
 import net.minecraft.pathfinding.PathNodeType;
 import net.minecraft.pathfinding.PathPoint;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.world.IBlockAccess;
+import net.minecraft.world.phys.AABB;
 
 import javax.annotation.Nullable;
 import java.util.EnumSet;
@@ -24,10 +26,10 @@ import java.util.Set;
  */
 public class ModNodeProcessor extends NodeProcessor {
     protected float avoidsWater;
-    protected EntityLiving currentEntity;
+    protected Mob currentEntity;
 
     @Override
-    public void init(IBlockAccess sourceIn, EntityLiving mob) {
+    public void init(BlockGetter sourceIn, Mob mob) {
         super.init(sourceIn, mob);
         this.avoidsWater = mob.getPathPriority(PathNodeType.WATER);
     }
@@ -49,19 +51,19 @@ public class ModNodeProcessor extends NodeProcessor {
     public PathPoint getStart() {
         int i;
         if (this.getCanSwim() && this.entity.isInWater()) {
-            i = MathHelper.floor(this.entity.getEntityBoundingBox().minY);
-            BlockPos.MutableBlockPos blockpos$mutableblockpos = new BlockPos.MutableBlockPos(MathHelper.floor(this.entity.posX), MathHelper.floor(i),
-                    MathHelper.floor(this.entity.posZ));
+            i = Mth.floor(this.entity.getEntityBoundingBox().minY);
+            BlockPos.MutableBlockPos blockpos$mutableblockpos = new BlockPos.MutableBlockPos(Mth.floor(this.entity.posX), Mth.floor(i),
+                    Mth.floor(this.entity.posZ));
 
             for (Block block = this.blockaccess.getBlockState(blockpos$mutableblockpos).getBlock(); block == Blocks.FLOWING_WATER
                     || block == Blocks.WATER; block = this.blockaccess.getBlockState(blockpos$mutableblockpos).getBlock()) {
                 ++i;
-                blockpos$mutableblockpos.setPos(MathHelper.floor(this.entity.posX), i, MathHelper.floor(this.entity.posZ));
+                blockpos$mutableblockpos.setPos(Mth.floor(this.entity.posX), i, Mth.floor(this.entity.posZ));
             }
 
             --i;
         } else if (this.entity.onGround) {
-            i = MathHelper.floor(this.entity.getEntityBoundingBox().minY + 0.5D);
+            i = Mth.floor(this.entity.getEntityBoundingBox().minY + 0.5D);
         } else {
             BlockPos blockpos;
             for (blockpos = new BlockPos(this.entity); (this.blockaccess.getBlockState(blockpos).getMaterial() == Material.AIR
@@ -94,7 +96,7 @@ public class ModNodeProcessor extends NodeProcessor {
 
     @Override
     public PathPoint getPathPointToCoords(double x, double y, double z) {
-        return this.openPoint(MathHelper.floor(x), MathHelper.floor(y), MathHelper.floor(z));
+        return this.openPoint(Mth.floor(x), Mth.floor(y), Mth.floor(z));
     }
 
     @Override
@@ -103,46 +105,46 @@ public class ModNodeProcessor extends NodeProcessor {
         int j = 0;
         PathNodeType pathnodetype = this.getPathNodeType(this.entity, currentPoint.x, currentPoint.y + 1, currentPoint.z);
         if (this.entity.getPathPriority(pathnodetype) >= 0.0F) {
-            j = MathHelper.floor(Math.max(1.0F, this.entity.stepHeight));
+            j = Mth.floor(Math.max(1.0F, this.entity.stepHeight));
         }
 
         double d0 = getGroundY(this.blockaccess, new BlockPos(currentPoint.x, currentPoint.y, currentPoint.z));
-        PathPoint pathpoint = this.getSafePoint(currentPoint.x, currentPoint.y, currentPoint.z + 1, j, d0, EnumFacing.SOUTH);
+        PathPoint pathpoint = this.getSafePoint(currentPoint.x, currentPoint.y, currentPoint.z + 1, j, d0, Direction.SOUTH);
         if (pathpoint != null && !pathpoint.visited && pathpoint.costMalus >= 0.0F) {
             pathOptions[i++] = pathpoint;
         }
 
-        PathPoint pathpoint1 = this.getSafePoint(currentPoint.x - 1, currentPoint.y, currentPoint.z, j, d0, EnumFacing.WEST);
+        PathPoint pathpoint1 = this.getSafePoint(currentPoint.x - 1, currentPoint.y, currentPoint.z, j, d0, Direction.WEST);
         if (pathpoint1 != null && !pathpoint1.visited && pathpoint1.costMalus >= 0.0F) {
             pathOptions[i++] = pathpoint1;
         }
 
-        PathPoint pathpoint2 = this.getSafePoint(currentPoint.x + 1, currentPoint.y, currentPoint.z, j, d0, EnumFacing.EAST);
+        PathPoint pathpoint2 = this.getSafePoint(currentPoint.x + 1, currentPoint.y, currentPoint.z, j, d0, Direction.EAST);
         if (pathpoint2 != null && !pathpoint2.visited && pathpoint2.costMalus >= 0.0F) {
             pathOptions[i++] = pathpoint2;
         }
 
-        PathPoint pathpoint3 = this.getSafePoint(currentPoint.x, currentPoint.y, currentPoint.z - 1, j, d0, EnumFacing.NORTH);
+        PathPoint pathpoint3 = this.getSafePoint(currentPoint.x, currentPoint.y, currentPoint.z - 1, j, d0, Direction.NORTH);
         if (pathpoint3 != null && !pathpoint3.visited && pathpoint3.costMalus >= 0.0F) {
             pathOptions[i++] = pathpoint3;
         }
 
-        PathPoint pathpoint4 = this.getSafePoint(currentPoint.x - 1, currentPoint.y, currentPoint.z - 1, j, d0, EnumFacing.NORTH);
+        PathPoint pathpoint4 = this.getSafePoint(currentPoint.x - 1, currentPoint.y, currentPoint.z - 1, j, d0, Direction.NORTH);
         if (this.func_222860_a(currentPoint, pathpoint1, pathpoint3, pathpoint4)) {
             pathOptions[i++] = pathpoint4;
         }
 
-        PathPoint pathpoint5 = this.getSafePoint(currentPoint.x + 1, currentPoint.y, currentPoint.z - 1, j, d0, EnumFacing.NORTH);
+        PathPoint pathpoint5 = this.getSafePoint(currentPoint.x + 1, currentPoint.y, currentPoint.z - 1, j, d0, Direction.NORTH);
         if (this.func_222860_a(currentPoint, pathpoint2, pathpoint3, pathpoint5)) {
             pathOptions[i++] = pathpoint5;
         }
 
-        PathPoint pathpoint6 = this.getSafePoint(currentPoint.x - 1, currentPoint.y, currentPoint.z + 1, j, d0, EnumFacing.SOUTH);
+        PathPoint pathpoint6 = this.getSafePoint(currentPoint.x - 1, currentPoint.y, currentPoint.z + 1, j, d0, Direction.SOUTH);
         if (this.func_222860_a(currentPoint, pathpoint1, pathpoint, pathpoint6)) {
             pathOptions[i++] = pathpoint6;
         }
 
-        PathPoint pathpoint7 = this.getSafePoint(currentPoint.x + 1, currentPoint.y, currentPoint.z + 1, j, d0, EnumFacing.SOUTH);
+        PathPoint pathpoint7 = this.getSafePoint(currentPoint.x + 1, currentPoint.y, currentPoint.z + 1, j, d0, Direction.SOUTH);
         if (this.func_222860_a(currentPoint, pathpoint2, pathpoint, pathpoint7)) {
             pathOptions[i++] = pathpoint7;
         }
@@ -165,7 +167,7 @@ public class ModNodeProcessor extends NodeProcessor {
         }
     }
 
-    public static double getGroundY(IBlockAccess p_197682_0_, BlockPos pos) {
+    public static double getGroundY(BlockGetter p_197682_0_, BlockPos pos) {
         // BlockPos blockpos = pos.down();
         // VoxelShape voxelshape =
         // p_197682_0_.getBlockState(blockpos).getCollisionShape(p_197682_0_, blockpos);
@@ -178,7 +180,7 @@ public class ModNodeProcessor extends NodeProcessor {
      * Returns a point that the entity can safely move to
      */
     @Nullable
-    private PathPoint getSafePoint(int x, int y, int z, int stepHeight, double groundYIn, EnumFacing facing) {
+    private PathPoint getSafePoint(int x, int y, int z, int stepHeight, double groundYIn, Direction facing) {
         PathPoint pathpoint = null;
         BlockPos blockpos = new BlockPos(x, y, z);
         double d0 = getGroundY(this.blockaccess, blockpos);
@@ -202,7 +204,7 @@ public class ModNodeProcessor extends NodeProcessor {
                     if (pathpoint != null && (pathpoint.nodeType == PathNodeType.OPEN || pathpoint.nodeType == PathNodeType.WALKABLE) && this.entity.width < 1.0F) {
                         double d2 = x - facing.getFrontOffsetX() + 0.5D;
                         double d3 = z - facing.getFrontOffsetZ() + 0.5D;
-                        AxisAlignedBB axisalignedbb = new AxisAlignedBB(d2 - d1, getGroundY(this.blockaccess, new BlockPos(d2, y + 1, d3)) + 0.001D, d3 - d1, d2 + d1,
+                        AABB axisalignedbb = new AABB(d2 - d1, getGroundY(this.blockaccess, new BlockPos(d2, y + 1, d3)) + 0.001D, d3 - d1, d2 + d1,
                                 this.entity.height + getGroundY(this.blockaccess, new BlockPos(pathpoint.x, pathpoint.y, pathpoint.z)) - 0.002D, d3 + d1);
                         if (this.entity.world.collidesWithAnyBlock(axisalignedbb)) {
                             pathpoint = null;
@@ -229,7 +231,7 @@ public class ModNodeProcessor extends NodeProcessor {
                 }
 
                 if (pathnodetype == PathNodeType.OPEN) {
-                    AxisAlignedBB axisalignedbb1 = new AxisAlignedBB(x - d1 + 0.5D, y + 0.001D, z - d1 + 0.5D, x + d1 + 0.5D, y + this.entity.height, z + d1 + 0.5D);
+                    AABB axisalignedbb1 = new AABB(x - d1 + 0.5D, y + 0.001D, z - d1 + 0.5D, x + d1 + 0.5D, y + this.entity.height, z + d1 + 0.5D);
                     if (this.entity.world.collidesWithAnyBlock(axisalignedbb1)) {
                         return null;
                     }
@@ -286,7 +288,7 @@ public class ModNodeProcessor extends NodeProcessor {
     }
 
     @Override
-    public PathNodeType getPathNodeType(IBlockAccess blockaccessIn, int x, int y, int z, EntityLiving entitylivingIn, int xSize, int ySize, int zSize, boolean canBreakDoorsIn,
+    public PathNodeType getPathNodeType(BlockGetter blockaccessIn, int x, int y, int z, Mob entitylivingIn, int xSize, int ySize, int zSize, boolean canBreakDoorsIn,
                                         boolean canEnterDoorsIn) {
         EnumSet<PathNodeType> enumset = EnumSet.noneOf(PathNodeType.class);
         PathNodeType pathnodetype = PathNodeType.BLOCKED;
@@ -318,7 +320,7 @@ public class ModNodeProcessor extends NodeProcessor {
         }
     }
 
-    public PathNodeType getPathNodeType(IBlockAccess p_193577_1_, int x, int y, int z, int xSize, int ySize, int zSize, boolean canOpenDoorsIn, boolean canEnterDoorsIn,
+    public PathNodeType getPathNodeType(BlockGetter p_193577_1_, int x, int y, int z, int xSize, int ySize, int zSize, boolean canOpenDoorsIn, boolean canEnterDoorsIn,
                                         EnumSet<PathNodeType> nodeTypeEnum, PathNodeType nodeType, BlockPos pos) {
         for (int i = 0; i < xSize; ++i) {
             for (int j = 0; j < ySize; ++j) {
@@ -340,7 +342,7 @@ public class ModNodeProcessor extends NodeProcessor {
         return nodeType;
     }
 
-    protected PathNodeType func_215744_a(IBlockAccess blockAccessIn, boolean p_215744_2_, boolean p_215744_3_, BlockPos p_215744_4_, PathNodeType p_215744_5_) {
+    protected PathNodeType func_215744_a(BlockGetter blockAccessIn, boolean p_215744_2_, boolean p_215744_3_, BlockPos p_215744_4_, PathNodeType p_215744_5_) {
         if (p_215744_5_ == PathNodeType.DOOR_WOOD_CLOSED && p_215744_2_ && p_215744_3_) {
             p_215744_5_ = PathNodeType.WALKABLE;
         }
@@ -362,17 +364,17 @@ public class ModNodeProcessor extends NodeProcessor {
         return p_215744_5_;
     }
 
-    private PathNodeType getPathNodeType(EntityLiving entitylivingIn, BlockPos pos) {
+    private PathNodeType getPathNodeType(Mob entitylivingIn, BlockPos pos) {
         return this.getPathNodeType(entitylivingIn, pos.getX(), pos.getY(), pos.getZ());
     }
 
-    private PathNodeType getPathNodeType(EntityLiving entitylivingIn, int x, int y, int z) {
+    private PathNodeType getPathNodeType(Mob entitylivingIn, int x, int y, int z) {
         return this.getPathNodeType(this.blockaccess, x, y, z, entitylivingIn, this.entitySizeX, this.entitySizeY, this.entitySizeZ, this.getCanOpenDoors(),
                 this.getCanEnterDoors());
     }
 
     @Override
-    public PathNodeType getPathNodeType(IBlockAccess blockaccessIn, int x, int y, int z) {
+    public PathNodeType getPathNodeType(BlockGetter blockaccessIn, int x, int y, int z) {
         PathNodeType pathnodetype = this.getPathNodeTypeRaw(blockaccessIn, x, y, z);
         if (pathnodetype == PathNodeType.OPEN && y >= 1) {
             Block block = blockaccessIn.getBlockState(new BlockPos(x, y - 1, z)).getBlock();
@@ -398,14 +400,14 @@ public class ModNodeProcessor extends NodeProcessor {
         return pathnodetype;
     }
 
-    public PathNodeType checkNeighborBlocks(IBlockAccess blockaccessIn, int x, int y, int z, PathNodeType nodeType) {
+    public PathNodeType checkNeighborBlocks(BlockGetter blockaccessIn, int x, int y, int z, PathNodeType nodeType) {
         if (nodeType == PathNodeType.WALKABLE) {
             BlockPos.PooledMutableBlockPos blockpos$pooledmutableblockpos = BlockPos.PooledMutableBlockPos.retain();
 
             for (int i = -1; i <= 1; ++i) {
                 for (int j = -1; j <= 1; ++j) {
                     if (i != 0 || j != 0) {
-                        IBlockState state = blockaccessIn.getBlockState(blockpos$pooledmutableblockpos.setPos(i + x, y, j + z));
+                        BlockState state = blockaccessIn.getBlockState(blockpos$pooledmutableblockpos.setPos(i + x, y, j + z));
                         Block block = state.getBlock();
                         PathNodeType type = block.getAiPathNodeType(state, blockaccessIn, blockpos$pooledmutableblockpos);
                         if (block == Blocks.CACTUS || type == PathNodeType.DAMAGE_CACTUS) {
@@ -421,9 +423,9 @@ public class ModNodeProcessor extends NodeProcessor {
         return nodeType;
     }
 
-    protected PathNodeType getPathNodeTypeRaw(IBlockAccess blockaccessIn, int x, int y, int z) {
+    protected PathNodeType getPathNodeTypeRaw(BlockGetter blockaccessIn, int x, int y, int z) {
         BlockPos blockpos = new BlockPos(x, y, z);
-        IBlockState blockstate = blockaccessIn.getBlockState(blockpos);
+        BlockState blockstate = blockaccessIn.getBlockState(blockpos);
         PathNodeType type = blockstate.getBlock().getAiPathNodeType(blockstate, blockaccessIn, blockpos);
         if (type != null)
             return type;
@@ -444,7 +446,7 @@ public class ModNodeProcessor extends NodeProcessor {
                 return PathNodeType.DOOR_OPEN;
             } else if (block instanceof BlockRailBase) {
                 return PathNodeType.RAIL;
-            } else if (!(block instanceof BlockFence) && !(block instanceof BlockWall) && (!(block instanceof BlockFenceGate) || blockstate.getValue(BlockFenceGate.OPEN).booleanValue())) {
+            } else if (!(block instanceof FenceBlock) && !(block instanceof BlockWall) && (!(block instanceof BlockFenceGate) || blockstate.getValue(BlockFenceGate.OPEN).booleanValue())) {
                 if (material == Material.WATER) {
                     return PathNodeType.WATER;
                 } else if (material == Material.LAVA) {

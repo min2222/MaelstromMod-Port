@@ -2,11 +2,11 @@ package com.barribob.MaelstromMod.entity.action;
 
 import com.barribob.MaelstromMod.entity.entities.EntityLeveledMob;
 import com.barribob.MaelstromMod.entity.projectile.EntityGeyser;
-import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.world.entity.LivingEntity;
 
 public class ActionGeyser implements IAction {
     @Override
-    public void performAction(EntityLeveledMob actor, EntityLivingBase target) {
+    public void performAction(EntityLeveledMob actor, LivingEntity target) {
         float zeroish = 0.001f;
         EntityGeyser projectile = new EntityGeyser(actor.world, actor, actor.getAttack());
         projectile.setPosition(target.posX, target.posY, target.posZ);

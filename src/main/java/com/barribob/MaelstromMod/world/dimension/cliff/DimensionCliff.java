@@ -3,13 +3,14 @@ package com.barribob.MaelstromMod.world.dimension.cliff;
 import com.barribob.MaelstromMod.init.BiomeInit;
 import com.barribob.MaelstromMod.init.ModDimensions;
 import com.barribob.MaelstromMod.world.biome.BiomeProviderMultiple;
-import net.minecraft.entity.Entity;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.util.Mth;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.DimensionType;
 import net.minecraft.world.WorldProvider;
 import net.minecraft.world.biome.Biome;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.gen.IChunkGenerator;
 
 import java.util.Arrays;
@@ -52,7 +53,7 @@ public class DimensionCliff extends WorldProvider {
     }
 
     @Override
-    public WorldSleepResult canSleepAt(net.minecraft.entity.player.EntityPlayer player, BlockPos pos) {
+    public WorldSleepResult canSleepAt(Player player, BlockPos pos) {
         return WorldSleepResult.DENY;
     }
 
@@ -67,26 +68,26 @@ public class DimensionCliff extends WorldProvider {
     }
 
     @Override
-    public Vec3d getCloudColor(float partialTicks) {
-        return new Vec3d(0.5f, 0.43f, 0.5f);
+    public Vec3 getCloudColor(float partialTicks) {
+        return new Vec3(0.5f, 0.43f, 0.5f);
     }
 
     @Override
-    public Vec3d getFogColor(float time, float p_76562_2_) {
+    public Vec3 getFogColor(float time, float p_76562_2_) {
         float f1 = 0.4f;
         float f2 = 0.3f;
         float f3 = 0.2F;
         f1 = f1 * (0.70F + 0.06F);
         f2 = f2 * (0.84F + 0.06F);
         f3 = f3 * (0.70F + 0.09F);
-        return new Vec3d(f1, f2, f3);
+        return new Vec3(f1, f2, f3);
     }
 
     @Override
-    public Vec3d getSkyColor(Entity cameraEntity, float partialTicks) {
+    public Vec3 getSkyColor(Entity cameraEntity, float partialTicks) {
         float f = cameraEntity.world.getCelestialAngle(partialTicks);
-        float f1 = MathHelper.cos(f * ((float) Math.PI * 2F)) * 2.0F + 0.5F;
-        f1 = MathHelper.clamp(f1, 0.1F, 1.0F);
-        return new Vec3d(0.60f, 0.55f, 0.7f).scale(f1);
+        float f1 = Mth.cos(f * ((float) Math.PI * 2F)) * 2.0F + 0.5F;
+        f1 = Mth.clamp(f1, 0.1F, 1.0F);
+        return new Vec3(0.60f, 0.55f, 0.7f).scale(f1);
     }
 }

@@ -1,11 +1,11 @@
 package com.barribob.MaelstromMod.world.gen;
 
 import com.barribob.MaelstromMod.entity.tileentity.TileEntityMobSpawner;
-import net.minecraft.block.Block;
-import net.minecraft.init.Blocks;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.gen.feature.WorldGenerator;
 
 import java.util.ArrayList;
@@ -27,7 +27,7 @@ public class WorldGenMaelstrom extends WorldGenerator {
      * Generate the structure using a form of bfs
      */
     @Override
-    public boolean generate(World worldIn, Random rand, BlockPos pos) {
+    public boolean generate(Level worldIn, Random rand, BlockPos pos) {
         int size = rand.nextInt(20) + 20;
 
         // Move down until we hit land
@@ -57,7 +57,7 @@ public class WorldGenMaelstrom extends WorldGenerator {
 
         // Add the core in the approximate center, and initialize the tile entity
         worldIn.setBlockState(pos.down(), this.maelstromCore.getDefaultState(), 2);
-        TileEntity tileentity = worldIn.getTileEntity(pos.down());
+        BlockEntity tileentity = worldIn.getTileEntity(pos.down());
 
         if (tileentity instanceof TileEntityMobSpawner) {
             this.dataSetter.accept((TileEntityMobSpawner) tileentity);
@@ -73,7 +73,7 @@ public class WorldGenMaelstrom extends WorldGenerator {
      * @param pos
      * @param queue
      */
-    private void addDirection(World worldIn, BlockPos pos, ArrayList<BlockPos> queue) {
+    private void addDirection(Level worldIn, BlockPos pos, ArrayList<BlockPos> queue) {
         if (worldIn.getBlockState(pos).getBlock() != this.maelstromBlock && worldIn.getBlockState(pos).getBlock() != Blocks.AIR) {
             queue.add(pos);
         }

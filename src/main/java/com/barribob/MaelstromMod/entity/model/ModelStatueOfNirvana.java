@@ -1,7 +1,7 @@
 package com.barribob.MaelstromMod.entity.model;// Made with Blockbench 3.6.6
 
 import net.minecraft.client.model.ModelRenderer;
-import net.minecraft.entity.Entity;
+import net.minecraft.world.entity.Entity;
 
 public class ModelStatueOfNirvana extends ModelBBAnimated {
     private final ModelRenderer root;

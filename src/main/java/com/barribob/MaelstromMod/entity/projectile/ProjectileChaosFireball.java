@@ -5,31 +5,31 @@ import com.barribob.MaelstromMod.util.ModDamageSource;
 import com.barribob.MaelstromMod.util.ModRandom;
 import com.barribob.MaelstromMod.util.ModUtils;
 import com.barribob.MaelstromMod.util.handlers.ParticleManager;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.init.SoundEvents;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.DamageSource;
-import net.minecraft.util.EnumParticleTypes;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.util.math.RayTraceResult;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.level.Level;
 
 public class ProjectileChaosFireball extends ProjectileGun {
     private static final int IMPACT_PARTICLE_AMOUNT = 20;
     private static final int EXPOSION_AREA_FACTOR = 2;
-    public static final Vec3d FIREBALL_COLOR = new Vec3d(1.0, 0.6, 0.5);
+    public static final Vec3 FIREBALL_COLOR = new Vec3(1.0, 0.6, 0.5);
 
-    public ProjectileChaosFireball(World worldIn, EntityLivingBase throwerIn, float baseDamage, ItemStack stack) {
+    public ProjectileChaosFireball(Level worldIn, LivingEntity throwerIn, float baseDamage, ItemStack stack) {
         super(worldIn, throwerIn, baseDamage, stack);
         this.setNoGravity(true);
     }
 
-    public ProjectileChaosFireball(World worldIn) {
+    public ProjectileChaosFireball(Level worldIn) {
         super(worldIn);
         this.setNoGravity(true);
     }
 
-    public ProjectileChaosFireball(World worldIn, double x, double y, double z) {
+    public ProjectileChaosFireball(Level worldIn, double x, double y, double z) {
         super(worldIn, x, y, z);
         this.setNoGravity(true);
     }
@@ -44,7 +44,7 @@ public class ProjectileChaosFireball extends ProjectileGun {
             world.setEntityState(this, ModUtils.PARTICLE_BYTE);
         }
 
-        Vec3d vel = new Vec3d(this.motionX, this.motionY, this.motionZ);
+        Vec3 vel = new Vec3(this.motionX, this.motionY, this.motionZ);
 
         super.onUpdate();
 
@@ -59,7 +59,7 @@ public class ProjectileChaosFireball extends ProjectileGun {
 
     @Override
     protected void spawnImpactParticles() {
-        this.world.spawnParticle(EnumParticleTypes.EXPLOSION_LARGE, this.posX, this.posY, this.posZ, 0, 0, 0);
+        this.world.spawnParticle(ParticleTypes.EXPLOSION_LARGE, this.posX, this.posY, this.posZ, 0, 0, 0);
         for (int i = 0; i < IMPACT_PARTICLE_AMOUNT; i++) {
             ParticleManager.spawnEffect(world, getPositionVector().add(ModRandom.randVec().scale(EXPOSION_AREA_FACTOR * 2)), ModColors.RED);
             ParticleManager.spawnFluff(world, getPositionVector().add(ModRandom.randVec().scale(EXPOSION_AREA_FACTOR * 2)), FIREBALL_COLOR, ModRandom.randVec().scale(0.1));
@@ -86,7 +86,7 @@ public class ProjectileChaosFireball extends ProjectileGun {
     @Override
     public void handleStatusUpdate(byte id) {
         if (id == ModUtils.PARTICLE_BYTE) {
-            ParticleManager.spawnSwirl2(world, getPositionVector(), ModColors.RED, Vec3d.ZERO);
+            ParticleManager.spawnSwirl2(world, getPositionVector(), ModColors.RED, Vec3.ZERO);
         }
         super.handleStatusUpdate(id);
     }

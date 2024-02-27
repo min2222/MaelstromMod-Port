@@ -5,15 +5,16 @@ import com.barribob.MaelstromMod.util.Element;
 import com.barribob.MaelstromMod.util.ModRandom;
 import com.barribob.MaelstromMod.util.ModUtils;
 import com.barribob.MaelstromMod.util.Reference;
-import net.minecraft.block.Block;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLiving;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.nbt.NBTTagList;
-import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.world.World;
+import net.minecraft.util.Mth;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.level.Level;
 
 import java.util.function.Supplier;
 
@@ -37,7 +38,7 @@ public abstract class MobSpawnerLogic {
      * The range coefficient for spawning entities around.
      */
     protected int spawnRange = 4;
-    protected Supplier<World> world;
+    protected Supplier<Level> world;
     protected Supplier<BlockPos> pos;
     protected Block block;
     protected float level;
@@ -58,7 +59,7 @@ public abstract class MobSpawnerLogic {
         int count;
         public Element[] possibleElements;
         public int[] elementalWeights;
-        public NBTTagCompound mobData;
+        public CompoundTag mobData;
 
         /**
          * Currently nbt is limited in that you can't specify the element
@@ -67,7 +68,7 @@ public abstract class MobSpawnerLogic {
          *
          * @param entityData
          */
-        public MobSpawnData(NBTTagCompound entityData) {
+        public MobSpawnData(CompoundTag entityData) {
             this(entityData.getString("id"), Element.NONE);
             this.mobData = entityData;
         }
@@ -93,12 +94,12 @@ public abstract class MobSpawnerLogic {
             this.count = count;
         }
 
-        public void addMobNBT(NBTTagCompound mobData) {
+        public void addMobNBT(CompoundTag mobData) {
             this.mobData = mobData;
         }
     }
 
-    public MobSpawnerLogic(Supplier<World> world, Supplier<BlockPos> pos, Block block) {
+    public MobSpawnerLogic(Supplier<Level> world, Supplier<BlockPos> pos, Block block) {
         this.world = world;
         this.pos = pos;
         this.block = block;
@@ -133,8 +134,8 @@ public abstract class MobSpawnerLogic {
      * @param blockpos
      * @return
      */
-    protected boolean tooManyEntities(World world, Entity entity, BlockPos blockpos) {
-        int k = world.getEntitiesWithinAABB(entity.getClass(), (new AxisAlignedBB(blockpos.getX(), blockpos.getY(), blockpos.getZ(),
+    protected boolean tooManyEntities(Level world, Entity entity, BlockPos blockpos) {
+        int k = world.getEntitiesWithinAABB(entity.getClass(), (new AABB(blockpos.getX(), blockpos.getY(), blockpos.getZ(),
                 blockpos.getX() + 1, blockpos.getY() + 1, blockpos.getZ() + 1)).grow(this.spawnRange)).size();
 
         if (k >= this.maxNearbyEntities) {
@@ -146,11 +147,11 @@ public abstract class MobSpawnerLogic {
     protected boolean tryToSpawnEntity() {
         MobSpawnData data = getEntityData();
         // Get a random position
-        int x = pos.get().getX() + MathHelper.getInt(world.get().rand, 0, this.spawnRange) * MathHelper.getInt(world.get().rand, -1, 1);
-        int y = pos.get().getY() + MathHelper.getInt(world.get().rand, 0, this.spawnRange) * MathHelper.getInt(world.get().rand, -1, 1);
-        int z = pos.get().getZ() + MathHelper.getInt(world.get().rand, 0, this.spawnRange) * MathHelper.getInt(world.get().rand, -1, 1);
+        int x = pos.get().getX() + Mth.getInt(world.get().rand, 0, this.spawnRange) * Mth.getInt(world.get().rand, -1, 1);
+        int y = pos.get().getY() + Mth.getInt(world.get().rand, 0, this.spawnRange) * Mth.getInt(world.get().rand, -1, 1);
+        int z = pos.get().getZ() + Mth.getInt(world.get().rand, 0, this.spawnRange) * Mth.getInt(world.get().rand, -1, 1);
 
-        if (world.get().getBlockState(new BlockPos(x, y - 1, z)).isSideSolid(world.get(), new BlockPos(x, y - 1, z), net.minecraft.util.EnumFacing.UP)) {
+        if (world.get().getBlockState(new BlockPos(x, y - 1, z)).isSideSolid(world.get(), new BlockPos(x, y - 1, z), Direction.UP)) {
             Entity entity = ModUtils.createMobFromSpawnData(data, world.get(), x, y, z);
 
             if (entity == null) {
@@ -160,7 +161,7 @@ public abstract class MobSpawnerLogic {
             if (world.get().checkNoEntityCollision(entity.getEntityBoundingBox(), entity)
                     && world.get().getCollisionBoxes(entity, entity.getEntityBoundingBox()).isEmpty() && !world.get().containsAnyLiquid(entity.getEntityBoundingBox())
                     && !this.tooManyEntities(world.get(), entity, pos.get())) {
-                EntityLiving entityliving = entity instanceof EntityLiving ? (EntityLiving) entity : null;
+                Mob entityliving = entity instanceof Mob ? (Mob) entity : null;
 
                 if (entityliving != null) {
                     // A successful spawn of the entity
@@ -183,7 +184,7 @@ public abstract class MobSpawnerLogic {
         return false;
     }
 
-    public void readFromNBT(NBTTagCompound nbt) {
+    public void readFromNBT(CompoundTag nbt) {
         this.spawnDelay = nbt.getShort("Delay");
 
         if (nbt.hasKey("MobWeights")) {
@@ -213,7 +214,7 @@ public abstract class MobSpawnerLogic {
 
             this.mobs = new MobSpawnData[nbttaglist.tagCount()];
             for (int i = 0; i < nbttaglist.tagCount(); i++) {
-                NBTTagCompound compound = nbttaglist.getCompoundTagAt(i);
+                CompoundTag compound = nbttaglist.getCompoundTagAt(i);
 
                 int[] elementIds = compound.getIntArray("Elements");
                 Element[] elements = new Element[elementIds.length];
@@ -242,7 +243,7 @@ public abstract class MobSpawnerLogic {
         }
     }
 
-    public NBTTagCompound writeToNBT(NBTTagCompound compound) {
+    public CompoundTag writeToNBT(CompoundTag compound) {
 
         if (mobs == null) {
             return compound;
@@ -259,7 +260,7 @@ public abstract class MobSpawnerLogic {
         NBTTagList nbttaglist = new NBTTagList();
         for (MobSpawnData data : this.mobs) {
 
-            NBTTagCompound dataCompound = new NBTTagCompound();
+            CompoundTag dataCompound = new CompoundTag();
             if (data.mobData != null) {
                 dataCompound.setTag("SpawnData", data.mobData);
             }

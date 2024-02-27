@@ -4,31 +4,31 @@ import com.barribob.MaelstromMod.util.ModDamageSource;
 import com.barribob.MaelstromMod.util.ModRandom;
 import com.barribob.MaelstromMod.util.ModUtils;
 import com.barribob.MaelstromMod.util.handlers.ParticleManager;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.init.MobEffects;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.potion.PotionEffect;
-import net.minecraft.util.DamageSource;
-import net.minecraft.util.EnumParticleTypes;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.util.math.RayTraceResult;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.level.Level;
 
 public class ProjectileBeastFireball extends Projectile {
     private static final int PARTICLE_AMOUNT = 15;
     private static final int IMPACT_PARTICLE_AMOUNT = 150;
     private static final int EXPOSION_AREA_FACTOR = 3;
 
-    public ProjectileBeastFireball(World worldIn, EntityLivingBase throwerIn, float baseDamage) {
+    public ProjectileBeastFireball(Level worldIn, LivingEntity throwerIn, float baseDamage) {
         super(worldIn, throwerIn, baseDamage);
         this.setNoGravity(true);
     }
 
-    public ProjectileBeastFireball(World worldIn) {
+    public ProjectileBeastFireball(Level worldIn) {
         super(worldIn);
         this.setNoGravity(true);
     }
 
-    public ProjectileBeastFireball(World worldIn, double x, double y, double z) {
+    public ProjectileBeastFireball(Level worldIn, double x, double y, double z) {
         super(worldIn, x, y, z);
         this.setNoGravity(true);
     }
@@ -45,16 +45,16 @@ public class ProjectileBeastFireball extends Projectile {
     protected void spawnImpactParticles() {
         float size = (float) (EXPOSION_AREA_FACTOR * this.getEntityBoundingBox().grow(EXPOSION_AREA_FACTOR).getAverageEdgeLength() * 0.5f);
         for (int i = 0; i < IMPACT_PARTICLE_AMOUNT; i++) {
-            Vec3d pos = ModUtils.entityPos(this).add(ModRandom.randVec().scale(size));
+            Vec3 pos = ModUtils.entityPos(this).add(ModRandom.randVec().scale(size));
             if (rand.nextInt(2) == 0) {
                 ParticleManager.spawnDarkFlames(this.world, rand, pos, ModRandom.randVec().scale(0.5f));
             } else {
-                this.world.spawnParticle(EnumParticleTypes.FLAME, pos.x, pos.y, pos.z, ModRandom.getFloat(0.25f), ModRandom.getFloat(0.25f), ModRandom.getFloat(0.25f));
+                this.world.spawnParticle(ParticleTypes.FLAME, pos.x, pos.y, pos.z, ModRandom.getFloat(0.25f), ModRandom.getFloat(0.25f), ModRandom.getFloat(0.25f));
             }
         }
         for (int i = 0; i < 10; i++) {
-            Vec3d pos = ModUtils.entityPos(this).add(ModRandom.randVec().scale(size));
-            this.world.spawnParticle(EnumParticleTypes.EXPLOSION_LARGE, pos.x, pos.y, pos.z, ModRandom.getFloat(0.25f), ModRandom.getFloat(0.25f), ModRandom.getFloat(0.25f));
+            Vec3 pos = ModUtils.entityPos(this).add(ModRandom.randVec().scale(size));
+            this.world.spawnParticle(ParticleTypes.EXPLOSION_LARGE, pos.x, pos.y, pos.z, ModRandom.getFloat(0.25f), ModRandom.getFloat(0.25f), ModRandom.getFloat(0.25f));
         }
     }
 
@@ -69,8 +69,8 @@ public class ProjectileBeastFireball extends Projectile {
                     .stoppedByArmorNotShields().build();
 
             ModUtils.handleAreaImpact(EXPOSION_AREA_FACTOR, (e) -> {
-                if (e instanceof EntityLivingBase) {
-                    ((EntityLivingBase) e).addPotionEffect(new PotionEffect(MobEffects.BLINDNESS, 80, 0));
+                if (e instanceof LivingEntity) {
+                    ((LivingEntity) e).addPotionEffect(new PotionEffect(MobEffects.BLINDNESS, 80, 0));
                 }
                 return this.getDamage();
             }, this.shootingEntity, this.getPositionVector(), source, 1, 0);

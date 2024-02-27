@@ -8,22 +8,22 @@ import com.barribob.MaelstromMod.packets.MessageMana;
 import com.barribob.MaelstromMod.util.ModUtils;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigException;
-import net.minecraft.enchantment.EnchantmentHelper;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.EnumActionResult;
-import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.TextComponentTranslation;
-import net.minecraft.util.text.TextFormatting;
+import net.minecraft.ChatFormatting;
+import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.event.entity.living.LivingEvent;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraftforge.api.distmarker.OnlyIn;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -35,15 +35,15 @@ public class ItemToManaSystem {
     @SubscribeEvent
     public static void onAttemptToUseItem(PlayerInteractEvent.RightClickItem event) {
 
-        if(event.getSide() == Side.CLIENT) return;
+        if(event.getSide() == Dist.CLIENT) return;
 
         ItemStack itemStack = event.getItemStack();
         Config config = getManaConfig(itemStack);
 
         if(config != null) {
             int manaCost = config.getInt("mana_cost");
-            NBTTagCompound compound = itemStack.getTagCompound();
-            EntityPlayer player = event.getEntityPlayer();
+            CompoundTag compound = itemStack.getTagCompound();
+            Player player = event.getEntityPlayer();
             IMana manaCapability = player.getCapability(ManaProvider.MANA, null);
             float mana = manaCapability.getMana();
 
@@ -68,16 +68,16 @@ public class ItemToManaSystem {
                 return;
             }
 
-            if (!player.capabilities.isCreativeMode && manaCost != 0 && player instanceof EntityPlayerMP) {
+            if (!player.capabilities.isCreativeMode && manaCost != 0 && player instanceof ServerPlayer) {
                 manaCapability.consume(manaCost);
-                Main.network.sendTo(new MessageMana(manaCapability.getMana()), (EntityPlayerMP) player);
+                Main.network.sendTo(new MessageMana(manaCapability.getMana()), (ServerPlayer) player);
             }
             compound.setInteger("cooldown", (int) getEnchantedCooldown(itemStack));
             itemStack.setTagCompound(compound);
         }
     }
 
-    private static void cancelUse(PlayerInteractEvent.RightClickItem event, EntityPlayer player, boolean sendMessage) {
+    private static void cancelUse(PlayerInteractEvent.RightClickItem event, Player player, boolean sendMessage) {
         if(sendMessage) {
             player.sendMessage(new TextComponentTranslation("mana_locked"));
         }
@@ -87,8 +87,8 @@ public class ItemToManaSystem {
 
     @SubscribeEvent
     public static void onLivingUpdate(LivingEvent.LivingUpdateEvent event) {
-        if (event.getEntity() instanceof EntityPlayer) {
-            EntityPlayer player = (EntityPlayer) event.getEntity();
+        if (event.getEntity() instanceof Player) {
+            Player player = (Player) event.getEntity();
 
             for(ItemStack itemStack : player.inventory.mainInventory) {
                 updateCooldowns(itemStack);
@@ -100,7 +100,7 @@ public class ItemToManaSystem {
     }
 
     @SubscribeEvent
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public static void onTooltip(ItemTooltipEvent event) {
         Config config = getManaConfig(event.getItemStack());
         if (config != null) {
@@ -111,7 +111,7 @@ public class ItemToManaSystem {
 
             String cooldownTooltip = ModUtils.getCooldownTooltip(ItemToManaSystem.getEnchantedCooldown(event.getItemStack()));
             int manaCost = config.getInt("mana_cost");
-            String manaTooltip = TextFormatting.GRAY + ModUtils.translateDesc("mana_cost") + ": " + TextFormatting.DARK_PURPLE + manaCost;
+            String manaTooltip = ChatFormatting.GRAY + ModUtils.translateDesc("mana_cost") + ": " + ChatFormatting.DARK_PURPLE + manaCost;
 
             if (nbtTooltips.isPresent()) {
                 int index = tooltips.indexOf(nbtTooltips.get());
@@ -132,9 +132,9 @@ public class ItemToManaSystem {
     private static void updateCooldowns(ItemStack stack) {
         Config config = getManaConfig(stack);
         if (config != null) {
-            NBTTagCompound compound = stack.getTagCompound();
+            CompoundTag compound = stack.getTagCompound();
             if(compound == null) {
-                compound = new NBTTagCompound();
+                compound = new CompoundTag();
             }
 
             if (compound.hasKey("cooldown")) {

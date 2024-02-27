@@ -2,10 +2,10 @@ package com.barribob.MaelstromMod.potions;
 
 import com.barribob.MaelstromMod.util.Reference;
 import net.minecraft.client.Minecraft;
-import net.minecraft.potion.Potion;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.world.effect.MobEffect;
+import net.minecraft.resources.ResourceLocation;
 
-public class ModPotion extends Potion {
+public class ModPotion extends MobEffect {
     public ModPotion(String name, boolean isBadEffectIn, int liquidColorIn, int iconX, int iconY) {
         super(isBadEffectIn, liquidColorIn);
         this.setIconIndex(iconX, iconY);

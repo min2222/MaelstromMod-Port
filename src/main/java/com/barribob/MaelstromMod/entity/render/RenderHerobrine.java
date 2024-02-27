@@ -7,8 +7,8 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.client.renderer.entity.layers.LayerRenderer;
-import net.minecraft.entity.EntityLiving;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.resources.ResourceLocation;
 
 public class RenderHerobrine extends RenderAnimatedBiped {
     public RenderHerobrine(RenderManager renderManagerIn, ResourceLocation resourceLocation) {
@@ -17,7 +17,7 @@ public class RenderHerobrine extends RenderAnimatedBiped {
     }
 
     @Override
-    public void doRender(EntityLiving entity, double x, double y, double z, float entityYaw, float partialTicks) {
+    public void doRender(Mob entity, double x, double y, double z, float entityYaw, float partialTicks) {
         if (!entity.isInvisible()) {
             // The blending here allows for rendering of translucent textures
             GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);

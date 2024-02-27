@@ -1,7 +1,7 @@
 package com.barribob.MaelstromMod.entity.util;
 
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.phys.Vec3;
 
 public interface IAcceleration {
-    Vec3d getAcceleration();
+    Vec3 getAcceleration();
 }

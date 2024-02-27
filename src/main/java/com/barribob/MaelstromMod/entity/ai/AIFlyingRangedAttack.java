@@ -1,14 +1,14 @@
 package com.barribob.MaelstromMod.entity.ai;
 
 import com.barribob.MaelstromMod.util.ModRandom;
-import net.minecraft.entity.EntityLiving;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.IRangedAttackMob;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.monster.RangedAttackMob;
 import net.minecraft.entity.ai.EntityAIBase;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.level.Level;
 
-public class AIFlyingRangedAttack<T extends EntityLiving & IRangedAttackMob> extends EntityAIBase {
+public class AIFlyingRangedAttack<T extends Mob & RangedAttackMob> extends EntityAIBase {
     private final T parentEntity;
     public int attackTimer;
     private final int attackCooldown;
@@ -43,11 +43,11 @@ public class AIFlyingRangedAttack<T extends EntityLiving & IRangedAttackMob> ext
 
     @Override
     public void updateTask() {
-        EntityLivingBase entitylivingbase = this.parentEntity.getAttackTarget();
+        LivingEntity entitylivingbase = this.parentEntity.getAttackTarget();
         double distance = entitylivingbase.getDistanceSq(this.parentEntity);
 
         if (distance < maxAttackDistance && this.parentEntity.canEntityBeSeen(entitylivingbase)) {
-            World world = this.parentEntity.world;
+            Level world = this.parentEntity.world;
             ++this.attackTimer;
 
             if (this.attackTimer == armsRaisedTime) {
@@ -65,8 +65,8 @@ public class AIFlyingRangedAttack<T extends EntityLiving & IRangedAttackMob> ext
         }
 
         if (distance > idealAttackDistance) {
-            Vec3d moveVec = this.parentEntity.getAttackTarget().getPositionVector().subtract(this.parentEntity.getPositionVector()).normalize().scale(16);
-            Vec3d pos = this.parentEntity.getPositionVector().add(moveVec);
+            Vec3 moveVec = this.parentEntity.getAttackTarget().getPositionVector().subtract(this.parentEntity.getPositionVector()).normalize().scale(16);
+            Vec3 pos = this.parentEntity.getPositionVector().add(moveVec);
             pos = pos.add(ModRandom.randVec().scale(16));
             this.parentEntity.getMoveHelper().setMoveTo(pos.x, pos.y, pos.z, moveSpeed);
         }

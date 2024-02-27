@@ -3,22 +3,22 @@ package com.barribob.MaelstromMod.packets;
 import com.barribob.MaelstromMod.sounds.DarkNexusWindSound;
 import com.barribob.MaelstromMod.util.handlers.ParticleManager;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.entity.EntityPlayerSP;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.ParticleSweepAttack;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.level.Level;
 
 public class PacketUtils {
     /**
      * Used to work around side errors
      */
-    public static EntityPlayer getPlayer() {
+    public static Player getPlayer() {
         return Minecraft.getMinecraft().player;
     }
 
-    public static World getWorld() {
+    public static Level getWorld() {
         return Minecraft.getMinecraft().world;
     }
 
@@ -30,11 +30,11 @@ public class PacketUtils {
     }
 
     public static void spawnEffect(MessageModParticles message) {
-        ParticleManager.spawnEffect(Minecraft.getMinecraft().world, new Vec3d(message.xCoord, message.yCoord, message.zCoord), new Vec3d(message.particleArguments[0], message.particleArguments[1], message.particleArguments[2]));
+        ParticleManager.spawnEffect(Minecraft.getMinecraft().world, new Vec3(message.xCoord, message.yCoord, message.zCoord), new Vec3(message.particleArguments[0], message.particleArguments[1], message.particleArguments[2]));
     }
 
     public static void playDarkNexusWindSound() {
-        EntityPlayer player = PacketUtils.getPlayer();
-        Minecraft.getMinecraft().getSoundHandler().playSound(new DarkNexusWindSound((EntityPlayerSP) player));
+        Player player = PacketUtils.getPlayer();
+        Minecraft.getMinecraft().getSoundHandler().playSound(new DarkNexusWindSound((LocalPlayer) player));
     }
 }

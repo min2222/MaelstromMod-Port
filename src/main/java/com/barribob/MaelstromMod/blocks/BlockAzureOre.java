@@ -5,15 +5,16 @@ import com.barribob.MaelstromMod.init.ModBlocks;
 import com.barribob.MaelstromMod.init.ModItems;
 import com.barribob.MaelstromMod.util.IHasModel;
 import net.minecraft.block.BlockOre;
-import net.minecraft.block.SoundType;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.init.Items;
-import net.minecraft.item.EnumDyeColor;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemBlock;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.world.World;
+import net.minecraft.util.Mth;
+import net.minecraft.world.item.*;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
 
 import java.util.Random;
 
@@ -28,7 +29,7 @@ public class BlockAzureOre extends BlockOre implements IHasModel {
 
         // Add both an item as a block and the block itself
         ModBlocks.BLOCKS.add(this);
-        ModItems.ITEMS.add(new ItemBlock(this).setRegistryName(this.getRegistryName()));
+        ModItems.ITEMS.add(new BlockItem(this).setRegistryName(this.getRegistryName()));
     }
 
     public BlockAzureOre(String name, float hardness, float resistance, SoundType soundType) {
@@ -42,7 +43,7 @@ public class BlockAzureOre extends BlockOre implements IHasModel {
      * Get the Item that this Block should drop when harvested.
      */
     @Override
-    public Item getItemDropped(IBlockState state, Random rand, int fortune) {
+    public Item getItemDropped(BlockState state, Random rand, int fortune) {
         if (this == ModBlocks.AZURE_COAL_ORE) {
             return Items.COAL;
         } else if (this == ModBlocks.AZURE_DIAMOND_ORE) {
@@ -57,19 +58,19 @@ public class BlockAzureOre extends BlockOre implements IHasModel {
     }
 
     @Override
-    public int getExpDrop(IBlockState state, net.minecraft.world.IBlockAccess world, BlockPos pos, int fortune) {
-        Random rand = world instanceof World ? ((World) world).rand : new Random();
+    public int getExpDrop(BlockState state, BlockGetter world, BlockPos pos, int fortune) {
+        Random rand = world instanceof Level ? ((Level) world).rand : new Random();
         if (this.getItemDropped(state, rand, fortune) != Item.getItemFromBlock(this)) {
             int i = 0;
 
             if (this == ModBlocks.AZURE_COAL_ORE) {
-                i = MathHelper.getInt(rand, 0, 2);
+                i = Mth.getInt(rand, 0, 2);
             } else if (this == ModBlocks.AZURE_DIAMOND_ORE) {
-                i = MathHelper.getInt(rand, 3, 7);
+                i = Mth.getInt(rand, 3, 7);
             } else if (this == ModBlocks.AZURE_EMERALD_ORE) {
-                i = MathHelper.getInt(rand, 3, 7);
+                i = Mth.getInt(rand, 3, 7);
             } else if (this == ModBlocks.AZURE_LAPIS_ORE) {
-                i = MathHelper.getInt(rand, 2, 5);
+                i = Mth.getInt(rand, 2, 5);
             }
 
             return i;
@@ -82,8 +83,8 @@ public class BlockAzureOre extends BlockOre implements IHasModel {
      * returns the metadata of the dropped item based on the old metadata of the block.
      */
     @Override
-    public int damageDropped(IBlockState state) {
-        return this == ModBlocks.AZURE_LAPIS_ORE ? EnumDyeColor.BLUE.getDyeDamage() : 0;
+    public int damageDropped(BlockState state) {
+        return this == ModBlocks.AZURE_LAPIS_ORE ? DyeColor.BLUE.getDyeDamage() : 0;
     }
 
     /**

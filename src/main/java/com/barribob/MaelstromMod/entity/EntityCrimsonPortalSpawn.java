@@ -4,16 +4,16 @@ import com.barribob.MaelstromMod.entity.util.EntityPortalSpawn;
 import com.barribob.MaelstromMod.init.ModBlocks;
 import com.barribob.MaelstromMod.util.ModColors;
 import com.barribob.MaelstromMod.util.handlers.ParticleManager;
-import net.minecraft.block.Block;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.level.Level;
 
 public class EntityCrimsonPortalSpawn extends EntityPortalSpawn {
-    public EntityCrimsonPortalSpawn(World worldIn) {
+    public EntityCrimsonPortalSpawn(Level worldIn) {
         super(worldIn);
     }
 
-    public EntityCrimsonPortalSpawn(World worldIn, double x, double y, double z) {
+    public EntityCrimsonPortalSpawn(Level worldIn, double x, double y, double z) {
         super(worldIn, x, y, z);
     }
 
@@ -27,8 +27,8 @@ public class EntityCrimsonPortalSpawn extends EntityPortalSpawn {
             double x = this.posX + Math.cos(i * degreesPerSector) * Math.sin(this.ticksExisted) * size + offset;
             double y = this.posY + 3.5 + Math.sin(i * degreesPerSector) * Math.cos(this.ticksExisted) * size + offset;
             double z = this.posZ + Math.cos(i * degreesPerSector) * Math.sin(this.ticksExisted) * size + offset;
-            ParticleManager.spawnEffect(world, new Vec3d(x, y, this.posZ), ModColors.RED);
-            ParticleManager.spawnEffect(world, new Vec3d(this.posX, y, z), ModColors.RED);
+            ParticleManager.spawnEffect(world, new Vec3(x, y, this.posZ), ModColors.RED);
+            ParticleManager.spawnEffect(world, new Vec3(this.posX, y, z), ModColors.RED);
         }
     }
 

@@ -2,32 +2,36 @@ package com.barribob.MaelstromMod.entity.entities;
 
 import com.barribob.MaelstromMod.init.ModProfessions;
 import com.barribob.MaelstromMod.util.ModUtils;
-import net.minecraft.enchantment.EnchantmentHelper;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.*;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.ai.goal.FloatGoal;
+import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.entity.*;
 import net.minecraft.entity.ai.*;
 import net.minecraft.entity.passive.EntityVillager.ITradeList;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.Items;
-import net.minecraft.init.SoundEvents;
-import net.minecraft.inventory.EntityEquipmentSlot;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.network.datasync.DataParameter;
-import net.minecraft.network.datasync.DataSerializers;
-import net.minecraft.network.datasync.EntityDataManager;
-import net.minecraft.util.DamageSource;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.util.Mth;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.SoundEvent;
-import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextComponentTranslation;
-import net.minecraft.util.text.TextFormatting;
 import net.minecraft.village.MerchantRecipeList;
 import net.minecraft.world.DifficultyInstance;
-import net.minecraft.world.World;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.storage.loot.LootTableList;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.api.distmarker.Dist;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -38,7 +42,7 @@ import java.util.List;
  */
 public class EntityAzureVillager extends EntityTrader implements IMerchant {
     // Used in animation to determine if the entity should render in attack pose
-    protected static final DataParameter<Byte> ATTACKING = EntityDataManager.<Byte>createKey(EntityAzureVillager.class, DataSerializers.BYTE);
+    protected static final EntityDataAccessor<Byte> ATTACKING = SynchedEntityData.<Byte>createKey(EntityAzureVillager.class, EntityDataSerializers.BYTE);
     private static final String[] CHAT_MESSAGES = {"azure_villager_1", "azure_villager_2", "azure_villager_3", "azure_villager_4", "azure_villager_5", "azure_villager_6"};
 
     private static int message_counter = 0;
@@ -49,7 +53,7 @@ public class EntityAzureVillager extends EntityTrader implements IMerchant {
         this.dataManager.register(ATTACKING, Byte.valueOf((byte) 0));
     }
 
-    public EntityAzureVillager(World worldIn) {
+    public EntityAzureVillager(Level worldIn) {
         super(worldIn);
         this.setSize(0.6F, 1.95F);
     }
@@ -57,26 +61,26 @@ public class EntityAzureVillager extends EntityTrader implements IMerchant {
     @Override
     protected void initEntityAI() {
         super.initEntityAI();
-        this.tasks.addTask(0, new EntityAISwimming(this));
+        this.tasks.addTask(0, new FloatGoal(this));
         this.tasks.addTask(2, new EntityAIMoveIndoors(this));
         this.tasks.addTask(3, new EntityAIRestrictOpenDoor(this));
         this.tasks.addTask(4, new EntityAIOpenDoor(this, true));
         this.tasks.addTask(4, new EntityAIAttackMelee(this, 1.0D, false));
         this.tasks.addTask(5, new EntityAIMoveTowardsRestriction(this, 0.6D));
         this.tasks.addTask(8, new EntityAIWander(this, 0.6D));
-        this.tasks.addTask(9, new EntityAIWatchClosest2(this, EntityPlayer.class, 3.0F, 1.0F));
+        this.tasks.addTask(9, new EntityAIWatchClosest2(this, Player.class, 3.0F, 1.0F));
         this.tasks.addTask(9, new EntityAIWanderAvoidWater(this, 0.6D));
-        this.tasks.addTask(10, new EntityAIWatchClosest(this, EntityLiving.class, 8.0F));
-        this.targetTasks.addTask(1, new EntityAIHurtByTarget(this, true, new Class[]{EntityAzureVillager.class}));
+        this.tasks.addTask(10, new EntityAIWatchClosest(this, Mob.class, 8.0F));
+        this.targetTasks.addTask(1, new HurtByTargetGoal(this, true, new Class[]{EntityAzureVillager.class}));
     }
 
     @Override
     protected void applyEntityAttributes() {
         super.applyEntityAttributes();
-        this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.3499999940395355D);
-        this.getEntityAttribute(SharedMonsterAttributes.FOLLOW_RANGE).setBaseValue(12.0D);
-        this.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).setBaseValue(1);
-        this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(20);
+        this.getEntityAttribute(Attributes.MOVEMENT_SPEED).setBaseValue(0.3499999940395355D);
+        this.getEntityAttribute(Attributes.FOLLOW_RANGE).setBaseValue(12.0D);
+        this.getEntityAttribute(Attributes.ATTACK_DAMAGE).setBaseValue(1);
+        this.getEntityAttribute(Attributes.MAX_HEALTH).setBaseValue(20);
     }
 
     @Override
@@ -99,7 +103,7 @@ public class EntityAzureVillager extends EntityTrader implements IMerchant {
         return SoundEvents.ENTITY_VILLAGER_DEATH;
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     protected boolean isAggressive(int mask) {
         int i = this.dataManager.get(ATTACKING).byteValue();
         return (i & mask) != 0;
@@ -117,7 +121,7 @@ public class EntityAzureVillager extends EntityTrader implements IMerchant {
         this.dataManager.set(ATTACKING, Byte.valueOf((byte) (i & 255)));
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public boolean isAggressive() {
         return this.isAggressive(1);
     }
@@ -137,19 +141,19 @@ public class EntityAzureVillager extends EntityTrader implements IMerchant {
      */
     @Override
     public boolean attackEntityAsMob(Entity entityIn) {
-        float f = (float) this.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).getAttributeValue();
+        float f = (float) this.getEntityAttribute(Attributes.ATTACK_DAMAGE).getAttributeValue();
         int i = 0;
 
-        if (entityIn instanceof EntityLivingBase) {
-            f += EnchantmentHelper.getModifierForCreature(this.getHeldItemMainhand(), ((EntityLivingBase) entityIn).getCreatureAttribute());
+        if (entityIn instanceof LivingEntity) {
+            f += EnchantmentHelper.getModifierForCreature(this.getHeldItemMainhand(), ((LivingEntity) entityIn).getCreatureAttribute());
             i += EnchantmentHelper.getKnockbackModifier(this);
         }
 
         boolean flag = entityIn.attackEntityFrom(DamageSource.causeMobDamage(this), f);
 
         if (flag) {
-            if (i > 0 && entityIn instanceof EntityLivingBase) {
-                ((EntityLivingBase) entityIn).knockBack(this, i * 0.5F, MathHelper.sin(this.rotationYaw * 0.017453292F), (-MathHelper.cos(this.rotationYaw * 0.017453292F)));
+            if (i > 0 && entityIn instanceof LivingEntity) {
+                ((LivingEntity) entityIn).knockBack(this, i * 0.5F, Mth.sin(this.rotationYaw * 0.017453292F), (-Mth.cos(this.rotationYaw * 0.017453292F)));
                 this.motionX *= 0.6D;
                 this.motionZ *= 0.6D;
             }
@@ -160,8 +164,8 @@ public class EntityAzureVillager extends EntityTrader implements IMerchant {
                 entityIn.setFire(j * 4);
             }
 
-            if (entityIn instanceof EntityPlayer) {
-                EntityPlayer entityplayer = (EntityPlayer) entityIn;
+            if (entityIn instanceof Player) {
+                Player entityplayer = (Player) entityIn;
                 ItemStack itemstack = this.getHeldItemMainhand();
                 ItemStack itemstack1 = entityplayer.isHandActive() ? entityplayer.getActiveItemStack() : ItemStack.EMPTY;
 
@@ -201,14 +205,14 @@ public class EntityAzureVillager extends EntityTrader implements IMerchant {
      */
     @Override
     protected void setEquipmentBasedOnDifficulty(DifficultyInstance difficulty) {
-        this.setItemStackToSlot(EntityEquipmentSlot.MAINHAND, new ItemStack(Items.IRON_SWORD));
+        this.setItemStackToSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.IRON_SWORD));
     }
 
     @Override
-    protected void onTraderInteract(EntityPlayer player) {
+    protected void onTraderInteract(Player player) {
         // Display chat messages
         if (!player.world.isRemote) {
-            player.sendMessage(new TextComponentString(TextFormatting.DARK_BLUE + "Villager: " + TextFormatting.WHITE)
+            player.sendMessage(new TextComponentString(ChatFormatting.DARK_BLUE + "Villager: " + ChatFormatting.WHITE)
                     .appendSibling(new TextComponentTranslation(ModUtils.LANG_CHAT + CHAT_MESSAGES[message_counter])));
 
             message_counter++;
@@ -229,7 +233,7 @@ public class EntityAzureVillager extends EntityTrader implements IMerchant {
     }
 
     @Override
-    public void writeEntityToNBT(NBTTagCompound compound) {
+    public void writeEntityToNBT(CompoundTag compound) {
         super.writeEntityToNBT(compound);
 
         if (this.buyingList != null) {
@@ -238,10 +242,10 @@ public class EntityAzureVillager extends EntityTrader implements IMerchant {
     }
 
     @Override
-    public void readEntityFromNBT(NBTTagCompound compound) {
+    public void readEntityFromNBT(CompoundTag compound) {
         super.readEntityFromNBT(compound);
         if (compound.hasKey("Offers", 10)) {
-            NBTTagCompound nbttagcompound = compound.getCompoundTag("Offers");
+            CompoundTag nbttagcompound = compound.getCompoundTag("Offers");
             this.buyingList = new MerchantRecipeList(nbttagcompound);
         }
     }

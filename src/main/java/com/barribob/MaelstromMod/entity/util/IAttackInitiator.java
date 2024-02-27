@@ -1,8 +1,8 @@
 package com.barribob.MaelstromMod.entity.util;
 
-import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.world.entity.LivingEntity;
 
 public interface IAttackInitiator {
-    void update(EntityLivingBase target);
+    void update(LivingEntity target);
     void resetTask();
 }

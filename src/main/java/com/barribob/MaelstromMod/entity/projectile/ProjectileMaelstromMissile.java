@@ -4,23 +4,23 @@ import com.barribob.MaelstromMod.entity.entities.EntityMaelstromMob;
 import com.barribob.MaelstromMod.util.ModDamageSource;
 import com.barribob.MaelstromMod.util.ModRandom;
 import com.barribob.MaelstromMod.util.handlers.ParticleManager;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.init.SoundEvents;
-import net.minecraft.util.DamageSource;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.math.RayTraceResult;
-import net.minecraft.world.World;
+import net.minecraft.world.level.Level;
 
 public class ProjectileMaelstromMissile extends Projectile {
-    public ProjectileMaelstromMissile(World worldIn, EntityLivingBase throwerIn, float damage) {
+    public ProjectileMaelstromMissile(Level worldIn, LivingEntity throwerIn, float damage) {
         super(worldIn, throwerIn, damage);
         this.setNoGravity(true);
     }
 
-    public ProjectileMaelstromMissile(World worldIn) {
+    public ProjectileMaelstromMissile(Level worldIn) {
         super(worldIn);
     }
 
-    public ProjectileMaelstromMissile(World worldIn, double x, double y, double z) {
+    public ProjectileMaelstromMissile(Level worldIn, double x, double y, double z) {
         super(worldIn, x, y, z);
     }
 

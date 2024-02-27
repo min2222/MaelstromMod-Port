@@ -2,20 +2,20 @@ package com.barribob.MaelstromMod.sounds;
 
 import com.barribob.MaelstromMod.init.ModDimensions;
 import net.minecraft.client.audio.MovingSound;
-import net.minecraft.client.entity.EntityPlayerSP;
-import net.minecraft.init.SoundEvents;
-import net.minecraft.util.SoundCategory;
-import net.minecraft.util.math.MathHelper;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.util.Mth;
+import net.minecraft.sounds.SoundSource;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 
-@SideOnly(Side.CLIENT)
+@OnlyIn(Dist.CLIENT)
 public class DarkNexusWindSound extends MovingSound {
-    private final EntityPlayerSP player;
+    private final LocalPlayer player;
     private int time;
 
-    public DarkNexusWindSound(EntityPlayerSP player) {
-        super(SoundEvents.ITEM_ELYTRA_FLYING, SoundCategory.PLAYERS);
+    public DarkNexusWindSound(LocalPlayer player) {
+        super(SoundEvents.ITEM_ELYTRA_FLYING, SoundSource.PLAYERS);
         this.player = player;
         this.repeat = true;
         this.repeatDelay = 0;
@@ -30,10 +30,10 @@ public class DarkNexusWindSound extends MovingSound {
             this.xPosF = (float) this.player.posX;
             this.yPosF = (float) this.player.posY;
             this.zPosF = (float) this.player.posZ;
-            float velocity = MathHelper.sqrt(this.player.motionX * this.player.motionX + this.player.motionZ * this.player.motionZ + this.player.motionY * this.player.motionY);
+            float velocity = Mth.sqrt(this.player.motionX * this.player.motionX + this.player.motionZ * this.player.motionZ + this.player.motionY * this.player.motionY);
             float f1 = velocity / 2.0F;
 
-            this.volume = 0.1f + MathHelper.clamp(f1 * f1, 0.0F, 1.0F);
+            this.volume = 0.1f + Mth.clamp(f1 * f1, 0.0F, 1.0F);
 
             if (this.time < 20) {
                 this.volume = 0.0F;

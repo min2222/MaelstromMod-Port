@@ -5,14 +5,14 @@ import com.barribob.MaelstromMod.util.ModDamageSource;
 import com.barribob.MaelstromMod.util.ModRandom;
 import com.barribob.MaelstromMod.util.ModUtils;
 import com.barribob.MaelstromMod.util.handlers.ParticleManager;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.init.SoundEvents;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.DamageSource;
-import net.minecraft.util.EnumParticleTypes;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.util.math.RayTraceResult;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.level.Level;
 
 import javax.annotation.Nullable;
 
@@ -26,24 +26,24 @@ public class ProjectileMegaFireball extends ProjectileAbstractMegaFireball {
     private static final int IMPACT_PARTICLE_AMOUNT = 30;
     private static final int EXPOSION_AREA_FACTOR = 4;
 
-    public ProjectileMegaFireball(World worldIn, EntityLivingBase throwerIn, float baseDamage, ItemStack stack, boolean canTakeDamage) {
+    public ProjectileMegaFireball(Level worldIn, LivingEntity throwerIn, float baseDamage, ItemStack stack, boolean canTakeDamage) {
         super(worldIn, throwerIn, baseDamage, stack, canTakeDamage);
     }
 
-    public ProjectileMegaFireball(World worldIn) {
+    public ProjectileMegaFireball(Level worldIn) {
         super(worldIn);
     }
 
-    public ProjectileMegaFireball(World worldIn, double x, double y, double z) {
+    public ProjectileMegaFireball(Level worldIn, double x, double y, double z) {
         super(worldIn, x, y, z);
     }
 
     @Override
     protected void spawnParticles() {
         for (int i = 0; i < PARTICLE_AMOUNT; i++) {
-            Vec3d origin = this.getPositionVector().add(ModUtils.getAxisOffset(ModUtils.getEntityVelocity(this).normalize(), new Vec3d(1, 0, 0)));
-            Vec3d smokePos = origin.add(ModRandom.randVec());
-            world.spawnParticle(EnumParticleTypes.SMOKE_LARGE, smokePos.x, smokePos.y, smokePos.z, 0, 0, 0);
+            Vec3 origin = this.getPositionVector().add(ModUtils.getAxisOffset(ModUtils.getEntityVelocity(this).normalize(), new Vec3(1, 0, 0)));
+            Vec3 smokePos = origin.add(ModRandom.randVec());
+            world.spawnParticle(ParticleTypes.SMOKE_LARGE, smokePos.x, smokePos.y, smokePos.z, 0, 0, 0);
             ParticleManager.spawnEffect(world, origin.add(ModRandom.randVec()), ModColors.FIREBALL_ORANGE);
         }
     }
@@ -51,9 +51,9 @@ public class ProjectileMegaFireball extends ProjectileAbstractMegaFireball {
     @Override
     protected void spawnImpactParticles() {
         for (int i = 0; i < IMPACT_PARTICLE_AMOUNT; i++) {
-            Vec3d pos = this.getPositionVector().add(ModRandom.randVec().scale(EXPOSION_AREA_FACTOR));
-            Vec3d vel = pos.subtract(this.getPositionVector()).normalize().scale(world.rand.nextFloat() * 0.3f);
-            this.world.spawnParticle(EnumParticleTypes.FLAME, pos.x, pos.y, pos.z, vel.x, vel.y, vel.z);
+            Vec3 pos = this.getPositionVector().add(ModRandom.randVec().scale(EXPOSION_AREA_FACTOR));
+            Vec3 vel = pos.subtract(this.getPositionVector()).normalize().scale(world.rand.nextFloat() * 0.3f);
+            this.world.spawnParticle(ParticleTypes.FLAME, pos.x, pos.y, pos.z, vel.x, vel.y, vel.z);
         }
     }
 
@@ -74,7 +74,7 @@ public class ProjectileMegaFireball extends ProjectileAbstractMegaFireball {
             this.world.newExplosion(null, this.posX, this.posY, this.posZ, 3, true, flag);
 
             for (int i = 0; i < 10; i++) {
-                Vec3d vel = ModRandom.randVec().normalize().scale(0.5f).add(ModUtils.yVec(1));
+                Vec3 vel = ModRandom.randVec().normalize().scale(0.5f).add(ModUtils.yVec(1));
                 ProjectileFireball shrapenel = new ProjectileFireball(world, shootingEntity, this.getDamage() * 0.5f, null);
                 ModUtils.setEntityPosition(shrapenel, this.getPositionVector().add(ModUtils.yVec(1)).add(ModRandom.randVec()));
                 shrapenel.setNoGravity(false);

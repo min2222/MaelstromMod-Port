@@ -13,22 +13,22 @@ import com.barribob.MaelstromMod.util.ModColors;
 import com.barribob.MaelstromMod.util.ModDamageSource;
 import com.barribob.MaelstromMod.util.ModUtils;
 import com.barribob.MaelstromMod.util.handlers.SoundsHandler;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.init.SoundEvents;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.pathfinding.PathNavigateFlying;
-import net.minecraft.util.DamageSource;
 import net.minecraft.util.SoundEvent;
-import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.level.Level;
 
 import javax.annotation.Nonnull;
 
 public class EntityMaelstromFury extends EntityMaelstromMob implements IAcceleration {
-    Vec3d acceleration = Vec3d.ZERO;
-    public EntityMaelstromFury(World worldIn) {
+    Vec3 acceleration = Vec3.ZERO;
+    public EntityMaelstromFury(Level worldIn) {
         super(worldIn);
         this.moveHelper = new FlyingMoveHelper(this);
         this.navigator = new PathNavigateFlying(this, worldIn);
@@ -41,7 +41,7 @@ public class EntityMaelstromFury extends EntityMaelstromMob implements IAccelera
     @Override
     public void onUpdate() {
         super.onUpdate();
-        Vec3d prevAcceleration = acceleration;
+        Vec3 prevAcceleration = acceleration;
         acceleration = ModUtils.getEntityVelocity(this).scale(0.1).add(this.acceleration.scale(0.9));
 
         if (!world.isRemote) {
@@ -54,7 +54,7 @@ public class EntityMaelstromFury extends EntityMaelstromMob implements IAccelera
         }
     }
 
-    public Vec3d getAcceleration() {
+    public Vec3 getAcceleration() {
         return acceleration;
     }
 
@@ -77,8 +77,8 @@ public class EntityMaelstromFury extends EntityMaelstromMob implements IAccelera
     }
 
     private void whileDiving() {
-        Vec3d entityVelocity = ModUtils.getEntityVelocity(this);
-        Vec3d spearPos = ModUtils.getAxisOffset(entityVelocity.normalize(), ModUtils.X_AXIS.scale(1.7)).add(getPositionVector());
+        Vec3 entityVelocity = ModUtils.getEntityVelocity(this);
+        Vec3 spearPos = ModUtils.getAxisOffset(entityVelocity.normalize(), ModUtils.X_AXIS.scale(1.7)).add(getPositionVector());
         DamageSource damageSource = ModDamageSource.builder()
                 .type(ModDamageSource.MOB)
                 .disablesShields()
@@ -100,7 +100,7 @@ public class EntityMaelstromFury extends EntityMaelstromMob implements IAccelera
     }
 
     @Override
-    protected void updateFallState(double y, boolean onGroundIn, @Nonnull IBlockState state, @Nonnull BlockPos pos) {
+    protected void updateFallState(double y, boolean onGroundIn, @Nonnull BlockState state, @Nonnull BlockPos pos) {
     }
 
     @Override
@@ -109,10 +109,10 @@ public class EntityMaelstromFury extends EntityMaelstromMob implements IAccelera
     }
 
     @Override
-    public void attackEntityWithRangedAttack(@Nonnull EntityLivingBase target, float distanceFactor) {
+    public void attackEntityWithRangedAttack(@Nonnull LivingEntity target, float distanceFactor) {
     }
 
-    protected AxisAlignedBB getTargetableArea(double targetDistance) {
+    protected AABB getTargetableArea(double targetDistance) {
         return this.getEntityBoundingBox().grow(targetDistance);
     }
 

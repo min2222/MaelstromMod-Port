@@ -5,10 +5,10 @@ import com.barribob.MaelstromMod.util.ModRandom;
 import com.barribob.MaelstromMod.util.ModUtils;
 import com.barribob.MaelstromMod.world.dimension.cliff.ChunkGeneratorCliff;
 import com.google.common.collect.Lists;
+import net.minecraft.core.BlockPos;
 import net.minecraft.util.Rotation;
 import net.minecraft.util.Tuple;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.gen.structure.StructureComponent;
 import net.minecraft.world.gen.structure.template.TemplateManager;
 
@@ -20,7 +20,7 @@ import java.util.List;
  */
 public class GoldenRuins {
     private List<StructureComponent> components;
-    private World world;
+    private Level world;
     private TemplateManager manager;
     private ChunkGeneratorCliff provider;
     private static final int SIZE = 10;
@@ -29,7 +29,7 @@ public class GoldenRuins {
     private static final List<Tuple<Rotation, BlockPos>> CROSS_POS = Lists.newArrayList(new Tuple(Rotation.NONE, new BlockPos(0, 0, 0)),
             new Tuple(Rotation.CLOCKWISE_90, new BlockPos(30, 0, 0)), new Tuple(Rotation.COUNTERCLOCKWISE_90, new BlockPos(0, 0, 30)));
 
-    public GoldenRuins(World world, TemplateManager manager, ChunkGeneratorCliff provider, List<StructureComponent> components) {
+    public GoldenRuins(Level world, TemplateManager manager, ChunkGeneratorCliff provider, List<StructureComponent> components) {
         this.components = components;
         this.world = world;
         this.manager = manager;

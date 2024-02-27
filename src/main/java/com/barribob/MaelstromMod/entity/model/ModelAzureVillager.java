@@ -3,14 +3,14 @@ package com.barribob.MaelstromMod.entity.model;
 import com.barribob.MaelstromMod.entity.entities.EntityAzureVillager;
 import net.minecraft.client.model.ModelBase;
 import net.minecraft.client.model.ModelRenderer;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.util.EnumHandSide;
-import net.minecraft.util.math.MathHelper;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraft.util.Mth;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 
-@SideOnly(Side.CLIENT)
+@OnlyIn(Dist.CLIENT)
 public class ModelAzureVillager extends ModelBase {
     public ModelRenderer head;
     public ModelRenderer body;
@@ -92,8 +92,8 @@ public class ModelAzureVillager extends ModelBase {
         this.arms.rotationPointY = 3.0F;
         this.arms.rotationPointZ = -1.0F;
         this.arms.rotateAngleX = -0.75F;
-        this.leg0.rotateAngleX = MathHelper.cos(limbSwing * 0.6662F) * 1.4F * limbSwingAmount * 0.5F;
-        this.leg1.rotateAngleX = MathHelper.cos(limbSwing * 0.6662F + (float) Math.PI) * 1.4F * limbSwingAmount * 0.5F;
+        this.leg0.rotateAngleX = Mth.cos(limbSwing * 0.6662F) * 1.4F * limbSwingAmount * 0.5F;
+        this.leg1.rotateAngleX = Mth.cos(limbSwing * 0.6662F + (float) Math.PI) * 1.4F * limbSwingAmount * 0.5F;
         this.leg0.rotateAngleY = 0.0F;
         this.leg1.rotateAngleY = 0.0F;
 
@@ -101,29 +101,29 @@ public class ModelAzureVillager extends ModelBase {
          * Taken from the vindicator class for attack animation
          */
         if (((EntityAzureVillager) entityIn).isAggressive()) {
-            float f = MathHelper.sin(this.swingProgress * (float) Math.PI);
-            float f1 = MathHelper.sin((1.0F - (1.0F - this.swingProgress) * (1.0F - this.swingProgress)) * (float) Math.PI);
+            float f = Mth.sin(this.swingProgress * (float) Math.PI);
+            float f1 = Mth.sin((1.0F - (1.0F - this.swingProgress) * (1.0F - this.swingProgress)) * (float) Math.PI);
             this.rightArm.rotateAngleZ = 0.0F;
             this.leftArm.rotateAngleZ = 0.0F;
             this.rightArm.rotateAngleY = 0.15707964F;
             this.leftArm.rotateAngleY = -0.15707964F;
 
-            if (((EntityLivingBase) entityIn).getPrimaryHand() == EnumHandSide.RIGHT) {
-                this.rightArm.rotateAngleX = -1.8849558F + MathHelper.cos(ageInTicks * 0.09F) * 0.15F;
-                this.leftArm.rotateAngleX = -0.0F + MathHelper.cos(ageInTicks * 0.19F) * 0.5F;
+            if (((LivingEntity) entityIn).getPrimaryHand() == EnumHandSide.RIGHT) {
+                this.rightArm.rotateAngleX = -1.8849558F + Mth.cos(ageInTicks * 0.09F) * 0.15F;
+                this.leftArm.rotateAngleX = -0.0F + Mth.cos(ageInTicks * 0.19F) * 0.5F;
                 this.rightArm.rotateAngleX += f * 2.2F - f1 * 0.4F;
                 this.leftArm.rotateAngleX += f * 1.2F - f1 * 0.4F;
             } else {
-                this.rightArm.rotateAngleX = -0.0F + MathHelper.cos(ageInTicks * 0.19F) * 0.5F;
-                this.leftArm.rotateAngleX = -1.8849558F + MathHelper.cos(ageInTicks * 0.09F) * 0.15F;
+                this.rightArm.rotateAngleX = -0.0F + Mth.cos(ageInTicks * 0.19F) * 0.5F;
+                this.leftArm.rotateAngleX = -1.8849558F + Mth.cos(ageInTicks * 0.09F) * 0.15F;
                 this.rightArm.rotateAngleX += f * 1.2F - f1 * 0.4F;
                 this.leftArm.rotateAngleX += f * 2.2F - f1 * 0.4F;
             }
 
-            this.rightArm.rotateAngleZ += MathHelper.cos(ageInTicks * 0.09F) * 0.05F + 0.05F;
-            this.leftArm.rotateAngleZ -= MathHelper.cos(ageInTicks * 0.09F) * 0.05F + 0.05F;
-            this.rightArm.rotateAngleX += MathHelper.sin(ageInTicks * 0.067F) * 0.05F;
-            this.leftArm.rotateAngleX -= MathHelper.sin(ageInTicks * 0.067F) * 0.05F;
+            this.rightArm.rotateAngleZ += Mth.cos(ageInTicks * 0.09F) * 0.05F + 0.05F;
+            this.leftArm.rotateAngleZ -= Mth.cos(ageInTicks * 0.09F) * 0.05F + 0.05F;
+            this.rightArm.rotateAngleX += Mth.sin(ageInTicks * 0.067F) * 0.05F;
+            this.leftArm.rotateAngleX -= Mth.sin(ageInTicks * 0.067F) * 0.05F;
         }
     }
 

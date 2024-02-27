@@ -1,30 +1,32 @@
 package com.barribob.MaelstromMod.blocks;
 
-import net.minecraft.block.Block;
-import net.minecraft.block.SoundType;
-import net.minecraft.block.material.Material;
-import net.minecraft.block.state.BlockFaceShape;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.init.Blocks;
-import net.minecraft.util.BlockRenderLayer;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.IBlockAccess;
-import net.minecraft.world.World;
-import net.minecraftforge.common.EnumPlantType;
-import net.minecraftforge.common.IPlantable;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+import java.util.Random;
 
 import javax.annotation.Nullable;
-import java.util.Random;
+
+import net.minecraft.core.Direction;
+import net.minecraftforge.api.distmarker.OnlyIn;
+import org.spongepowered.asm.mixin.MixinEnvironment.Side;
+
+import net.minecraft.block.state.BlockFaceShape;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.core.BlockPos;
+import net.minecraft.util.BlockRenderLayer;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.material.Material;
+import net.minecraft.world.phys.AABB;
+import net.minecraftforge.common.IPlantable;
+import net.minecraftforge.common.PlantType;
 
 /**
  * A base class for mod foliage
  */
 public class BlockModBush extends BlockBase implements IPlantable {
-    protected static final AxisAlignedBB BUSH_AABB = new AxisAlignedBB(0.30000001192092896D, 0.0D, 0.30000001192092896D, 0.699999988079071D, 0.6000000238418579D,
+    protected static final AABB BUSH_AABB = new AABB(0.30000001192092896D, 0.0D, 0.30000001192092896D, 0.699999988079071D, 0.6000000238418579D,
             0.699999988079071D);
     private Block grassBlock;
 
@@ -35,23 +37,23 @@ public class BlockModBush extends BlockBase implements IPlantable {
     }
 
     @Override
-    public EnumPlantType getPlantType(IBlockAccess world, BlockPos pos) {
+    public PlantType getPlantType(BlockGetter world, BlockPos pos) {
         return null;
     }
 
     @Override
-    public IBlockState getPlant(IBlockAccess world, BlockPos pos) {
-        IBlockState state = world.getBlockState(pos);
+    public BlockState getPlant(BlockGetter world, BlockPos pos) {
+    	BlockState state = world.getBlockState(pos);
         if (state.getBlock() != this)
-            return getDefaultState();
+            return defaultBlockState();
         return state;
     }
 
     /**
      * Checks if this block can be placed exactly at the given position.
      */
-    public boolean canPlaceBlockAt(World worldIn, BlockPos pos) {
-        IBlockState soil = worldIn.getBlockState(pos.down());
+    public boolean canPlaceBlockAt(Level worldIn, BlockPos pos) {
+        BlockState soil = worldIn.getBlockState(pos.below());
         return super.canPlaceBlockAt(worldIn, pos) && soil.getBlock() == grassBlock;
     }
 
@@ -61,45 +63,45 @@ public class BlockModBush extends BlockBase implements IPlantable {
      * power is updated, cactus blocks popping off due to a neighboring solid block,
      * etc.
      */
-    public void neighborChanged(IBlockState state, World worldIn, BlockPos pos, Block blockIn, BlockPos fromPos) {
+    public void neighborChanged(BlockState state, Level worldIn, BlockPos pos, Block blockIn, BlockPos fromPos) {
         super.neighborChanged(state, worldIn, pos, blockIn, fromPos);
         this.checkAndDropBlock(worldIn, pos, state);
     }
 
-    public void updateTick(World worldIn, BlockPos pos, IBlockState state, Random rand) {
+    public void updateTick(Level worldIn, BlockPos pos, BlockState state, Random rand) {
         this.checkAndDropBlock(worldIn, pos, state);
     }
 
-    protected void checkAndDropBlock(World worldIn, BlockPos pos, IBlockState state) {
+    protected void checkAndDropBlock(Level worldIn, BlockPos pos, BlockState state) {
         if (!this.canBlockStay(worldIn, pos, state)) {
             this.dropBlockAsItem(worldIn, pos, state, 0);
-            worldIn.setBlockState(pos, Blocks.AIR.getDefaultState(), 3);
+            worldIn.setBlock(pos, Blocks.AIR.defaultBlockState(), 3);
         }
     }
 
-    public boolean canBlockStay(World worldIn, BlockPos pos, IBlockState state) {
+    public boolean canBlockStay(Level worldIn, BlockPos pos, BlockState state) {
         if (state.getBlock() == this) // Forge: This function is called during world gen and placement, before this
         // block is set, so if we are not 'here' then assume it's the pre-check.
         {
-            IBlockState soil = worldIn.getBlockState(pos.down());
+            BlockState soil = worldIn.getBlockState(pos.below());
             return soil.getBlock() == grassBlock;
         }
-        return this.canSustainBush(worldIn.getBlockState(pos.down()));
+        return this.canSustainBush(worldIn.getBlockState(pos.below()));
     }
 
     /**
      * Return true if the block can sustain a Bush
      */
-    protected boolean canSustainBush(IBlockState state) {
+    protected boolean canSustainBush(BlockState state) {
         return state.getBlock() == grassBlock;
     }
 
     @Nullable
-    public AxisAlignedBB getCollisionBoundingBox(IBlockState blockState, IBlockAccess worldIn, BlockPos pos) {
+    public AABB getCollisionBoundingBox(BlockState blockState, BlockGetter worldIn, BlockPos pos) {
         return NULL_AABB;
     }
 
-    public AxisAlignedBB getBoundingBox(IBlockState state, IBlockAccess source, BlockPos pos) {
+    public AABB getBoundingBox(BlockState state, BlockGetter source, BlockPos pos) {
         return BUSH_AABB;
     }
 
@@ -107,15 +109,15 @@ public class BlockModBush extends BlockBase implements IPlantable {
      * Used to determine ambient occlusion and culling when rebuilding chunks for
      * render
      */
-    public boolean isOpaqueCube(IBlockState state) {
+    public boolean isOpaqueCube(BlockState state) {
         return false;
     }
 
-    public boolean isFullCube(IBlockState state) {
+    public boolean isFullCube(BlockState state) {
         return false;
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Side.CLIENT)
     public BlockRenderLayer getBlockLayer() {
         return BlockRenderLayer.CUTOUT;
     }
@@ -131,7 +133,7 @@ public class BlockModBush extends BlockBase implements IPlantable {
      *
      * @return an approximation of the form of the given face
      */
-    public BlockFaceShape getBlockFaceShape(IBlockAccess worldIn, IBlockState state, BlockPos pos, EnumFacing face) {
+    public BlockFaceShape getBlockFaceShape(BlockGetter worldIn, BlockState state, BlockPos pos, Direction face) {
         return BlockFaceShape.UNDEFINED;
     }
 }

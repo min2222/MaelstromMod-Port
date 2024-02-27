@@ -1,13 +1,13 @@
 package com.barribob.MaelstromMod.entity.animation;
 
 import net.minecraft.client.model.ModelBase;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 
 /*
  * In charge of a single animation for an entity
  */
-@SideOnly(Side.CLIENT)
+@OnlyIn(Dist.CLIENT)
 public abstract class ArrayAnimation<T extends ModelBase> implements Animation<T> {
     protected int attackTimer;
     protected int animationLength;

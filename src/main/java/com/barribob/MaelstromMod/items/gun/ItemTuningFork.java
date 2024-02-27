@@ -7,19 +7,19 @@ import com.barribob.MaelstromMod.init.ModItems;
 import com.barribob.MaelstromMod.util.ModDamageSource;
 import com.barribob.MaelstromMod.util.ModRandom;
 import com.barribob.MaelstromMod.util.ModUtils;
-import net.minecraft.client.util.ITooltipFlag;
-import net.minecraft.entity.Entity;
+import net.minecraft.ChatFormatting;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.entity.IEntityMultiPart;
 import net.minecraft.entity.MultiPartEntityPart;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.SoundEvents;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.EnumHand;
-import net.minecraft.util.SoundCategory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.util.math.RayTraceResult;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.text.TextFormatting;
-import net.minecraft.world.World;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.level.Level;
 
 import java.util.List;
 
@@ -33,11 +33,11 @@ public class ItemTuningFork extends ItemStaff {
     }
 
     @Override
-    protected void shoot(World world, EntityPlayer player, EnumHand handIn, ItemStack stack) {
-        world.playSound(null, player.getPosition(), SoundEvents.BLOCK_NOTE_BELL, SoundCategory.NEUTRAL, 0.5F, 1.0f + ModRandom.getFloat(0.2f));
-        world.playSound(null, player.getPosition(), SoundEvents.BLOCK_FIRE_EXTINGUISH, SoundCategory.NEUTRAL, 1.0F, 1.0f + ModRandom.getFloat(0.2f));
+    protected void shoot(Level world, Player player, InteractionHand handIn, ItemStack stack) {
+        world.playSound(null, player.getPosition(), SoundEvents.BLOCK_NOTE_BELL, SoundSource.NEUTRAL, 0.5F, 1.0f + ModRandom.getFloat(0.2f));
+        world.playSound(null, player.getPosition(), SoundEvents.BLOCK_FIRE_EXTINGUISH, SoundSource.NEUTRAL, 1.0F, 1.0f + ModRandom.getFloat(0.2f));
 
-        Vec3d lazerEnd = player.getPositionEyes(1).add(player.getLookVec().scale(40));
+        Vec3 lazerEnd = player.getPositionEyes(1).add(player.getLookVec().scale(40));
 
         // Ray trace both blocks and entities
         RayTraceResult raytraceresult = world.rayTraceBlocks(player.getPositionEyes(1), lazerEnd, false, true, false);
@@ -78,16 +78,16 @@ public class ItemTuningFork extends ItemStaff {
         }
 
         // Spawn an entity to render the ray and additional particles
-        EntityTuningForkLazer renderer = new EntityTuningForkLazer(world, player.getPositionEyes(1).add(ModUtils.getAxisOffset(player.getLookVec(), new Vec3d(0.5, 0, 0.5))));
+        EntityTuningForkLazer renderer = new EntityTuningForkLazer(world, player.getPositionEyes(1).add(ModUtils.getAxisOffset(player.getLookVec(), new Vec3(0.5, 0, 0.5))));
         renderer.setPosition(lazerEnd.x, lazerEnd.y, lazerEnd.z);
         world.spawnEntity(renderer);
     }
 
     @Override
-    public void addInformation(ItemStack stack, World worldIn, List<String> tooltip, ITooltipFlag flagIn) {
+    public void addInformation(ItemStack stack, Level worldIn, List<String> tooltip, TooltipFlag flagIn) {
         super.addInformation(stack, worldIn, tooltip, flagIn);
         tooltip.add(ModUtils.getDamageTooltip(ModUtils.getEnchantedDamage(stack, this.getLevel(), getBaseDamage())));
-        tooltip.add(TextFormatting.GRAY + ModUtils.translateDesc("tuning_fork"));
+        tooltip.add(ChatFormatting.GRAY + ModUtils.translateDesc("tuning_fork"));
     }
 
     @Override

@@ -2,15 +2,15 @@ package com.barribob.MaelstromMod.world.dimension;
 
 import com.barribob.MaelstromMod.init.ModBlocks;
 import com.barribob.MaelstromMod.world.biome.BiomeDifferentStone;
-import net.minecraft.block.Block;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.block.BlockFalling;
-import net.minecraft.block.state.IBlockState;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.entity.EnumCreatureType;
-import net.minecraft.init.Blocks;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkPos;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.world.World;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.ChunkPos;
+import net.minecraft.util.Mth;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.WorldEntitySpawner;
 import net.minecraft.world.WorldType;
 import net.minecraft.world.biome.Biome;
@@ -31,10 +31,10 @@ import java.util.Random;
  */
 public abstract class WorldChunkGenerator implements IChunkGenerator {
     // The stone block
-    private IBlockState stone = ModBlocks.DARK_AZURE_STONE.getDefaultState();
+    private BlockState stone = ModBlocks.DARK_AZURE_STONE.getDefaultState();
 
     // The ocean block
-    private IBlockState oceanBlock = Blocks.WATER.getDefaultState();
+    private BlockState oceanBlock = Blocks.WATER.getDefaultState();
 
     protected final Random rand;
     protected NoiseGeneratorOctaves minLimitPerlinNoise;
@@ -44,7 +44,7 @@ public abstract class WorldChunkGenerator implements IChunkGenerator {
     public NoiseGeneratorOctaves scaleNoise;
     public NoiseGeneratorOctaves depthNoise;
     public NoiseGeneratorOctaves forestNoise;
-    protected final World world;
+    protected final Level world;
     protected final boolean mapFeaturesEnabled;
     protected final WorldType terrainType;
     protected final double[] heightMap;
@@ -58,14 +58,14 @@ public abstract class WorldChunkGenerator implements IChunkGenerator {
     double[] depthRegion;
     protected MapGenStructure[] structures;
 
-    public WorldChunkGenerator(World worldIn, long seed, boolean mapFeaturesEnabledIn, String generatorOptions, Block stone, Block ocean, MapGenStructure[] structures) {
+    public WorldChunkGenerator(Level worldIn, long seed, boolean mapFeaturesEnabledIn, String generatorOptions, Block stone, Block ocean, MapGenStructure[] structures) {
         this(worldIn, seed, mapFeaturesEnabledIn, generatorOptions);
         this.stone = stone.getDefaultState();
         this.oceanBlock = ocean.getDefaultState();
         this.structures = structures;
     }
 
-    public WorldChunkGenerator(World worldIn, long seed, boolean mapFeaturesEnabledIn, String generatorOptions) {
+    public WorldChunkGenerator(Level worldIn, long seed, boolean mapFeaturesEnabledIn, String generatorOptions) {
         this.world = worldIn;
         this.mapFeaturesEnabled = mapFeaturesEnabledIn;
         this.terrainType = worldIn.getWorldInfo().getTerrainType();
@@ -85,7 +85,7 @@ public abstract class WorldChunkGenerator implements IChunkGenerator {
          */
         for (int i = -2; i <= 2; ++i) {
             for (int j = -2; j <= 2; ++j) {
-                float f = 10.0F / MathHelper.sqrt(i * i + j * j + 0.2F);
+                float f = 10.0F / Mth.sqrt(i * i + j * j + 0.2F);
                 this.biomeWeights[i + 2 + (j + 2) * 5] = f;
             }
         }
@@ -341,7 +341,7 @@ public abstract class WorldChunkGenerator implements IChunkGenerator {
                     double d2 = this.minLimitRegion[i] / this.settings.lowerLimitScale;
                     double d3 = this.maxLimitRegion[i] / this.settings.upperLimitScale;
                     double d4 = (this.mainNoiseRegion[i] / 10.0D + 1.0D) / 2.0D;
-                    double d5 = MathHelper.clampedLerp(d2, d3, d4) - d1;
+                    double d5 = Mth.clampedLerp(d2, d3, d4) - d1;
 
                     if (l1 > 29) {
                         double d6 = (l1 - 29) / 3.0F;
@@ -394,7 +394,7 @@ public abstract class WorldChunkGenerator implements IChunkGenerator {
     }
 
     @Override
-    public boolean isInsideStructure(World worldIn, String structureName, BlockPos pos) {
+    public boolean isInsideStructure(Level worldIn, String structureName, BlockPos pos) {
         if (!this.mapFeaturesEnabled) {
             return false;
         }
@@ -410,7 +410,7 @@ public abstract class WorldChunkGenerator implements IChunkGenerator {
 
     @Override
     @Nullable
-    public BlockPos getNearestStructurePos(World worldIn, String structureName, BlockPos position, boolean findUnexplored) {
+    public BlockPos getNearestStructurePos(Level worldIn, String structureName, BlockPos position, boolean findUnexplored) {
         if (!this.mapFeaturesEnabled) {
             return null;
         }

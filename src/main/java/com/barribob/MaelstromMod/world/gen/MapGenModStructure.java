@@ -1,7 +1,7 @@
 package com.barribob.MaelstromMod.world.gen;
 
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.gen.structure.MapGenStructure;
 
 public abstract class MapGenModStructure extends MapGenStructure {
@@ -21,7 +21,7 @@ public abstract class MapGenModStructure extends MapGenStructure {
     }
 
     @Override
-    public BlockPos getNearestStructurePos(World worldIn, BlockPos pos, boolean findUnexplored) {
+    public BlockPos getNearestStructurePos(Level worldIn, BlockPos pos, boolean findUnexplored) {
         this.world = worldIn;
         return findNearestStructurePosBySpacing(worldIn, this, pos, 20, 11, 10387313, true, 100, findUnexplored);
     }

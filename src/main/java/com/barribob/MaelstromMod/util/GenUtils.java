@@ -3,9 +3,9 @@ package com.barribob.MaelstromMod.util;
 import com.barribob.MaelstromMod.init.ModBlocks;
 import com.barribob.MaelstromMod.world.dimension.WorldChunkGenerator;
 import com.barribob.MaelstromMod.world.gen.ModStructureTemplate;
+import net.minecraft.core.BlockPos;
 import net.minecraft.util.Rotation;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.chunk.ChunkPrimer;
 import net.minecraft.world.gen.structure.StructureBoundingBox;
 
@@ -51,7 +51,7 @@ public class GenUtils {
     /*
      * Dig blocks in a blobby sort of way
      */
-    public static void digBlockToVoid(int size, BlockPos pos, World world) {
+    public static void digBlockToVoid(int size, BlockPos pos, Level world) {
         ArrayList<BlockPos> queue = new ArrayList<BlockPos>();
         queue.add(pos);
 
@@ -80,7 +80,7 @@ public class GenUtils {
         }
     }
 
-    public static int getTerrainVariation(World world, int x, int z, int sizeX, int sizeZ) {
+    public static int getTerrainVariation(Level world, int x, int z, int sizeX, int sizeZ) {
         sizeX = x + sizeX;
         sizeZ = z + sizeZ;
         int corner1 = ModUtils.calculateGenerationHeight(world, x, z);

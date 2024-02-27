@@ -1,8 +1,8 @@
 package com.barribob.MaelstromMod.entity.model;
 
 import net.minecraft.client.model.ModelRenderer;
-import net.minecraft.entity.Entity;
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.util.Mth;
 
 /**
  * Swamp_Crawler - Barribob
@@ -148,16 +148,16 @@ public class ModelSwampCrawler extends ModelAnimated {
     @Override
     public void setRotationAngles(float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch, float scaleFactor, Entity entityIn) {
         super.setRotationAngles(limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch, scaleFactor, entityIn);
-        this.backLeftLeg.rotateAngleX = MathHelper.cos(limbSwing * 0.6662F) * 1.4F * limbSwingAmount * 0.5F;
-        this.backRightLeg.rotateAngleX = MathHelper.cos(limbSwing * 0.6662F + (float) Math.PI) * 1.4F * limbSwingAmount * 0.5F;
-        this.backLeftLeg.rotateAngleY = -MathHelper.cos(limbSwing * 0.6662F) * 1.4F * limbSwingAmount * 0.5F;
-        this.backRightLeg.rotateAngleY = MathHelper.cos(limbSwing * 0.6662F + (float) Math.PI) * 1.4F * limbSwingAmount * 0.5F;
-        this.backLeftLeg.rotateAngleZ = (float) (-Math.toRadians(50) - MathHelper.cos((float) (limbSwing * 0.6662F)) * 1.4F * limbSwingAmount * 0.25F);
-        this.backRightLeg.rotateAngleZ = (float) (Math.toRadians(50) + MathHelper.cos(limbSwing * 0.6662F + (float) Math.PI) * 1.4F * limbSwingAmount * 0.25F);
+        this.backLeftLeg.rotateAngleX = Mth.cos(limbSwing * 0.6662F) * 1.4F * limbSwingAmount * 0.5F;
+        this.backRightLeg.rotateAngleX = Mth.cos(limbSwing * 0.6662F + (float) Math.PI) * 1.4F * limbSwingAmount * 0.5F;
+        this.backLeftLeg.rotateAngleY = -Mth.cos(limbSwing * 0.6662F) * 1.4F * limbSwingAmount * 0.5F;
+        this.backRightLeg.rotateAngleY = Mth.cos(limbSwing * 0.6662F + (float) Math.PI) * 1.4F * limbSwingAmount * 0.5F;
+        this.backLeftLeg.rotateAngleZ = (float) (-Math.toRadians(50) - Mth.cos((float) (limbSwing * 0.6662F)) * 1.4F * limbSwingAmount * 0.25F);
+        this.backRightLeg.rotateAngleZ = (float) (Math.toRadians(50) + Mth.cos(limbSwing * 0.6662F + (float) Math.PI) * 1.4F * limbSwingAmount * 0.25F);
 
-        this.frontLeftUpperLeg1.rotateAngleX = MathHelper.cos(limbSwing * 0.6662F + (float) Math.PI) * 1.4F * limbSwingAmount * 0.5F;
-        this.frontRightUpperLeg1.rotateAngleX = MathHelper.cos(limbSwing * 0.6662F) * 1.4F * limbSwingAmount * 0.5F;
-        this.frontLeftUpperLeg1.rotateAngleY = -MathHelper.cos(limbSwing * 0.6662F + (float) Math.PI) * 1.4F * limbSwingAmount * 0.5F;
-        this.frontRightUpperLeg1.rotateAngleY = MathHelper.cos(limbSwing * 0.6662F) * 1.4F * limbSwingAmount * 0.5F;
+        this.frontLeftUpperLeg1.rotateAngleX = Mth.cos(limbSwing * 0.6662F + (float) Math.PI) * 1.4F * limbSwingAmount * 0.5F;
+        this.frontRightUpperLeg1.rotateAngleX = Mth.cos(limbSwing * 0.6662F) * 1.4F * limbSwingAmount * 0.5F;
+        this.frontLeftUpperLeg1.rotateAngleY = -Mth.cos(limbSwing * 0.6662F + (float) Math.PI) * 1.4F * limbSwingAmount * 0.5F;
+        this.frontRightUpperLeg1.rotateAngleY = Mth.cos(limbSwing * 0.6662F) * 1.4F * limbSwingAmount * 0.5F;
     }
 }

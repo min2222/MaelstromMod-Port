@@ -5,22 +5,22 @@ import com.barribob.MaelstromMod.util.ModDamageSource;
 import com.barribob.MaelstromMod.util.ModRandom;
 import com.barribob.MaelstromMod.util.ModUtils;
 import com.barribob.MaelstromMod.util.handlers.ParticleManager;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.util.DamageSource;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.level.Level;
 
 public class ProjectileBeastQuake extends ProjectileQuake {
-    public ProjectileBeastQuake(World worldIn, EntityLivingBase throwerIn, float baseDamage) {
+    public ProjectileBeastQuake(Level worldIn, LivingEntity throwerIn, float baseDamage) {
         super(worldIn, throwerIn, baseDamage, null);
         this.updates = 10;
     }
 
-    public ProjectileBeastQuake(World worldIn) {
+    public ProjectileBeastQuake(Level worldIn) {
         super(worldIn);
     }
 
-    public ProjectileBeastQuake(World worldIn, double x, double y, double z) {
+    public ProjectileBeastQuake(Level worldIn, double x, double y, double z) {
         super(worldIn, x, y, z);
     }
 
@@ -35,7 +35,7 @@ public class ProjectileBeastQuake extends ProjectileQuake {
                                 .add(ModRandom.randVec().scale(0.5))
                                 .add(ModUtils.planeProject(ModUtils.getEntityVelocity(this), ModUtils.Y_AXIS).scale(2)),
                         ModColors.MAELSTROM,
-                        Vec3d.ZERO,
+                        Vec3.ZERO,
                         ModRandom.range(10, 15));
             }
         }

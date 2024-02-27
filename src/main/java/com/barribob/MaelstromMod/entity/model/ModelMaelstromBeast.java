@@ -4,8 +4,8 @@ package com.barribob.MaelstromMod.entity.model;
 
 import net.minecraft.client.model.ModelBox;
 import net.minecraft.client.model.ModelRenderer;
-import net.minecraft.entity.Entity;
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.util.Mth;
 
 public class ModelMaelstromBeast extends ModelBBAnimated {
 	private final ModelRenderer root;
@@ -233,8 +233,8 @@ public class ModelMaelstromBeast extends ModelBBAnimated {
 	@Override
 	public void setRotationAngles(float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch, float scaleFactor, Entity entityIn) {
 		float limbSwingFactor = 0.4f;
-		this.leftLeg.rotateAngleX = -0.384F + MathHelper.cos(limbSwing * 0.6662F) * 1.4F * limbSwingAmount * limbSwingFactor;
-		this.rightLeg.rotateAngleX = -0.2793F + MathHelper.cos(limbSwing * 0.6662F + (float) Math.PI) * 1.4F * limbSwingAmount * limbSwingFactor;
+		this.leftLeg.rotateAngleX = -0.384F + Mth.cos(limbSwing * 0.6662F) * 1.4F * limbSwingAmount * limbSwingFactor;
+		this.rightLeg.rotateAngleX = -0.2793F + Mth.cos(limbSwing * 0.6662F + (float) Math.PI) * 1.4F * limbSwingAmount * limbSwingFactor;
 
 		this.neck.rotateAngleY = Math.min(Math.max(netHeadYaw * 0.017453292F, -0.20F * (float) Math.PI), 0.20F * (float) Math.PI);
 		this.neck.rotateAngleX = 0.4554F;

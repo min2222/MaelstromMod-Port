@@ -4,28 +4,28 @@ import com.barribob.MaelstromMod.util.ModColors;
 import com.barribob.MaelstromMod.util.ModDamageSource;
 import com.barribob.MaelstromMod.util.ModUtils;
 import com.barribob.MaelstromMod.util.handlers.ParticleManager;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.util.DamageSource;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.util.math.RayTraceResult;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.level.Level;
 
 public class ProjectileGoldenMissile extends Projectile {
-    public ProjectileGoldenMissile(World worldIn, EntityLivingBase throwerIn, float damage) {
+    public ProjectileGoldenMissile(Level worldIn, LivingEntity throwerIn, float damage) {
         super(worldIn, throwerIn, damage);
     }
 
-    public ProjectileGoldenMissile(World worldIn) {
+    public ProjectileGoldenMissile(Level worldIn) {
         super(worldIn);
     }
 
-    public ProjectileGoldenMissile(World worldIn, double x, double y, double z) {
+    public ProjectileGoldenMissile(Level worldIn, double x, double y, double z) {
         super(worldIn, x, y, z);
     }
 
     @Override
     protected void spawnParticles() {
-        ParticleManager.spawnSwirl2(world, this.getPositionVector(), ModColors.YELLOW, Vec3d.ZERO);
+        ParticleManager.spawnSwirl2(world, this.getPositionVector(), ModColors.YELLOW, Vec3.ZERO);
     }
 
     @Override

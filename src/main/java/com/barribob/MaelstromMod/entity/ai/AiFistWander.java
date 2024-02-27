@@ -2,11 +2,11 @@ package com.barribob.MaelstromMod.entity.ai;
 
 import com.barribob.MaelstromMod.util.ModRandom;
 import com.barribob.MaelstromMod.util.ModUtils;
-import net.minecraft.entity.EntityLiving;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.entity.ai.EntityAIBase;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.core.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.phys.Vec3;
 
 import javax.annotation.Nullable;
 import java.util.function.Consumer;
@@ -17,12 +17,12 @@ import java.util.function.Consumer;
  * @author Barribob
  */
 public class AiFistWander extends EntityAIBase {
-    protected final EntityLiving entity;
+    protected final Mob entity;
     protected int cooldown;
     protected float heightAboveGround;
-    Consumer<Vec3d> movement;
+    Consumer<Vec3> movement;
 
-    public AiFistWander(EntityLiving entity, Consumer<Vec3d> movement, int cooldown, float heightAboveGround) {
+    public AiFistWander(Mob entity, Consumer<Vec3> movement, int cooldown, float heightAboveGround) {
         this.entity = entity;
         this.cooldown = cooldown;
         this.heightAboveGround = heightAboveGround;
@@ -31,14 +31,14 @@ public class AiFistWander extends EntityAIBase {
     }
 
     @Nullable
-    protected Vec3d getPosition() {
-        Vec3d groupCenter = ModUtils.findEntityGroupCenter(this.entity, 20);
+    protected Vec3 getPosition() {
+        Vec3 groupCenter = ModUtils.findEntityGroupCenter(this.entity, 20);
 
         for (int i = 0; i < 10; i++) {
             int minRange = 5;
             int maxRange = 15;
-            Vec3d pos = groupCenter.add(new Vec3d(ModRandom.range(minRange, maxRange) * ModRandom.randSign(), 0, ModRandom.range(minRange, maxRange) * ModRandom.randSign()));
-            pos = new Vec3d(ModUtils.findGroundBelow(entity.world, new BlockPos(pos)));
+            Vec3 pos = groupCenter.add(new Vec3(ModRandom.range(minRange, maxRange) * ModRandom.randSign(), 0, ModRandom.range(minRange, maxRange) * ModRandom.randSign()));
+            pos = new Vec3(ModUtils.findGroundBelow(entity.world, new BlockPos(pos)));
             pos = pos.add(ModUtils.yVec(heightAboveGround));
 
             RayTraceResult result = entity.world.rayTraceBlocks(entity.getPositionEyes(1), pos, false, true, false);
@@ -63,7 +63,7 @@ public class AiFistWander extends EntityAIBase {
             return;
         }
 
-        Vec3d vec3d = this.getPosition();
+        Vec3 vec3d = this.getPosition();
 
         if (vec3d != null) {
             movement.accept(vec3d);
