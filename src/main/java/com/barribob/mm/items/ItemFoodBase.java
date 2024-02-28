@@ -1,0 +1,27 @@
+package com.barribob.mm.items;
+
+import net.minecraft.world.item.CreativeModeTab;
+
+import com.barribob.mm.Main;
+import com.barribob.mm.init.ModItems;
+import com.barribob.mm.util.IHasModel;
+
+import net.minecraft.item.ItemFood;
+
+public class ItemFoodBase extends ItemFood implements IHasModel {
+    public ItemFoodBase(String name, CreativeModeTab tab, int amount, float saturation, boolean isWolfFood) {
+        super(amount, saturation, isWolfFood);
+        setUnlocalizedName(name);
+        setRegistryName(name);
+        if (tab != null) {
+            setCreativeTab(tab);
+        }
+
+        ModItems.ITEMS.add(this);
+    }
+
+    @Override
+    public void registerModels() {
+        Main.proxy.registerItemRenderer(this, 0, "inventory");
+    }
+}
