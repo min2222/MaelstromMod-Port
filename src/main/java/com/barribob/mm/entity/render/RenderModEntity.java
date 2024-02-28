@@ -1,37 +1,45 @@
 package com.barribob.mm.entity.render;
 
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.model.Model;
-import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.culling.ICamera;
-import net.minecraft.client.renderer.entity.RenderLiving;
-import net.minecraft.client.renderer.entity.RenderManager;
-import net.minecraft.world.entity.Mob;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.phys.Vec3;
+import java.util.Optional;
+
+import javax.annotation.Nonnull;
+
 import org.lwjgl.opengl.GL11;
 
 import com.barribob.mm.config.ModConfig;
 import com.barribob.mm.entity.entities.EntityLeveledMob;
 import com.barribob.mm.entity.entities.EntityMaelstromMob;
 import com.barribob.mm.renderer.ITarget;
-import com.barribob.mm.util.*;
+import com.barribob.mm.util.Element;
+import com.barribob.mm.util.IElement;
+import com.barribob.mm.util.ModUtils;
+import com.barribob.mm.util.Reference;
+import com.barribob.mm.util.RenderUtils;
+import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.math.Vector3f;
 
-import javax.annotation.Nonnull;
-import java.util.Optional;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.model.EntityModel;
+import net.minecraft.client.renderer.culling.Frustum;
+import net.minecraft.client.renderer.entity.EntityRendererProvider;
+import net.minecraft.client.renderer.entity.MobRenderer;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.phys.Vec3;
 
 /**
  * Renders an entity with a generic type, texture, and model passed in.
  */
-public class RenderModEntity<T extends Mob> extends RenderLiving<T> {
+public class RenderModEntity<T extends Mob, M extends EntityModel<T>> extends MobRenderer<T, M> {
     public String[] TEXTURES;
     private ResourceLocation DEATH_TEXTURES;
 
-    public <U extends Model> RenderModEntity(RenderManager rendermanagerIn, String textures, U modelClass) {
+    public RenderModEntity(EntityRendererProvider.Context rendermanagerIn, String textures, M modelClass) {
         this(rendermanagerIn, modelClass, new String[]{textures});
     }
 
-    public <U extends Model> RenderModEntity(RenderManager rendermanagerIn, U modelClass, String... textures) {
+    public RenderModEntity(EntityRendererProvider.Context rendermanagerIn, M modelClass, String... textures) {
         super(rendermanagerIn, modelClass, 0.5f);
         if (textures.length == 0) {
             throw new IllegalArgumentException("Must provide at least one texture to render an entity.");
@@ -41,7 +49,7 @@ public class RenderModEntity<T extends Mob> extends RenderLiving<T> {
     }
 
     @Override
-    protected ResourceLocation getEntityTexture(T entity) {
+	public ResourceLocation getTextureLocation(T entity) {
         String texture = TEXTURES[0];
         if (entity instanceof IElement) {
             IElement e = (IElement) entity;
@@ -56,13 +64,12 @@ public class RenderModEntity<T extends Mob> extends RenderLiving<T> {
 
         return new ResourceLocation(Reference.MOD_ID + ":textures/entity/" + texture);
     }
-
     @Override
-    protected void applyRotations(T entityLiving, float p_77043_2_, float rotationYaw, float partialTicks) {
-        if (entityLiving instanceof EntityMaelstromMob && Minecraft.getMinecraft().getFramebuffer().isStencilEnabled() && GL11.glGetInteger(GL11.GL_STENCIL_BITS) > 0) {
-            GlStateManager.rotate(180.0F - rotationYaw, 0.0F, 1.0F, 0.0F);
+    protected void setupRotations(T entityLiving, PoseStack pMatrixStack, float p_77043_2_, float rotationYaw, float partialTicks) {
+        if (entityLiving instanceof EntityMaelstromMob && Minecraft.getInstance().getFramebuffer().isStencilEnabled() && GL11.glGetInteger(GL11.GL_STENCIL_BITS) > 0) {
+        	pMatrixStack.mulPose(Vector3f.YP.rotationDegrees(180.0F - rotationYaw));
         } else {
-            super.applyRotations(entityLiving, p_77043_2_, rotationYaw, partialTicks);
+            super.setupRotations(entityLiving, pMatrixStack, p_77043_2_, rotationYaw, partialTicks);
         }
     }
 
@@ -158,18 +165,18 @@ public class RenderModEntity<T extends Mob> extends RenderLiving<T> {
     }
 
     @Override
-    public boolean shouldRender(@Nonnull T livingEntity, @Nonnull ICamera camera, double camX, double camY, double camZ) {
+    public boolean shouldRender(@Nonnull T livingEntity, @Nonnull Frustum camera, double camX, double camY, double camZ) {
         if (super.shouldRender(livingEntity, camera, camX, camY, camZ))
         {
             return true;
         }
 
         if (livingEntity instanceof ITarget) {
-            Optional<Vec3> optional = ((ITarget) livingEntity).getTarget();
+            Optional<Vec3> optional = ((ITarget) livingEntity).getLazerTarget();
             if(optional.isPresent()) {
                 Vec3 end = optional.get();
                 Vec3 start = livingEntity.getEyePosition(1);
-                return camera.isBoundingBoxInFrustum(ModUtils.makeBox(start, end));
+                return camera.isVisible(ModUtils.makeBox(start, end));
             }
         }
 

@@ -1,6 +1,7 @@
 package com.barribob.mm.items.gun;
 
 import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 
@@ -29,9 +30,9 @@ public class ItemAmmoCase extends ItemBase implements ILeveledItem {
     }
 
     @Override
-    public void addInformation(ItemStack stack, Level worldIn, List<String> tooltip, TooltipFlag flagIn) {
+    public void appendHoverText(ItemStack stack, Level worldIn, List<Component> tooltip, TooltipFlag flagIn) {
         if(!ModConfig.gui.disableMaelstromArmorItemTooltips) {
-            tooltip.add(ModUtils.getDisplayLevel(this.level));
+            tooltip.add(Component.translatable(ModUtils.getDisplayLevel(this.level)));
         }
     }
 }

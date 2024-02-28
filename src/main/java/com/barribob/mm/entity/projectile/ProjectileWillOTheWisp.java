@@ -51,7 +51,7 @@ public class ProjectileWillOTheWisp extends ProjectileGun {
     }
 
     @Override
-    public void onUpdate() {
+    public void tick() {
         super.onUpdate();
 
         /*

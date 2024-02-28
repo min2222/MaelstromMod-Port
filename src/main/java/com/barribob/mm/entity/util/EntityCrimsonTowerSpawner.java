@@ -25,7 +25,7 @@ public class EntityCrimsonTowerSpawner extends Entity {
     }
 
     @Override
-    public void onUpdate() {
+    public void tick() {
         super.onUpdate();
 
         if (level.isClientSide) {
@@ -50,11 +50,11 @@ public class EntityCrimsonTowerSpawner extends Entity {
 
     @Override
     @OnlyIn(Dist.CLIENT)
-    public void handleStatusUpdate(byte id) {
+    public void handleEntityEvent(byte id) {
         if (id == ModUtils.PARTICLE_BYTE) {
             this.spawnParticles();
         }
-        super.handleStatusUpdate(id);
+        super.handleEntityEvent(id);
     }
 
     protected void spawnParticles() {
@@ -77,7 +77,7 @@ public class EntityCrimsonTowerSpawner extends Entity {
     }
 
     @Override
-    protected void readEntityFromNBT(CompoundTag compound) {
+    protected void readAdditionalSaveData(CompoundTag compound) {
     }
 
     @Override

@@ -41,12 +41,12 @@ public class NexusGunTrader extends EntityTrader {
     }
 
     @Override
-    protected void initEntityAI() {
-        this.tasks.addTask(9, new EntityAIWatchClosest2(this, Player.class, 5.0F, 1.0F));
+    protected void registerGoals() {
+        this.goalSelector.addGoal(9, new EntityAIWatchClosest2(this, Player.class, 5.0F, 1.0F));
     }
 
     @Override
-    public void onUpdate() {
+    public void tick() {
         super.onUpdate();
         if (!level.isClientSide && messager != null) {
             messager.Update(world, ModUtils.getPlayerAreaMessager(this));
@@ -57,7 +57,7 @@ public class NexusGunTrader extends EntityTrader {
     }
 
     @Override
-    public void handleStatusUpdate(byte id) {
+    public void handleEntityEvent(byte id) {
         if (id == smoke) {
             // Positions smoke particles right above the smoking pipe
             Vec3 look = this.getVectorForRotation(this.rotationPitch, this.rotationYawHead);
@@ -67,7 +67,7 @@ public class NexusGunTrader extends EntityTrader {
 
             world.spawnParticle(ParticleTypes.SMOKE_NORMAL, offset.x, offset.y, offset.z, 0, 0.0f, 0);
         } else {
-            super.handleStatusUpdate(id);
+            super.handleEntityEvent(id);
         }
     }
 

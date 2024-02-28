@@ -56,7 +56,7 @@ public class EntityMonolith extends EntityMaelstromMob implements IAttack, Direc
     public static final byte yellowAttack = 6;
     private byte stageTransform = 7;
     private static final EntityDataAccessor<Boolean> TRANSFORMED = SynchedEntityData.<Boolean>createKey(EntityMonolith.class, EntityDataSerializers.BOOLEAN);
-    private final ServerBossEvent bossInfo = (new ServerBossEvent(this.getDisplayName(), BossEvent.Color.PURPLE, BossEvent.Overlay.NOTCHED_6));
+    private final ServerBossEvent bossInfo = (new ServerBossEvent(this.getDisplayName(), BossBarColor.PURPLE, BossBarOverlay.NOTCHED_6));
 
     // Field to store the lazer's aimed direction
     private Vec3 lazerDir;
@@ -217,9 +217,9 @@ public class EntityMonolith extends EntityMaelstromMob implements IAttack, Direc
     }
 
     @Override
-    protected void initEntityAI() {
-        super.initEntityAI();
-        this.tasks.addTask(4, new EntityAITimedAttack<EntityMonolith>(this, 0, 90, 30, 0, 30.0f));
+    protected void registerGoals() {
+        super.registerGoals();
+        this.goalSelector.addGoal(4, new EntityAITimedAttack<EntityMonolith>(this, 0, 90, 30, 0, 30.0f));
     }
 
     public Optional<Vec3> getTarget() {
@@ -234,7 +234,7 @@ public class EntityMonolith extends EntityMaelstromMob implements IAttack, Direc
     }
 
     @Override
-    public void onUpdate() {
+    public void tick() {
         super.onUpdate();
         this.setRotation(0, 0);
         this.setRotationYawHead(0);
@@ -268,7 +268,7 @@ public class EntityMonolith extends EntityMaelstromMob implements IAttack, Direc
     }
 
     @Override
-    public void handleStatusUpdate(byte id) {
+    public void handleEntityEvent(byte id) {
         if (id >= 4 && id <= 7) {
             currentAnimation = attackHandler.getAnimation(id);
             getCurrentAnimation().startAnimation();
@@ -316,7 +316,7 @@ public class EntityMonolith extends EntityMaelstromMob implements IAttack, Direc
                 }
             }
         }
-        super.handleStatusUpdate(id);
+        super.handleEntityEvent(id);
     }
 
     @Override
@@ -415,11 +415,11 @@ public class EntityMonolith extends EntityMaelstromMob implements IAttack, Direc
     }
 
     @Override
-    public void readEntityFromNBT(CompoundTag compound) {
+    public void readAdditionalSaveData(CompoundTag compound) {
         if (this.hasCustomName()) {
             this.bossInfo.setName(this.getDisplayName());
         }
-        super.readEntityFromNBT(compound);
+        super.readAdditionalSaveData(compound);
     }
 
     @Override

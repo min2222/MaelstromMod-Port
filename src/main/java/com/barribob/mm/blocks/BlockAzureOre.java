@@ -38,12 +38,12 @@ public class BlockAzureOre extends DropExperienceBlock {
             return Items.EMERALD;
         }
 
-        return Item.byBlock(this);
+        return Item.BY_BLOCK.get(this);
     }
 
     @Override
     public int getExpDrop(BlockState state, LevelReader world, RandomSource rand, BlockPos pos, int fortune, int silktouch) {
-        if (this.getItemDropped(state, rand, fortune) != Item.byBlock(this)) {
+        if (this.getItemDropped(state, rand, fortune) != Item.BY_BLOCK.get(this)) {
             int i = 0;
 
             if (this == ModBlocks.AZURE_COAL_ORE) {

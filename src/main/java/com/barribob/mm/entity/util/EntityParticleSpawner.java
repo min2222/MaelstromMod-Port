@@ -20,7 +20,7 @@ public abstract class EntityParticleSpawner extends Entity {
     }
 
     @Override
-    public void onUpdate() {
+    public void tick() {
         super.onUpdate();
         level.broadcastEntityEvent(this, ModUtils.PARTICLE_BYTE);
         this.setDead();
@@ -28,11 +28,11 @@ public abstract class EntityParticleSpawner extends Entity {
 
     @Override
     @OnlyIn(Dist.CLIENT)
-    public void handleStatusUpdate(byte id) {
+    public void handleEntityEvent(byte id) {
         if (id == ModUtils.PARTICLE_BYTE) {
             spawnParticles();
         }
-        super.handleStatusUpdate(id);
+        super.handleEntityEvent(id);
     }
 
     @OnlyIn(Dist.CLIENT)
@@ -43,7 +43,7 @@ public abstract class EntityParticleSpawner extends Entity {
     }
 
     @Override
-    protected void readEntityFromNBT(CompoundTag compound) {
+    protected void readAdditionalSaveData(CompoundTag compound) {
     }
 
     @Override

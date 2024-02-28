@@ -1,16 +1,16 @@
 package com.barribob.mm.util;
 
-import net.minecraft.util.Mirror;
-import net.minecraft.util.Rotation;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.gen.structure.template.PlacementSettings;
-import net.minecraftforge.fml.common.FMLCommonHandler;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Mirror;
+import net.minecraft.world.level.block.Rotation;
+import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
+import net.minecraftforge.server.ServerLifecycleHooks;
 
 /**
  * Keeps track of the world server and placement settings for structures
  */
 public interface IStructure {
-    public static final ServerLevel worldServer = FMLCommonHandler.instance().getMinecraftServerInstance().getWorld(0);
-    public static final PlacementSettings settings = new PlacementSettings().setChunk(null).setIgnoreEntities(false).setIgnoreStructureBlock(false).setMirror(Mirror.NONE).setRotation(Rotation.NONE);
-
+    public static final ServerLevel worldServer = ServerLifecycleHooks.getCurrentServer().getLevel(Level.OVERWORLD);
+    public static final StructurePlaceSettings settings = new StructurePlaceSettings().setIgnoreEntities(false).setMirror(Mirror.NONE).setRotation(Rotation.NONE);
 }

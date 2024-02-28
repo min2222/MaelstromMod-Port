@@ -25,7 +25,7 @@ public class MovementTracker {
         return secondPos.subtract(firstPos);
     }
 
-    public void onUpdate() {
+    public void tick() {
         positions.add(entity.position());
         if(positions.size() > maxTicksTracking) positions.remove(0);
     }

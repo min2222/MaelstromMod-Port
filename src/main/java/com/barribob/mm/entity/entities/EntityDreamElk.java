@@ -4,21 +4,25 @@ import com.barribob.mm.util.handlers.LevelHandler;
 import com.barribob.mm.util.handlers.LootTableHandler;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.util.Mth;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.entity.ai.*;
+import net.minecraft.world.entity.ai.goal.EatBlockGoal;
 import net.minecraft.world.entity.ai.goal.FloatGoal;
+import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
+import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
+import net.minecraft.world.entity.ai.goal.MoveTowardsTargetGoal;
 import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
+import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.SoundEvent;
-import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
@@ -28,7 +32,7 @@ public class EntityDreamElk extends EntityLeveledMob {
      */
     private int attackTimer;
     private int eatGrassTimer;
-    private EntityAIEatGrass grassAI;
+    private EatBlockGoal grassAI;
 
     public EntityDreamElk(Level worldIn) {
         super(worldIn);
@@ -37,17 +41,16 @@ public class EntityDreamElk extends EntityLeveledMob {
     }
 
     @Override
-    protected void initEntityAI() {
-        grassAI = new EntityAIEatGrass(this);
-        ;
-        this.tasks.addTask(0, new FloatGoal(this));
-        this.tasks.addTask(1, new EntityAIAttackMelee(this, 1.0D, true));
-        this.tasks.addTask(2, new EntityAIMoveTowardsTarget(this, 0.9D, 32.0F));
-        this.tasks.addTask(5, grassAI);
-        this.tasks.addTask(6, new EntityAIWanderAvoidWater(this, 0.6D));
-        this.tasks.addTask(7, new EntityAIWatchClosest(this, Player.class, 6.0F));
-        this.tasks.addTask(8, new RandomLookAroundGoal(this));
-        this.targetTasks.addTask(2, new HurtByTargetGoal(this, false, new Class[0]));
+    protected void registerGoals() {
+        grassAI = new EatBlockGoal(this);
+        this.goalSelector.addGoal(0, new FloatGoal(this));
+        this.goalSelector.addGoal(1, new MeleeAttackGoal(this, 1.0D, true));
+        this.goalSelector.addGoal(2, new MoveTowardsTargetGoal(this, 0.9D, 32.0F));
+        this.goalSelector.addGoal(5, grassAI);
+        this.goalSelector.addGoal(6, new WaterAvoidingRandomStrollGoal(this, 0.6D));
+        this.goalSelector.addGoal(7, new LookAtPlayerGoal(this, Player.class, 6.0F));
+        this.goalSelector.addGoal(8, new RandomLookAroundGoal(this));
+        this.targetSelector.addGoal(2, new HurtByTargetGoal(this));
     }
 
     @Override
@@ -60,18 +63,18 @@ public class EntityDreamElk extends EntityLeveledMob {
     }
 
     @Override
-    protected void updateAITasks() {
-        this.eatGrassTimer = this.grassAI.getEatingGrassTimer();
-        super.updateAITasks();
+    protected void customServerAiStep() {
+        this.eatGrassTimer = this.grassAI.getEatAnimationTick();
+        super.customServerAiStep();
     }
 
     @Override
-    protected ResourceLocation getLootTable() {
+    protected ResourceLocation getDefaultLootTable() {
         return LootTableHandler.ELK;
     }
 
     @Override
-    public void swingArm(InteractionHand hand) {
+    public void swing(InteractionHand hand) {
     }
 
     /**
@@ -80,8 +83,8 @@ public class EntityDreamElk extends EntityLeveledMob {
      * burn.
      */
     @Override
-    public void onLivingUpdate() {
-        super.onLivingUpdate();
+    public void aiStep() {
+        super.aiStep();
 
         if (this.attackTimer > 0) {
             --this.attackTimer;
@@ -109,15 +112,15 @@ public class EntityDreamElk extends EntityLeveledMob {
      */
     @Override
     @OnlyIn(Dist.CLIENT)
-    public void handleStatusUpdate(byte id) {
+    public void handleEntityEvent(byte id) {
         if (id == 4) {
             this.attackTimer = 10;
-            this.playSound(SoundEvents.IRONGOLEM_ATTACK, 1.0F, 1.0F);
+            this.playSound(SoundEvents.IRON_GOLEM_ATTACK, 1.0F, 1.0F);
         }
         if (id == 10) {
             this.eatGrassTimer = 40;
         } else {
-            super.handleStatusUpdate(id);
+            super.handleEntityEvent(id);
         }
     }
 
@@ -151,16 +154,16 @@ public class EntityDreamElk extends EntityLeveledMob {
     }
 
     @Override
-    public boolean attackEntityAsMob(Entity entityIn) {
+    public boolean doHurtTarget(Entity entityIn) {
         this.level.broadcastEntityEvent(this, (byte) 4);
-        boolean flag = entityIn.attackEntityFrom(DamageSource.causeMobDamage(this), this.getAttack());
+        boolean flag = entityIn.hurt(DamageSource.mobAttack(this), this.getAttack());
 
         if (flag) {
-            entityIn.motionY += 0.35D;
+            entityIn.setDeltaMovement(entityIn.getDeltaMovement().add(0, 0.35D, 0));
             this.applyEnchantments(this, entityIn);
         }
 
-        this.playSound(SoundEvents.IRONGOLEM_ATTACK, 1.0F, 1.0F);
+        this.playSound(SoundEvents.IRON_GOLEM_ATTACK, 1.0F, 1.0F);
         return flag;
     }
 

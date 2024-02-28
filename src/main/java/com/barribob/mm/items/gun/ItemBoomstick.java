@@ -30,14 +30,14 @@ public class ItemBoomstick extends ItemGun {
      */
     @Override
     protected void shoot(Level world, Player player, InteractionHand handIn, ItemStack stack) {
-        world.playSound((Player) null, player.posX, player.posY, player.posZ, SoundEvents.GENERIC_EXPLODE, SoundSource.NEUTRAL, 0.5F,
-                0.4F / (itemRand.nextFloat() * 0.4F + 0.8F));
+        world.playSound((Player) null, player.getX(), player.getY(), player.getZ(), SoundEvents.GENERIC_EXPLODE, SoundSource.NEUTRAL, 0.5F,
+                0.4F / (world.random.nextFloat() * 0.4F + 0.8F));
 
         for (int i = 0; i < pelletCount; i++) {
             float inaccuracy = 0.0f;
             float speed = 3f;
-            float pitch = player.rotationPitch + ModRandom.getFloat(15);
-            float yaw = player.rotationYaw + ModRandom.getFloat(15);
+            float pitch = player.getXRot() + ModRandom.getFloat(15);
+            float yaw = player.getYRot() + ModRandom.getFloat(15);
 
             ModProjectile projectile = factory.get(world, player, stack, this.getEnchantedDamage(stack));
             projectile.setElement(getElement());

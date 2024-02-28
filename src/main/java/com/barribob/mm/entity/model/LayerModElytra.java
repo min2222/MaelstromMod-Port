@@ -1,17 +1,20 @@
 package com.barribob.mm.entity.model;
 
 import com.barribob.mm.items.ItemModElytra;
+import com.mojang.blaze3d.platform.GlStateManager;
 
-import net.minecraft.client.entity.AbstractClientPlayer;
-import net.minecraft.client.model.ModelElytra;
-import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.entity.RenderLivingBase;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.model.ElytraModel;
+import net.minecraft.client.model.PlayerModel;
+import net.minecraft.client.model.geom.ModelLayers;
+import net.minecraft.client.player.AbstractClientPlayer;
+import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.layers.LayerArmorBase;
-import net.minecraft.client.renderer.entity.layers.LayerRenderer;
+import net.minecraft.client.renderer.entity.layers.RenderLayer;
+import net.minecraft.entity.player.EnumPlayerModelParts;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.entity.player.EnumPlayerModelParts;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
@@ -20,17 +23,19 @@ import net.minecraftforge.api.distmarker.OnlyIn;
  * Taken from {@code LayerElytra}
  */
 @OnlyIn(Dist.CLIENT)
-public class LayerModElytra implements LayerRenderer<LivingEntity> {
+public class LayerModElytra extends RenderLayer<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>> {
     /**
      * Instance of the player renderer.
      */
-    protected final RenderLivingBase<?> renderPlayer;
+    protected final LivingEntityRenderer<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>> renderPlayer;
     /**
      * The model used by the Elytra.
      */
-    private final ModelElytra modelElytra = new ModelElytra();
+    private final ElytraModel<AbstractClientPlayer> modelElytra;
 
-    public LayerModElytra(RenderLivingBase<?> renderer) {
+    public LayerModElytra(LivingEntityRenderer<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>> renderer) {
+    	super(renderer);
+    	this.modelElytra = new ElytraModel<>(Minecraft.getInstance().getEntityModels().bakeLayer(ModelLayers.ELYTRA));
         this.renderPlayer = renderer;
     }
 
@@ -71,10 +76,5 @@ public class LayerModElytra implements LayerRenderer<LivingEntity> {
             GlStateManager.disableBlend();
             GlStateManager.popMatrix();
         }
-    }
-
-    @Override
-    public boolean shouldCombineTextures() {
-        return false;
     }
 }

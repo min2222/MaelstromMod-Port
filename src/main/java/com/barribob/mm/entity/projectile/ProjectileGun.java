@@ -65,7 +65,7 @@ public class ProjectileGun extends ModProjectile {
     }
 
     @Override
-    public void onUpdate() {
+    public void tick() {
         super.onUpdate();
         if (this.isCritical) {
             level.broadcastEntityEvent(this, this.CRITICAL_BYTE);
@@ -74,11 +74,11 @@ public class ProjectileGun extends ModProjectile {
 
     @Override
     @OnlyIn(Dist.CLIENT)
-    public void handleStatusUpdate(byte id) {
+    public void handleEntityEvent(byte id) {
         if (id == this.CRITICAL_BYTE) {
             world.spawnParticle(ParticleTypes.REDSTONE, this.posX, this.posY, this.posZ, 0, 0, 0);
         } else {
-            super.handleStatusUpdate(id);
+            super.handleEntityEvent(id);
         }
     }
 

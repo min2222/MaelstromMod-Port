@@ -11,15 +11,14 @@ import com.barribob.mm.util.ModUtils;
 import com.barribob.mm.util.handlers.ParticleManager;
 import com.barribob.mm.util.handlers.SoundsHandler;
 
-import net.minecraft.client.audio.SoundHandler;
-import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.util.SoundEvent;
-import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 
 /**
  * Represent the attibutes and logic of the shade monster
@@ -34,47 +33,47 @@ public class EntityShade extends EntityMaelstromMob implements IAttack {
     }
 
     @Override
-    protected void initEntityAI() {
-        super.initEntityAI();
-        this.tasks.addTask(4, new EntityAITimedAttack<>(this, 1.0f, 5, 3f, 0.5f));
-        this.tasks.addTask(0, new AIJumpAtTarget(this, 0.4f, 0.5f));
+    protected void registerGoals() {
+        super.registerGoals();
+        this.goalSelector.addGoal(4, new EntityAITimedAttack<>(this, 1.0f, 5, 3f, 0.5f));
+        this.goalSelector.addGoal(0, new AIJumpAtTarget(this, 0.4f, 0.5f));
     }
 
     @Override
     protected SoundEvent getAmbientSound() {
-        return SoundsHandler.ENTITY_SHADE_AMBIENT;
+        return SoundsHandler.ENTITY_SHADE_AMBIENT.get();
     }
 
     @Override
     protected SoundEvent getHurtSound(DamageSource damageSourceIn) {
-        return SoundsHandler.ENTITY_SHADE_HURT;
+        return SoundsHandler.ENTITY_SHADE_HURT.get();
     }
 
     @Override
     protected SoundEvent getDeathSound() {
-        return SoundsHandler.ENTITY_SHADE_HURT;
+        return SoundsHandler.ENTITY_SHADE_HURT.get();
     }
 
     @Override
-    public void onEntityUpdate() {
-        super.onEntityUpdate();
+    public void baseTick() {
+        super.baseTick();
 
-        if (rand.nextInt(20) == 0) {
+        if (random.nextInt(20) == 0) {
             level.broadcastEntityEvent(this, ModUtils.PARTICLE_BYTE);
         }
     }
 
     @Override
     @OnlyIn(Dist.CLIENT)
-    public void handleStatusUpdate(byte id) {
+    public void handleEntityEvent(byte id) {
         if (id == ModUtils.PARTICLE_BYTE) {
             if (this.getElement().equals(Element.NONE)) {
-                ParticleManager.spawnMaelstromPotionParticle(world, rand, this.position().add(ModRandom.randVec()).add(ModUtils.yVec(1)), false);
+                ParticleManager.spawnMaelstromPotionParticle(level, random, this.position().add(ModRandom.randVec()).add(ModUtils.yVec(1)), false);
             }
 
-            ParticleManager.spawnEffect(world, this.position().add(ModRandom.randVec()).add(ModUtils.yVec(1)), getElement().particleColor);
+            ParticleManager.spawnEffect(level, this.position().add(ModRandom.randVec()).add(ModUtils.yVec(1)), getElement().particleColor);
         } else {
-            super.handleStatusUpdate(id);
+            super.handleEntityEvent(id);
         }
     }
 
@@ -84,7 +83,7 @@ public class EntityShade extends EntityMaelstromMob implements IAttack {
         ModUtils.leapTowards(this, this.getTarget().position(), 0.4f, 0.3f);
 
         addEvent(() -> {
-            Vec3 pos = this.position().add(ModUtils.yVec(1)).add(this.getLookVec());
+            Vec3 pos = this.position().add(ModUtils.yVec(1)).add(this.getLookAngle());
             this.playSound(SoundEvents.PLAYER_ATTACK_SWEEP, 1.0F, 0.8F / (this.getRandom().nextFloat() * 0.4F + 0.8F));
             ModUtils.handleAreaImpact(0.6f, (e) -> this.getAttack(), this, pos, ModDamageSource.causeElementalMeleeDamage(this, getElement()), 0.20f, 0, false);
         }, 10);

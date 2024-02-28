@@ -48,7 +48,7 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public class EntityMaelstromStatueOfNirvana extends EntityMaelstromMob implements IAttack {
-    private final ServerBossEvent bossInfo = (new ServerBossEvent(this.getDisplayName(), BossEvent.Color.PURPLE, BossEvent.Overlay.NOTCHED_20));
+    private final ServerBossEvent bossInfo = (new ServerBossEvent(this.getDisplayName(), BossBarColor.PURPLE, BossBarOverlay.NOTCHED_20));
     private static boolean doTeleportNext;
     Consumer<LivingEntity> previousAttack;
 
@@ -65,7 +65,7 @@ public class EntityMaelstromStatueOfNirvana extends EntityMaelstromMob implement
 
     private void initNirvanaAI() {
         float attackDistance = (float) this.getEntityAttribute(Attributes.FOLLOW_RANGE).getAttributeValue();
-        this.tasks.addTask(4,
+        this.goalSelector.addGoal(4,
                 new AIAerialTimedAttack(this, attackDistance, 20, 30,
                         new TimedAttackInitiator<>(this, 80)));
     }
@@ -80,13 +80,13 @@ public class EntityMaelstromStatueOfNirvana extends EntityMaelstromMob implement
     }
 
     @Override
-    protected void initEntityAI() {
-        super.initEntityAI();
+    protected void registerGoals() {
+        super.registerGoals();
         ModUtils.removeTaskOfType(this.tasks, EntityAIWanderWithGroup.class);
     }
 
     @Override
-    public void onUpdate() {
+    public void tick() {
         super.onUpdate();
         this.bossInfo.setPercent(getHealth() / getMaxHealth());
         if (!level.isClientSide) {
@@ -157,7 +157,7 @@ public class EntityMaelstromStatueOfNirvana extends EntityMaelstromMob implement
 
     @Override
     @OnlyIn(Dist.CLIENT)
-    public void handleStatusUpdate(byte id) {
+    public void handleEntityEvent(byte id) {
         if (id == ModUtils.PARTICLE_BYTE) {
             ParticleManager.spawnEffect(world, ModRandom.randVec().add(this.position()), ModColors.PURPLE);
         } else if(id == ModUtils.SECOND_PARTICLE_BYTE) {
@@ -169,7 +169,7 @@ public class EntityMaelstromStatueOfNirvana extends EntityMaelstromMob implement
             }));
         }
 
-        super.handleStatusUpdate(id);
+        super.handleEntityEvent(id);
     }
 
     @Override
@@ -201,7 +201,7 @@ public class EntityMaelstromStatueOfNirvana extends EntityMaelstromMob implement
     }
 
     @Override
-    protected ResourceLocation getLootTable() {
+    protected ResourceLocation getDefaultLootTable() {
         return LootTableHandler.GOLDEN_BOSS;
     }
 

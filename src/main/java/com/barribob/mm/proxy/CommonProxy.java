@@ -30,17 +30,17 @@ public class CommonProxy {
         int packetId = 0;
 
         Main.NETWORK.registerMessage(MessageExtendedReachAttack.Handler.class, MessageExtendedReachAttack.class, packetId++, Dist.SERVER);
-        Main.network.registerMessage(MessageMana.MessageHandler.class, MessageMana.class, packetId++, Dist.CLIENT);
-        Main.network.registerMessage(MessageLeap.MessageHandler.class, MessageLeap.class, packetId++, Dist.CLIENT);
-        Main.network.registerMessage(MessageManaUnlock.MessageHandler.class, MessageManaUnlock.class, packetId++, Dist.CLIENT);
-        Main.network.registerMessage(MessageDirectionForRender.Handler.class, MessageDirectionForRender.class, packetId++, Dist.CLIENT);
-        Main.network.registerMessage(MessageModParticles.MessageHandler.class, MessageModParticles.class, packetId++, Dist.CLIENT);
-        Main.network.registerMessage(MessageSyncConfig.Handler.class, MessageSyncConfig.class, packetId++, Dist.CLIENT);
-        Main.network.registerMessage(MessageBBAnimation.Handler.class, MessageBBAnimation.class, packetId++, Dist.CLIENT);
-        Main.network.registerMessage(MessageLoopAnimationUpdate.Handler.class, MessageLoopAnimationUpdate.class, packetId++, Dist.CLIENT);
-        Main.network.registerMessage(MessageStartElytraFlying.Handler.class, MessageStartElytraFlying.class, packetId++, Dist.SERVER);
-        Main.network.registerMessage(MessageEmptySwing.Handler.class, MessageEmptySwing.class, packetId++, Dist.SERVER);
-        Main.network.registerMessage(MessagePlayDarkNexusWindSound.Handler.class, MessagePlayDarkNexusWindSound.class, packetId++, Dist.CLIENT);
+        Main.NETWORK.registerMessage(MessageMana.MessageHandler.class, MessageMana.class, packetId++, Dist.CLIENT);
+        Main.NETWORK.registerMessage(MessageLeap.MessageHandler.class, MessageLeap.class, packetId++, Dist.CLIENT);
+        Main.NETWORK.registerMessage(MessageManaUnlock.MessageHandler.class, MessageManaUnlock.class, packetId++, Dist.CLIENT);
+        Main.NETWORK.registerMessage(MessageDirectionForRender.Handler.class, MessageDirectionForRender.class, packetId++, Dist.CLIENT);
+        Main.NETWORK.registerMessage(MessageModParticles.MessageHandler.class, MessageModParticles.class, packetId++, Dist.CLIENT);
+        Main.NETWORK.registerMessage(MessageSyncConfig.Handler.class, MessageSyncConfig.class, packetId++, Dist.CLIENT);
+        Main.NETWORK.registerMessage(MessageBBAnimation.Handler.class, MessageBBAnimation.class, packetId++, Dist.CLIENT);
+        Main.NETWORK.registerMessage(MessageLoopAnimationUpdate.Handler.class, MessageLoopAnimationUpdate.class, packetId++, Dist.CLIENT);
+        Main.NETWORK.registerMessage(MessageStartElytraFlying.Handler.class, MessageStartElytraFlying.class, packetId++, Dist.SERVER);
+        Main.NETWORK.registerMessage(MessageEmptySwing.Handler.class, MessageEmptySwing.class, packetId++, Dist.SERVER);
+        Main.NETWORK.registerMessage(MessagePlayDarkNexusWindSound.Handler.class, MessagePlayDarkNexusWindSound.class, packetId++, Dist.CLIENT);
 
         CapabilityManager.INSTANCE.register(IMana.class, new ManaStorage(), Mana.class);
         // CapabilityManager.INSTANCE.register(IInvasion.class, new InvasionStorage(),

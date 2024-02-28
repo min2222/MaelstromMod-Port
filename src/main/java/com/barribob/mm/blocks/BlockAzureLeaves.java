@@ -15,6 +15,6 @@ public class BlockAzureLeaves extends BlockLeavesBase {
 
     @Override
     public Item getItemDropped(BlockState state, Random rand, int fortune) {
-        return Item.byBlock(ModBlocks.AZURE_SAPLING);
+        return Item.BY_BLOCK.get(ModBlocks.AZURE_SAPLING);
     }
 }

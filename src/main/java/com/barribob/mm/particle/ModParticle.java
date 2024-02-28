@@ -98,7 +98,7 @@ public class ModParticle extends Particle {
     }
 
     @Override
-    public void onUpdate() {
+    public void tick() {
         this.setParticleTextureIndex(minIndex + (int) (this.indexRange * (((this.particleAge * this.animationSpeed) % this.particleMaxAge) / this.particleMaxAge)));
 
         this.prevPosX = this.posX;

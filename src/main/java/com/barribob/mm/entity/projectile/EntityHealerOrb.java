@@ -93,7 +93,7 @@ public class EntityHealerOrb extends Entity {
     }
 
     @Override
-    protected void readEntityFromNBT(CompoundTag compound) {
+    protected void readAdditionalSaveData(CompoundTag compound) {
         this.tempTarget = new Vec3(compound.getDouble("TXD"), compound.getDouble("TYD"), compound.getDouble("TZD"));
 
         if (compound.hasKey("Owner", 10)) {
@@ -114,7 +114,7 @@ public class EntityHealerOrb extends Entity {
     }
 
     @Override
-    public void onUpdate() {
+    public void tick() {
         if (!this.level.isClientSide && this.world.getDifficulty() == EnumDifficulty.PEACEFUL) {
             this.setDead();
         } else {
@@ -272,7 +272,7 @@ public class EntityHealerOrb extends Entity {
      * Spawn impact healing particles
      */
     @Override
-    public void handleStatusUpdate(byte id) {
+    public void handleEntityEvent(byte id) {
         if (id == ModUtils.PARTICLE_BYTE) {
             for (int i = -5; i < 2; i++) {
                 final float yOff = i * 0.5f;
@@ -282,7 +282,7 @@ public class EntityHealerOrb extends Entity {
                 });
             }
         }
-        super.handleStatusUpdate(id);
+        super.handleEntityEvent(id);
     }
 
     @Override

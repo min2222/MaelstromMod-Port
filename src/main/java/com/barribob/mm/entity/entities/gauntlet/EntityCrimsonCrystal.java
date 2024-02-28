@@ -45,7 +45,7 @@ public class EntityCrimsonCrystal extends Entity {
     }
 
     @Override
-    public void onUpdate() {
+    public void tick() {
         super.onUpdate();
 
         if (!level.isClientSide) {
@@ -103,7 +103,7 @@ public class EntityCrimsonCrystal extends Entity {
     }
 
     @Override
-    public void handleStatusUpdate(byte id) {
+    public void handleEntityEvent(byte id) {
         if (id == ModUtils.PARTICLE_BYTE) {
             for (int i = 0; i < 20; i++) {
                 Vec3 randPos = radialRandVec();
@@ -116,7 +116,7 @@ public class EntityCrimsonCrystal extends Entity {
                 ParticleManager.spawnFluff(world, randPos, Vec3.ZERO, outVelocity);
             }
         }
-        super.handleStatusUpdate(id);
+        super.handleEntityEvent(id);
     }
 
     public Vec3 radialRandVec() {
@@ -142,7 +142,7 @@ public class EntityCrimsonCrystal extends Entity {
     }
 
     @Override
-    protected void readEntityFromNBT(@Nonnull CompoundTag compound) {
+    protected void readAdditionalSaveData(@Nonnull CompoundTag compound) {
 
     }
 

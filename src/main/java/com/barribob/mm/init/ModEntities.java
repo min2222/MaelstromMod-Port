@@ -1,93 +1,127 @@
 package com.barribob.mm.init;
 
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.util.math.Vec3i;
-import net.minecraftforge.fml.common.registry.EntityRegistry;
-import net.minecraftforge.fml.common.registry.GameRegistry;
-
 import java.util.HashMap;
 import java.util.Map;
 
 import com.barribob.mm.Main;
 import com.barribob.mm.entity.EntityCrimsonPortalSpawn;
-import com.barribob.mm.entity.entities.*;
+import com.barribob.mm.entity.entities.EntityAzureGolem;
+import com.barribob.mm.entity.entities.EntityAzureVillager;
+import com.barribob.mm.entity.entities.EntityBeast;
+import com.barribob.mm.entity.entities.EntityChaosKnight;
+import com.barribob.mm.entity.entities.EntityCliffFly;
+import com.barribob.mm.entity.entities.EntityCliffGolem;
+import com.barribob.mm.entity.entities.EntityDreamElk;
+import com.barribob.mm.entity.entities.EntityFloatingSkull;
+import com.barribob.mm.entity.entities.EntityGoldenBoss;
+import com.barribob.mm.entity.entities.EntityGoldenPillar;
+import com.barribob.mm.entity.entities.EntityHerobrineOne;
+import com.barribob.mm.entity.entities.EntityHorror;
+import com.barribob.mm.entity.entities.EntityIronShade;
+import com.barribob.mm.entity.entities.EntityMaelstromBeast;
+import com.barribob.mm.entity.entities.EntityMaelstromFury;
+import com.barribob.mm.entity.entities.EntityMaelstromHealer;
+import com.barribob.mm.entity.entities.EntityMaelstromIllager;
+import com.barribob.mm.entity.entities.EntityMaelstromLancer;
+import com.barribob.mm.entity.entities.EntityMaelstromMage;
+import com.barribob.mm.entity.entities.EntityMaelstromStatueOfNirvana;
+import com.barribob.mm.entity.entities.EntityMaelstromWitch;
+import com.barribob.mm.entity.entities.EntityMonolith;
+import com.barribob.mm.entity.entities.EntityShade;
+import com.barribob.mm.entity.entities.EntitySwampCrawler;
+import com.barribob.mm.entity.entities.EntityWhiteMonolith;
+import com.barribob.mm.entity.entities.Herobrine;
 import com.barribob.mm.entity.entities.gauntlet.EntityAlternativeMaelstromGauntletStage1;
 import com.barribob.mm.entity.entities.gauntlet.EntityAlternativeMaelstromGauntletStage2;
 import com.barribob.mm.entity.entities.gauntlet.EntityCrimsonCrystal;
 import com.barribob.mm.entity.entities.gauntlet.EntityMaelstromGauntlet;
-import com.barribob.mm.entity.entities.npc.*;
+import com.barribob.mm.entity.entities.npc.NexusArmorer;
+import com.barribob.mm.entity.entities.npc.NexusBladesmith;
+import com.barribob.mm.entity.entities.npc.NexusGunTrader;
+import com.barribob.mm.entity.entities.npc.NexusMageTrader;
+import com.barribob.mm.entity.entities.npc.NexusSpecialTrader;
 import com.barribob.mm.entity.particleSpawners.ParticleSpawnerExplosion;
 import com.barribob.mm.entity.particleSpawners.ParticleSpawnerRainbow;
 import com.barribob.mm.entity.particleSpawners.ParticleSpawnerSwordSwing;
-import com.barribob.mm.entity.projectile.*;
-import com.barribob.mm.entity.tileentity.*;
-import com.barribob.mm.entity.util.*;
+import com.barribob.mm.entity.projectile.EntityGeyser;
+import com.barribob.mm.entity.projectile.EntityGoldenRune;
+import com.barribob.mm.entity.projectile.EntityHealerOrb;
+import com.barribob.mm.entity.projectile.EntityLargeGoldenRune;
+import com.barribob.mm.entity.projectile.ProjectileBeastAttack;
+import com.barribob.mm.entity.projectile.ProjectileBeastFireball;
+import com.barribob.mm.entity.projectile.ProjectileBeastQuake;
+import com.barribob.mm.entity.projectile.ProjectileBlackFireball;
+import com.barribob.mm.entity.projectile.ProjectileBone;
+import com.barribob.mm.entity.projectile.ProjectileBoneQuake;
+import com.barribob.mm.entity.projectile.ProjectileBrownstoneCannon;
+import com.barribob.mm.entity.projectile.ProjectileBullet;
+import com.barribob.mm.entity.projectile.ProjectileChaosFireball;
+import com.barribob.mm.entity.projectile.ProjectileCrimsonWanderer;
+import com.barribob.mm.entity.projectile.ProjectileExplosiveDrill;
+import com.barribob.mm.entity.projectile.ProjectileFireball;
+import com.barribob.mm.entity.projectile.ProjectileGoldenFireball;
+import com.barribob.mm.entity.projectile.ProjectileGoldenMissile;
+import com.barribob.mm.entity.projectile.ProjectileHerobrineQuake;
+import com.barribob.mm.entity.projectile.ProjectileHomingFlame;
+import com.barribob.mm.entity.projectile.ProjectileHorrorAttack;
+import com.barribob.mm.entity.projectile.ProjectileMaelstromCannon;
+import com.barribob.mm.entity.projectile.ProjectileMaelstromMeteor;
+import com.barribob.mm.entity.projectile.ProjectileMaelstromMissile;
+import com.barribob.mm.entity.projectile.ProjectileMaelstromQuake;
+import com.barribob.mm.entity.projectile.ProjectileMaelstromRune;
+import com.barribob.mm.entity.projectile.ProjectileMaelstromWisp;
+import com.barribob.mm.entity.projectile.ProjectileMegaFireball;
+import com.barribob.mm.entity.projectile.ProjectileMeteor;
+import com.barribob.mm.entity.projectile.ProjectileMeteorSpawner;
+import com.barribob.mm.entity.projectile.ProjectileMonolithFireball;
+import com.barribob.mm.entity.projectile.ProjectilePiercingBullet;
+import com.barribob.mm.entity.projectile.ProjectilePillarFlames;
+import com.barribob.mm.entity.projectile.ProjectilePumpkin;
+import com.barribob.mm.entity.projectile.ProjectileQuake;
+import com.barribob.mm.entity.projectile.ProjectileRepeater;
+import com.barribob.mm.entity.projectile.ProjectileRuneWisp;
+import com.barribob.mm.entity.projectile.ProjectileSkullAttack;
+import com.barribob.mm.entity.projectile.ProjectileStatueMaelstromMissile;
+import com.barribob.mm.entity.projectile.ProjectileSwampSpittle;
+import com.barribob.mm.entity.projectile.ProjectileSwordSlash;
+import com.barribob.mm.entity.projectile.ProjectileWillOTheWisp;
+import com.barribob.mm.entity.tileentity.TileEntityBossSpawner;
+import com.barribob.mm.entity.tileentity.TileEntityDisappearingSpawner;
+import com.barribob.mm.entity.tileentity.TileEntityFan;
+import com.barribob.mm.entity.tileentity.TileEntityMalestromSpawner;
+import com.barribob.mm.entity.tileentity.TileEntityMegaStructure;
+import com.barribob.mm.entity.tileentity.TileEntityTeleporter;
+import com.barribob.mm.entity.tileentity.TileEntityUpdater;
+import com.barribob.mm.entity.util.EntityAzurePortalSpawn;
+import com.barribob.mm.entity.util.EntityCliffPortalSpawn;
+import com.barribob.mm.entity.util.EntityCrimsonTowerSpawner;
+import com.barribob.mm.entity.util.EntityMaelstromTowerDestroyer;
+import com.barribob.mm.entity.util.EntityNexusParticleSpawner;
+import com.barribob.mm.entity.util.EntityTuningForkLazer;
 import com.barribob.mm.util.Reference;
+
+import net.minecraft.core.Vec3i;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraftforge.registries.DeferredRegister;
+import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraftforge.registries.RegistryObject;
 
 /**
  * Lists all of the entities in the mod
  */
 public class ModEntities {
-    public static final int SHADE_ID = 100;
-    public static final int HORROR_ID = 101;
-    public static final int DREAM_ELK_ID = 102;
-    public static final int BEAST_ID = 103;
-    public static final int MAELSTROM_ILLAGER_ID = 104;
-    public static final int AZURE_VILLAGER_ID = 105;
-    public static final int MAELSTROM_MAGE_ID = 106;
-    public static final int AZURE_GOLEM_ID = 107;
-    public static final int FLOATING_SKULL_ID = 108;
-    public static final int HEROBRINE_1_ID = 109;
-    public static final int HEROBRINE_CONTROLLLER = 110;
-    public static final int NEXUS_GUNSMITH = 111;
-    public static final int NEXUS_MAGE = 112;
-    public static final int NEXUS_ARMORER = 113;
-    public static final int NEXUS_SAIYAN = 114;
-    public static final int NEXUS_BLADESMITH = 115;
-    public static final int GOLDEN_PILLAR = 116;
-    public static final int GOLDEN_BOSS = 119;
-    public static final int MAELSTROM_WITCH = 121;
-    public static final int CLIFF_GOLEM = 122;
 
-    private static int ENTITY_START_ID = 123;
-
-    public static final int HORROR_ATTACK_ID = 202;
-    public static final int BEAST_ATTACK_ID = 203;
-    public static final int BULLET_ID = 204;
-    public static final int MAELSTROM_CANNON_ID = 205;
-    public static final int WILL_O_THE_WISP_ID = 206;
-    public static final int QUAKE_ID = 207;
-    public static final int SKULL_ATTACK_ID = 208;
-    public static final int AZURE_PORTAL_SPAWN_ID = 209;
-    public static final int PUMPKIN_ID = 210;
-    public static final int REPEATER_ID = 211;
-    public static final int FIREBALL_ID = 212;
-    public static final int HEROBRINE_SLASH_ID = 213;
-    public static final int BLACK_FIREBALL_ID = 214;
-    public static final int PILLAR_FLAMES_ID = 217;
-    public static final int GOLDEN_RUNE_ID = 218;
-    public static final int GOLDEN_MAGE_ATTACK_ID = 220;
-    public static final int GOLDEN_FIREBALL_ID = 222;
-    public static final int MAELSTROM_QUAKE_ID = 223;
-    public static final int WOOD_ID = 224;
-    public static final int GEYSER_ID = 225;
-    public static final int BROWNSTONE_CANNON_ID = 226;
-    public static final int CLIFF_PORTAL_SPAWN = 227;
-    public static final int EXPLOSIVE_DRILL = 228;
-    public static final int AZURE_BULLET = 229;
-
-    private static int PROJECTILE_START_ID = 230;
-
-    private static int PARTICLE_START_ID = 500;
-
-    public static Vec3i maelstrom = new Vec3i(6433126, 3221816, 0);
-    public static Vec3i azure = new Vec3i(7248383, 7236306, 0);
-    public static Vec3i nexus = new Vec3i(15724287, 12501453, 0);
-    public static Vec3i cliff = new Vec3i(0x999966, 0xe6e600, 0);
-    public static Vec3i cliff_maelstrom = new Vec3i(6433126, 0xe6e600, 0);
-    public static Vec3i crimson_maelstrom = new Vec3i(6433126, 0xeb4034, 0);
+	public static final DeferredRegister<EntityType<?>> ENTITY_TYPES = DeferredRegister.create(ForgeRegistries.ENTITY_TYPES, Reference.MOD_ID);
+	
+    public static final Vec3i MAELSTROM = new Vec3i(6433126, 3221816, 0);
+    public static final Vec3i AZURE = new Vec3i(7248383, 7236306, 0);
+    public static final Vec3i NEXUS = new Vec3i(15724287, 12501453, 0);
+    public static final Vec3i CLIFF = new Vec3i(0x999966, 0xe6e600, 0);
+    public static final Vec3i CLIFF_MAELSTROM = new Vec3i(6433126, 0xe6e600, 0);
+    public static final Vec3i CRIMSON_MAELSTROM = new Vec3i(6433126, 0xeb4034, 0);
 
     private static final Map<Class<? extends Entity>, String> ID_MAP = new HashMap<>();
 
@@ -198,9 +232,10 @@ public class ModEntities {
         throw new IllegalArgumentException("Mapping of an entity has not be registered for the maelstrom mod spawner system.");
     }
 
-    private static void registerEntityWithID(String name, Class<? extends Entity> entity, int id, int range, Vec3i eggColor) {
+    private static <T extends Entity> RegistryObject<EntityType<T>> registerEntityWithID(String name, Class<? extends Entity> entity, int id, int range, Vec3i eggColor) {
         EntityRegistry.registerModEntity(new ResourceLocation(Reference.MOD_ID + ":" + name), entity, name, id, Main.instance, range, 1, true, eggColor.getX(), eggColor.getY());
         ID_MAP.put(entity, name);
+        return ENTITY_TYPES.register(name, null);
     }
 
     private static void registerEntity(String name, Class<? extends Entity> entity, int id, int range, Vec3i eggColor) {

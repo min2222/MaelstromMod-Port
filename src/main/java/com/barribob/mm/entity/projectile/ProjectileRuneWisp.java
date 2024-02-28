@@ -46,7 +46,7 @@ public class ProjectileRuneWisp extends ProjectileGun {
     }
 
     @Override
-    public void onUpdate() {
+    public void tick() {
         super.onUpdate();
         if (this.shootingEntity != null && this.tickCount % 4 == 1) {
             float knockbackFactor = 1.0f + this.getKnockback() * 0.3f;

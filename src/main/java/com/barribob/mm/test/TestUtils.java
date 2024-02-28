@@ -12,7 +12,7 @@ public class TestUtils {
         String mobString = "Name: " + entity.getDisplayName();
         if(entity instanceof LivingEntity) {
             CompoundTag compound = new CompoundTag();
-            ((LivingEntity)entity).writeEntityToNBT(compound);
+            ((LivingEntity)entity).save(compound);
             mobString += "\nNBT: " + compound;
         }
 

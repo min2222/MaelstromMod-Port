@@ -8,11 +8,11 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiDownloadTerrain;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.GuiOpenEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.client.FMLClientHandler;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.api.distmarker.OnlyIn;
 
 @Mod.EventBusSubscriber()
 public class DimensionScreenHandler {

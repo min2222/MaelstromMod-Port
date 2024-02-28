@@ -1,18 +1,18 @@
 package com.barribob.mm.event_handlers;
 
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.common.gameevent.TickEvent;
-
 import java.util.Map;
 import java.util.WeakHashMap;
 
 import com.barribob.mm.items.ItemModElytra;
 import com.barribob.mm.util.ModUtils;
 import com.barribob.mm.util.Reference;
+
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.item.ItemStack;
+import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod;
 
 /**
  * Code based heavily on {@link https://github.com/GlassPane/Powered-Elytra} Handles the server side ticking of custom Elytras
@@ -26,11 +26,11 @@ public class ServerElytraEventHandler {
     public static synchronized void setFlying(ServerPlayer playerMP, boolean flying) {
         LAST_TICK_FLIGHT.put(playerMP, flying);
         if (flying) {
-            if (!playerMP.isElytraFlying()) {
-                playerMP.setElytraFlying();
+            if (!playerMP.isFallFlying()) {
+                playerMP.startFallFlying();
             }
-        } else if (playerMP.isElytraFlying()) {
-            playerMP.clearElytraFlying();
+        } else if (playerMP.isFallFlying()) {
+            playerMP.stopFallFlying();
         }
     }
 
@@ -49,9 +49,9 @@ public class ServerElytraEventHandler {
          */
         if (event.player instanceof ServerPlayer) {
             ServerPlayer mpPlayer = (ServerPlayer) event.player;
-            ItemStack stack = mpPlayer.getItemStackFromSlot(EquipmentSlot.CHEST);
+            ItemStack stack = mpPlayer.getItemBySlot(EquipmentSlot.CHEST);
 
-            boolean canContinueFly = stack.getItem() instanceof ItemModElytra && !mpPlayer.onGround && !mpPlayer.isRiding() && !mpPlayer.capabilities.isFlying;
+            boolean canContinueFly = stack.getItem() instanceof ItemModElytra && !mpPlayer.isOnGround() && !mpPlayer.isPassenger() && !mpPlayer.getAbilities().flying;
             if (isFlying(mpPlayer)) {
                 if (event.phase == TickEvent.Phase.END) {
                     ModUtils.handleElytraTravel(mpPlayer);

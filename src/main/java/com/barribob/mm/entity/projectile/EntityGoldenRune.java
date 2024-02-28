@@ -36,7 +36,7 @@ public class EntityGoldenRune extends ModProjectile {
     }
 
     @Override
-    public void onUpdate() {
+    public void tick() {
         Vec3 vel = new Vec3(this.motionX, this.motionY, this.motionZ);
 
         super.onUpdate();

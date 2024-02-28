@@ -39,7 +39,7 @@ public class NexusArmorer extends EntityTrader {
     }
 
     @Override
-    public void onUpdate() {
+    public void tick() {
         super.onUpdate();
         if (!level.isClientSide && messager != null) {
             messager.Update(world, ModUtils.getPlayerAreaMessager(this));
@@ -47,8 +47,8 @@ public class NexusArmorer extends EntityTrader {
     }
 
     @Override
-    protected void initEntityAI() {
-        this.tasks.addTask(9, new EntityAIWatchClosest2(this, Player.class, 3.0F, 1.0F));
+    protected void registerGoals() {
+        this.goalSelector.addGoal(9, new EntityAIWatchClosest2(this, Player.class, 3.0F, 1.0F));
     }
 
     @Override

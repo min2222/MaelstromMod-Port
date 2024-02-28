@@ -1,16 +1,5 @@
 package com.barribob.mm.entity.entities;
 
-import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.pathfinding.PathNavigateFlying;
-import net.minecraft.util.SoundEvent;
-import net.minecraft.world.phys.AABB;
-import net.minecraft.core.BlockPos;
-import net.minecraft.world.phys.Vec3;
-import net.minecraft.world.level.Level;
-
 import javax.annotation.Nonnull;
 
 import com.barribob.mm.Main;
@@ -27,21 +16,32 @@ import com.barribob.mm.util.ModDamageSource;
 import com.barribob.mm.util.ModUtils;
 import com.barribob.mm.util.handlers.SoundsHandler;
 
+import net.minecraft.core.BlockPos;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.navigation.FlyingPathNavigation;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
+
 public class EntityMaelstromFury extends EntityMaelstromMob implements IAcceleration {
     Vec3 acceleration = Vec3.ZERO;
     public EntityMaelstromFury(Level worldIn) {
         super(worldIn);
-        this.moveHelper = new FlyingMoveHelper(this);
-        this.navigator = new PathNavigateFlying(this, worldIn);
-        if(!worldIn.isRemote) {
+        this.moveControl = new FlyingMoveHelper(this);
+        this.navigation = new FlyingPathNavigation(this, worldIn);
+        if(!worldIn.isClientSide) {
             ModBBAnimations.animation(this, "fury.fly", false);
         }
         this.setSize(1.2f, 1.2f);
     }
 
     @Override
-    public void onUpdate() {
-        super.onUpdate();
+    public void tick() {
+        super.tick();
         Vec3 prevAcceleration = acceleration;
         acceleration = ModUtils.getEntityVelocity(this).scale(0.1).add(this.acceleration.scale(0.9));
 
@@ -60,16 +60,16 @@ public class EntityMaelstromFury extends EntityMaelstromMob implements IAccelera
     }
 
     @Override
-    protected void initEntityAI() {
-        this.tasks.addTask(4, new AIRandomFly(this));
-        this.tasks.addTask(3, new AIPassiveCircle<>(this, 30));
-        this.tasks.addTask(2, new AIFuryDive(100, 5 * 20, this, this::onDiveStart, this::onDiveEnd, this::whileDiving));
-        super.initEntityAI();
+    protected void registerGoals() {
+        this.goalSelector.addGoal(4, new AIRandomFly(this));
+        this.goalSelector.addGoal(3, new AIPassiveCircle<>(this, 30));
+        this.goalSelector.addGoal(2, new AIFuryDive(100, 5 * 20, this, this::onDiveStart, this::onDiveEnd, this::whileDiving));
+        super.registerGoals();
     }
 
     @Override
-    public void travel(float strafe, float vertical, float forward) {
-        ModUtils.aerialTravel(this, strafe, vertical, forward);
+    public void travel(Vec3 vec) {
+        ModUtils.aerialTravel(this, (float)vec.x, (float)vec.y, (float)vec.z);
     }
 
     private void onDiveStart() {
@@ -86,9 +86,9 @@ public class EntityMaelstromFury extends EntityMaelstromMob implements IAccelera
                 .directEntity(this)
                 .element(getElement())
                 .build();
-        float velocity = (float) entityVelocity.lengthVector();
+        float velocity = (float) entityVelocity.length();
         ModUtils.handleAreaImpact(0.7f, e -> getAttack() * velocity * 2, this, spearPos, damageSource, 0.5f, 0);
-        Main.network.sendToAllTracking(new MessageModParticles(EnumModParticles.EFFECT, spearPos, entityVelocity, ModColors.PURPLE), this);
+        Main.NETWORK.sendToAllTracking(new MessageModParticles(EnumModParticles.EFFECT, spearPos, entityVelocity, ModColors.PURPLE), this);
     }
 
     private void onDiveEnd() {
@@ -114,7 +114,7 @@ public class EntityMaelstromFury extends EntityMaelstromMob implements IAccelera
     }
 
     protected AABB getTargetableArea(double targetDistance) {
-        return this.getBoundingBox().grow(targetDistance);
+        return this.getBoundingBox().inflate(targetDistance);
     }
 
     @Override

@@ -1,15 +1,5 @@
 package com.barribob.mm.entity.entities;
 
-import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.util.SoundEvent;
-import net.minecraft.util.Mth;
-import net.minecraft.world.phys.Vec3;
-import net.minecraft.world.level.Level;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.api.distmarker.Dist;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;
@@ -26,6 +16,16 @@ import com.barribob.mm.util.ModUtils;
 import com.barribob.mm.util.handlers.ParticleManager;
 import com.barribob.mm.util.handlers.SoundsHandler;
 
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.util.Mth;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
+
 public class EntityMaelstromMage extends EntityMaelstromMob {
     public static final float PROJECTILE_INACCURACY = 6.0f;
     public static final float PROJECTILE_SPEED = 1.2f;
@@ -36,33 +36,33 @@ public class EntityMaelstromMage extends EntityMaelstromMob {
     }
 
     @Override
-    protected void initEntityAI() {
-        super.initEntityAI();
-        this.tasks.addTask(4, new EntityAIRangedAttack<EntityMaelstromMob>(this, 1.0f, 50, 20, 15.0f, 0.5f));
-        this.tasks.addTask(0, new AIJumpAtTarget(this, 0.4f, 0.5f));
+    protected void registerGoals() {
+        super.registerGoals();
+        this.goalSelector.addGoal(4, new EntityAIRangedAttack<EntityMaelstromMob>(this, 1.0f, 50, 20, 15.0f, 0.5f));
+        this.goalSelector.addGoal(0, new AIJumpAtTarget(this, 0.4f, 0.5f));
     }
 
     @Override
     protected SoundEvent getAmbientSound() {
-        return SoundsHandler.ENTITY_SHADE_AMBIENT;
+        return SoundsHandler.ENTITY_SHADE_AMBIENT.get();
     }
 
     @Override
     protected SoundEvent getHurtSound(DamageSource damageSourceIn) {
-        return SoundsHandler.ENTITY_SHADE_HURT;
+        return SoundsHandler.ENTITY_SHADE_HURT.get();
     }
 
     @Override
     protected SoundEvent getDeathSound() {
-        return SoundsHandler.ENTITY_SHADE_HURT;
+        return SoundsHandler.ENTITY_SHADE_HURT.get();
     }
 
     /**
      * Spawn summoning particles
      */
     @Override
-    public void onUpdate() {
-        super.onUpdate();
+    public void tick() {
+        super.tick();
 
         if (this.level.isClientSide && this.isSwingingArms()) {
             this.prepareShoot();
@@ -73,44 +73,42 @@ public class EntityMaelstromMage extends EntityMaelstromMob {
         float f = ModRandom.getFloat(0.25f);
 
         if (getElement() != Element.NONE) {
-            ParticleManager.spawnEffect(world, new Vec3(this.posX + f, this.posY + this.getEyeHeight() + 1.0f, this.posZ + f), getElement().particleColor);
+            ParticleManager.spawnEffect(level, new Vec3(this.getX() + f, this.getY() + this.getEyeHeight() + 1.0f, this.getZ() + f), getElement().particleColor);
         } else {
-            ParticleManager.spawnMaelstromPotionParticle(world, rand, new Vec3(this.posX + f, this.posY + this.getEyeHeight() + 1.0f, this.posZ + f), true);
+            ParticleManager.spawnMaelstromPotionParticle(level, random, new Vec3(this.getX() + f, this.getY() + this.getEyeHeight() + 1.0f, this.getZ() + f), true);
         }
     }
 
     @Override
-    public void onEntityUpdate() {
-        super.onEntityUpdate();
+    public void baseTick() {
+        super.baseTick();
 
-        if (rand.nextInt(20) == 0) {
+        if (random.nextInt(20) == 0) {
             level.broadcastEntityEvent(this, ModUtils.PARTICLE_BYTE);
         }
     }
 
     @Override
-    public void setSwingingArms(boolean swingingArms) {
-        super.setSwingingArms(swingingArms);
+    public void setAggressive(boolean swingingArms) {
+        super.setAggressive(swingingArms);
         if (swingingArms) {
             this.level.broadcastEntityEvent(this, (byte) 4);
         }
     }
 
-    ;
-
     @Override
     @OnlyIn(Dist.CLIENT)
-    public void handleStatusUpdate(byte id) {
+    public void handleEntityEvent(byte id) {
         if (id == 4) {
             getCurrentAnimation().startAnimation();
         } else if (id == ModUtils.PARTICLE_BYTE) {
             if (this.getElement().equals(Element.NONE)) {
-                ParticleManager.spawnMaelstromPotionParticle(world, rand, this.position().add(ModRandom.randVec()).add(ModUtils.yVec(1)), false);
+                ParticleManager.spawnMaelstromPotionParticle(level, random, this.position().add(ModRandom.randVec()).add(ModUtils.yVec(1)), false);
             }
 
-            ParticleManager.spawnEffect(world, this.position().add(ModRandom.randVec()).add(ModUtils.yVec(1)), getElement().particleColor);
+            ParticleManager.spawnEffect(level, this.position().add(ModRandom.randVec()).add(ModUtils.yVec(1)), getElement().particleColor);
         } else {
-            super.handleStatusUpdate(id);
+            super.handleEntityEvent(id);
         }
     }
 
@@ -121,14 +119,14 @@ public class EntityMaelstromMage extends EntityMaelstromMob {
     @Override
     public void performRangedAttack(LivingEntity target, float distanceFactor) {
         if (!level.isClientSide) {
-            ProjectileHorrorAttack projectile = new ProjectileHorrorAttack(this.world, this, this.getAttack());
+            ProjectileHorrorAttack projectile = new ProjectileHorrorAttack(this.level, this, this.getAttack());
             projectile.posY = this.posY + this.getEyeHeight() + 1.0f; // Raise pos y to summon the projectile above the head
             double d0 = target.posY + target.getEyeHeight() - 0.9f;
             double d1 = target.posX - this.posX;
             double d2 = d0 - projectile.posY;
             double d3 = target.posZ - this.posZ;
-            float f = Mth.sqrt(d1 * d1 + d3 * d3) * 0.2F;
-            projectile.shoot(d1, d2 + f, d3, this.PROJECTILE_SPEED, this.PROJECTILE_INACCURACY);
+            float f = (float) (Math.sqrt(d1 * d1 + d3 * d3) * 0.2F);
+            projectile.shoot(d1, d2 + f, d3, EntityMaelstromMage.PROJECTILE_SPEED, EntityMaelstromMage.PROJECTILE_INACCURACY);
             this.playSound(SoundEvents.BLAZE_SHOOT, 1.0F, 1.0F / (this.getRandom().nextFloat() * 0.4F + 0.8F));
             this.level.addFreshEntity(projectile);
         }

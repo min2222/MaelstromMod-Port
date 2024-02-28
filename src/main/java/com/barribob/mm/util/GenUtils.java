@@ -3,6 +3,7 @@ package com.barribob.mm.util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Rotation;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.chunk.ChunkPrimer;
 import net.minecraft.world.gen.structure.StructureBoundingBox;
 
@@ -60,21 +61,21 @@ public class GenUtils {
             if (queue.size() == 0)
                 return;
 
-            BlockPos randPos = queue.get(world.rand.nextInt(queue.size()));
+            BlockPos randPos = queue.get(world.random.nextInt(queue.size()));
             queue.remove(randPos);
             BlockPos[] adjacents = {randPos.north(), randPos.south(), randPos.east(), randPos.west()};
 
             for (int y = randPos.getY(); y >= 0; y--) {
-                world.setBlockToAir(new BlockPos(randPos.getX(), y, randPos.getZ()));
+                world.setBlockAndUpdate(new BlockPos(randPos.getX(), y, randPos.getZ()), Blocks.AIR.defaultBlockState());
                 for (BlockPos adj : adjacents) {
-                    if (!world.isAirBlock(new BlockPos(adj.getX(), y, adj.getZ()))) {
-                        world.setBlockState(new BlockPos(adj.getX(), y, adj.getZ()), ModBlocks.AZURE_STONEBRICK.getDefaultState());
+                    if (!world.isEmptyBlock(new BlockPos(adj.getX(), y, adj.getZ()))) {
+                        world.setBlockAndUpdate(new BlockPos(adj.getX(), y, adj.getZ()), ModBlocks.AZURE_STONEBRICK.defaultBlockState());
                     }
                 }
             }
 
             for (BlockPos adj : adjacents) {
-                if (!world.isAirBlock(adj)) {
+                if (!world.isEmptyBlock(adj)) {
                     queue.add(adj);
                 }
             }

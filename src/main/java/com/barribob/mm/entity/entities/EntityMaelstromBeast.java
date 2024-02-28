@@ -1,27 +1,16 @@
 package com.barribob.mm.entity.entities;
 
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.level.ServerBossEvent;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.BossEvent;
-import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.effect.MobEffects;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.potion.PotionEffect;
-import net.minecraft.util.SoundEvent;
-import net.minecraft.world.phys.AABB;
-import net.minecraft.world.phys.Vec3;
-import net.minecraft.world.level.Level;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
 
 import com.barribob.mm.entity.ai.EntityAITimedAttack;
-import com.barribob.mm.entity.projectile.*;
+import com.barribob.mm.entity.projectile.ModProjectile;
+import com.barribob.mm.entity.projectile.ProjectileBeastFireball;
+import com.barribob.mm.entity.projectile.ProjectileBeastQuake;
+import com.barribob.mm.entity.projectile.ProjectileBone;
+import com.barribob.mm.entity.projectile.ProjectileBoneQuake;
 import com.barribob.mm.entity.util.IAttack;
 import com.barribob.mm.init.ModBBAnimations;
 import com.barribob.mm.util.ModColors;
@@ -31,8 +20,25 @@ import com.barribob.mm.util.ModUtils;
 import com.barribob.mm.util.handlers.LootTableHandler;
 import com.barribob.mm.util.handlers.ParticleManager;
 
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerBossEvent;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.BossEvent.BossBarColor;
+import net.minecraft.world.BossEvent.BossBarOverlay;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
+
 public class EntityMaelstromBeast extends EntityMaelstromMob implements IAttack {
-    private final ServerBossEvent bossInfo = (new ServerBossEvent(this.getDisplayName(), BossEvent.Color.PURPLE, BossEvent.Overlay.NOTCHED_20));
+    private final ServerBossEvent bossInfo = (new ServerBossEvent(this.getDisplayName(), BossBarColor.PURPLE, BossBarOverlay.NOTCHED_20));
     private Consumer<LivingEntity> attack;
 
     public EntityMaelstromBeast(Level worldIn) {
@@ -42,36 +48,36 @@ public class EntityMaelstromBeast extends EntityMaelstromMob implements IAttack 
     }
 
     @Override
-    protected void initEntityAI() {
-        super.initEntityAI();
-        this.tasks.addTask(4, new EntityAITimedAttack<>(this, 1.25f, 50, 30, 0.5f, 10f));
+    protected void registerGoals() {
+        super.registerGoals();
+        this.goalSelector.addGoal(4, new EntityAITimedAttack<>(this, 1.25f, 50, 30, 0.5f, 10f));
     }
 
     @Override
-    public void onUpdate() {
-        super.onUpdate();
+    public void tick() {
+        super.tick();
         if (!level.isClientSide && this.isRaged()) {
             level.broadcastEntityEvent(this, ModUtils.SECOND_PARTICLE_BYTE);
         }
 
         if(!level.isClientSide && this.isLeaping() && this.getTarget() != null &&
-                this.getDistanceSq(this.getTarget()) < Math.pow(4, 2)){
+                this.distanceToSqr(this.getTarget()) < Math.pow(4, 2)){
             this.setLeaping(false);
             onStopLeaping();
         }
 
         if(!level.isClientSide && this.isLeaping()) {
-            AABB box = getBoundingBox().grow(0.25, 0.12, 0.25).offset(0, 0.12, 0);
-            ModUtils.destroyBlocksInAABB(box, world, this);
+            AABB box = getBoundingBox().inflate(0.25, 0.12, 0.25).move(0, 0.12, 0);
+            ModUtils.destroyBlocksInAABB(box, level, this);
         }
     }
 
     @Override
-    public void handleStatusUpdate(byte id) {
+    public void handleEntityEvent(byte id) {
         if (id == ModUtils.SECOND_PARTICLE_BYTE) {
-            ParticleManager.spawnEffect(world, position().add(ModRandom.randVec().scale(2)).add(ModUtils.yVec(this.getEyeHeight())), ModColors.RED);
+            ParticleManager.spawnEffect(level, position().add(ModRandom.randVec().scale(2)).add(ModUtils.yVec(this.getEyeHeight())), ModColors.RED);
         }
-        super.handleStatusUpdate(id);
+        super.handleEntityEvent(id);
     }
 
     public boolean isRaged() {
@@ -81,7 +87,7 @@ public class EntityMaelstromBeast extends EntityMaelstromMob implements IAttack 
     @Override
     public int startAttack(LivingEntity target, float distanceSq, boolean strafingBackwards) {
 
-        if(target.posY - posY > 3)
+        if(target.getY() - getY() > 3)
         {
             spray.accept(target);
             return 50;
@@ -97,15 +103,15 @@ public class EntityMaelstromBeast extends EntityMaelstromMob implements IAttack 
                 attack != roar ? 0.5 : 0,
                 1};
 
-        attack = ModRandom.choice(attacks, rand, weights).next();
+        attack = ModRandom.choice(attacks, random, weights).next();
         attack.accept(target);
         return 50;
     }
 
     Runnable spawnQuake = () -> {
         ModProjectile projectile = this.isRaged() ?
-                new ProjectileBoneQuake(world, this, this.getAttack() * getConfigFloat("bone_hammer_wave_damage")) :
-                new ProjectileBeastQuake(world, this, this.getAttack() * getConfigFloat("hammer_wave_damage"));
+                new ProjectileBoneQuake(level, this, this.getAttack() * getConfigFloat("bone_hammer_wave_damage")) :
+                new ProjectileBeastQuake(level, this, this.getAttack() * getConfigFloat("hammer_wave_damage"));
 
         Vec3 projectileOffset = ModUtils.getRelativeOffset(this, new Vec3(2, -2, 0));
         Vec3 forwardPos = ModUtils.getRelativeOffset(this, new Vec3(3, -2, 0)).add(getEyePosition(1));
@@ -122,7 +128,7 @@ public class EntityMaelstromBeast extends EntityMaelstromMob implements IAttack 
     public void onStopLeaping() {
         ModBBAnimations.animation(this, "beast.leap", true);
 
-        if(getTarget() != null && getTarget().getDistanceSq(this) < Math.pow(12, 2)) {
+        if(getTarget() != null && getTarget().distanceToSqr(this) < Math.pow(12, 2)) {
             ModBBAnimations.animation(this, "beast.slam", false);
             addEvent(spawnQuake, 4);
         }
@@ -150,12 +156,12 @@ public class EntityMaelstromBeast extends EntityMaelstromMob implements IAttack 
 
             double width = getMobConfig().getDouble("swipe_width");
 
-            ModUtils.destroyBlocksInAABB(new AABB(getPosition())
-                    .grow(width, 1, width)
-                    .offset(ModUtils.getRelativeOffset(this, new Vec3(1, 1, 0))), world, this);
+            ModUtils.destroyBlocksInAABB(new AABB(blockPosition())
+                    .inflate(width, 1, width)
+                    .move(ModUtils.getRelativeOffset(this, new Vec3(1, 1, 0))), level, this);
 
             if (EntityMaelstromBeast.this.isRaged()) {
-                ModUtils.performNTimes(8, (i) -> spawnBone(world, offset.add(ModRandom.randVec().scale(3)), EntityMaelstromBeast.this));
+                ModUtils.performNTimes(8, (i) -> spawnBone(level, offset.add(ModRandom.randVec().scale(3)), EntityMaelstromBeast.this));
             }
             this.playSound(SoundEvents.PLAYER_ATTACK_SWEEP, 1.0F, 0.4f + ModRandom.getFloat(0.1f));
         }, 15);
@@ -166,16 +172,16 @@ public class EntityMaelstromBeast extends EntityMaelstromMob implements IAttack 
 
         addEvent(() -> {
             if (EntityMaelstromBeast.this.isRaged()) {
-                ModUtils.spawnMob(world, getPosition(), getLevel(), getMobConfig().getConfig("spawning_algorithm"));
+                ModUtils.spawnMob(level, blockPosition(), getLevel(), getMobConfig().getConfig("spawning_algorithm"));
             } else {
                 ModUtils.handleAreaImpact(20, (e) -> {
                     if (e instanceof LivingEntity) {
-                        ((LivingEntity) e).addPotionEffect(new PotionEffect(MobEffects.SLOWNESS, 120, 3));
+                        ((LivingEntity) e).addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 120, 3));
                     }
                     return 0.0f;
                 }, this, this.position(), ModDamageSource.MAELSTROM_DAMAGE);
             }
-            this.playSound(SoundEvents.ENDERDRAGON_GROWL, 1.0F, 0.9F / (this.getRandom().nextFloat() * 0.4F + 0.8F));
+            this.playSound(SoundEvents.ENDER_DRAGON_GROWL, 1.0F, 0.9F / (this.getRandom().nextFloat() * 0.4F + 0.8F));
         }, 12);
     };
 
@@ -192,7 +198,7 @@ public class EntityMaelstromBeast extends EntityMaelstromMob implements IAttack 
             Vec3 axis = ModUtils.rotateVector2(dir.cross(ModUtils.Y_AXIS), dir, 90).normalize().scale(5);
 
             ModUtils.lineCallback(targetPos.add(axis), targetPos.subtract(axis), 5, (pos, i) -> {
-                ModProjectile projectile = new ProjectileBeastFireball(world, this, this.getAttack() * getConfigFloat("high_leap_fireball_damage"));
+                ModProjectile projectile = new ProjectileBeastFireball(level, this, this.getAttack() * getConfigFloat("high_leap_fireball_damage"));
                 ModUtils.throwProjectile(this, pos, projectile, 4, 0.7f);
             });
 
@@ -209,47 +215,47 @@ public class EntityMaelstromBeast extends EntityMaelstromMob implements IAttack 
     };
 
     public static void spawnBone(Level world, Vec3 pos, EntityLeveledMob entity) {
-        if (!level.isClientSide) {
+        if (!world.isClientSide) {
             ProjectileBone projectile = new ProjectileBone(world, entity, entity.getAttack() * entity.getConfigFloat("bone_projectile_damage"));
-            projectile.setPosition(pos.x, pos.y + 1.5, pos.z);
+            projectile.setPos(pos.x, pos.y + 1.5, pos.z);
             double xDir = ModRandom.getFloat(0.1f);
             double yDir = 1 + ModRandom.getFloat(0.1f);
             double zDir = ModRandom.getFloat(0.1f);
             projectile.shoot(xDir, yDir, zDir, 0.5f, 0.5f);
-            level.addFreshEntity(projectile);
+            world.addFreshEntity(projectile);
         }
     }
 
     @Override
-    public void readEntityFromNBT(CompoundTag compound) {
+    public void readAdditionalSaveData(CompoundTag compound) {
         if (this.hasCustomName()) {
             this.bossInfo.setName(this.getDisplayName());
         }
 
-        super.readEntityFromNBT(compound);
+        super.readAdditionalSaveData(compound);
     }
 
     @Override
-    public void setCustomNameTag(String name) {
-        super.setCustomNameTag(name);
+    public void setCustomName(Component name) {
+        super.setCustomName(name);
         this.bossInfo.setName(this.getDisplayName());
     }
 
     @Override
-    protected void updateAITasks() {
-        this.bossInfo.setPercent(this.getHealth() / this.getMaxHealth());
-        super.updateAITasks();
+    protected void customServerAiStep() {
+        this.bossInfo.setProgress(this.getHealth() / this.getMaxHealth());
+        super.customServerAiStep();
     }
 
     @Override
-    public void addTrackingPlayer(ServerPlayer player) {
-        super.addTrackingPlayer(player);
+    public void startSeenByPlayer(ServerPlayer player) {
+        super.startSeenByPlayer(player);
         this.bossInfo.addPlayer(player);
     }
 
     @Override
-    public void removeTrackingPlayer(ServerPlayer player) {
-        super.removeTrackingPlayer(player);
+    public void stopSeenByPlayer(ServerPlayer player) {
+        super.stopSeenByPlayer(player);
         this.bossInfo.removePlayer(player);
     }
 
@@ -269,13 +275,13 @@ public class EntityMaelstromBeast extends EntityMaelstromMob implements IAttack 
     }
 
     @Override
-    protected ResourceLocation getLootTable() {
+    protected ResourceLocation getDefaultLootTable() {
         return LootTableHandler.BEAST;
     }
 
     @Override
-    protected float getSoundPitch() {
-        return super.getSoundPitch() * 0.8f;
+	public float getVoicePitch() {
+        return super.getVoicePitch() * 0.8f;
     }
 
     @Override

@@ -1,32 +1,12 @@
 package com.barribob.mm.entity.entities;
 
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.syncher.EntityDataAccessor;
-import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.entity.IEntityLivingData;
-import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.entity.ai.goal.FloatGoal;
-import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
-import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
-import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
-import net.minecraft.world.entity.monster.RangedAttackMob;
-import net.minecraft.entity.ai.*;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.network.syncher.EntityDataSerializers;
-import net.minecraft.network.syncher.SynchedEntityData;
-import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.phys.Vec3;
-import net.minecraft.world.DifficultyInstance;
-import net.minecraft.world.level.Level;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-
 import javax.annotation.Nullable;
 
-import com.barribob.mm.entity.action.*;
+import com.barribob.mm.entity.action.ActionFireball;
+import com.barribob.mm.entity.action.ActionGroundSlash;
+import com.barribob.mm.entity.action.ActionSpinSlash;
+import com.barribob.mm.entity.action.ActionTeleport;
+import com.barribob.mm.entity.action.IAction;
 import com.barribob.mm.entity.ai.EntityAIRangedAttack;
 import com.barribob.mm.entity.animation.AnimationFireballThrow;
 import com.barribob.mm.entity.animation.AnimationHerobrineGroundSlash;
@@ -40,9 +20,35 @@ import com.barribob.mm.util.ModRandom;
 import com.barribob.mm.util.ModUtils;
 import com.barribob.mm.util.handlers.ParticleManager;
 
+import net.minecraft.entity.IEntityLivingData;
+import net.minecraft.entity.ai.*;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.DifficultyInstance;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.ai.goal.FleeSunGoal;
+import net.minecraft.world.entity.ai.goal.FloatGoal;
+import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
+import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
+import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
+import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
+import net.minecraft.world.entity.monster.RangedAttackMob;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
+
 public class EntityHerobrineOne extends EntityLeveledMob implements RangedAttackMob {
     // Swinging arms is the animation for the attack
-    private static final EntityDataAccessor<Boolean> SWINGING_ARMS = SynchedEntityData.<Boolean>createKey(EntityLeveledMob.class, EntityDataSerializers.BOOLEAN);
+    private static final EntityDataAccessor<Boolean> SWINGING_ARMS = SynchedEntityData.<Boolean>defineId(EntityLeveledMob.class, EntityDataSerializers.BOOLEAN);
     private ComboAttack attackHandler = new ComboAttack();
     private byte passiveParticleByte = 7;
     private int maxHits = 3;
@@ -61,13 +67,13 @@ public class EntityHerobrineOne extends EntityLeveledMob implements RangedAttack
         this.setSize(0.8f, 2.0f);
         if (!level.isClientSide) {
             attackHandler.setAttack(spinSlash, new ActionSpinSlash());
-            attackHandler.setAttack(groundSlash, new ActionGroundSlash(() -> new ProjectileHerobrineQuake(world, this, this.getAttack())));
+            attackHandler.setAttack(groundSlash, new ActionGroundSlash(() -> new ProjectileHerobrineQuake(level, this, this.getAttack())));
             attackHandler.setAttack(fireball, new IAction() {
                 @Override
                 public void performAction(EntityLeveledMob actor, LivingEntity target) {
-                    actor.playSound(SoundEvents.BLAZE_SHOOT, 1.0F, 0.4F / (actor.world.rand.nextFloat() * 0.4F + 0.8F));
+                    actor.playSound(SoundEvents.BLAZE_SHOOT, 1.0F, 0.4F / (actor.level.random.nextFloat() * 0.4F + 0.8F));
 
-                    ProjectileFireball projectile = new ProjectileFireball(actor.world, actor, actor.getAttack(), null);
+                    ProjectileFireball projectile = new ProjectileFireball(actor.level, actor, actor.getAttack(), null);
                     ModUtils.throwProjectile(actor, target, projectile, 2.0f, 0.5f, ModUtils.yVec(0.5f));
                 }
             });
@@ -78,22 +84,22 @@ public class EntityHerobrineOne extends EntityLeveledMob implements RangedAttack
     @OnlyIn(Dist.CLIENT)
     protected void initAnimation() {
         attackHandler.setAttack(spinSlash, new ActionSpinSlash(), () -> new AnimationSpinSlash());
-        attackHandler.setAttack(groundSlash, new ActionGroundSlash(() -> new ProjectileHerobrineQuake(world, this, this.getAttack())),
+        attackHandler.setAttack(groundSlash, new ActionGroundSlash(() -> new ProjectileHerobrineQuake(level, this, this.getAttack())),
                 () -> new AnimationHerobrineGroundSlash());
         attackHandler.setAttack(fireball, new ActionFireball(), () -> new AnimationFireballThrow());
         this.currentAnimation = new AnimationSpinSlash();
     }
 
     @Override
-    protected void initEntityAI() {
-        super.initEntityAI();
-        this.tasks.addTask(4, new EntityAIRangedAttack<EntityHerobrineOne>(this, 1.0f, 40, 10.0f, 0.2f));
-        this.tasks.addTask(1, new FloatGoal(this));
-        this.tasks.addTask(3, new EntityAIFleeSun(this, 1.0D));
-        this.tasks.addTask(5, new EntityAIWanderAvoidWater(this, 1.0D));
-        this.tasks.addTask(6, new RandomLookAroundGoal(this));
-        this.targetTasks.addTask(1, new HurtByTargetGoal(this, false, new Class[0]));
-        this.targetTasks.addTask(2, new NearestAttackableTargetGoal(this, Player.class, true));
+    protected void registerGoals() {
+        super.registerGoals();
+        this.goalSelector.addGoal(4, new EntityAIRangedAttack<EntityHerobrineOne>(this, 1.0f, 40, 10.0f, 0.2f));
+        this.goalSelector.addGoal(1, new FloatGoal(this));
+        this.goalSelector.addGoal(3, new FleeSunGoal(this, 1.0D));
+        this.goalSelector.addGoal(5, new WaterAvoidingRandomStrollGoal(this, 1.0D));
+        this.goalSelector.addGoal(6, new RandomLookAroundGoal(this));
+        this.targetSelector.addGoal(1, new HurtByTargetGoal(this));
+        this.targetSelector.addGoal(2, new NearestAttackableTargetGoal(this, Player.class, true));
     }
 
     @Override
@@ -105,14 +111,14 @@ public class EntityHerobrineOne extends EntityLeveledMob implements RangedAttack
     }
 
     @Override
-    public boolean attackEntityFrom(DamageSource source, float amount) {
+    public boolean hurt(DamageSource source, float amount) {
         if (hits == 0) {
             hits = maxHits;
-            return super.attackEntityFrom(source, amount);
-        } else if (source.getTrueSource() instanceof LivingEntity) {
-            new ActionTeleport().performAction(this, (LivingEntity) source.getTrueSource());
-            this.playSound(SoundEvents.ENDERMEN_TELEPORT, 1.0F, 1.0F + ModRandom.getFloat(0.2f));
-            this.setRevengeTarget((LivingEntity) source.getTrueSource());
+            return super.hurt(source, amount);
+        } else if (source.getEntity() instanceof LivingEntity) {
+            new ActionTeleport().performAction(this, (LivingEntity) source.getEntity());
+            this.playSound(SoundEvents.ENDERMAN_TELEPORT, 1.0F, 1.0F + ModRandom.getFloat(0.2f));
+            this.setRevengeTarget((LivingEntity) source.getEntity());
 
             hits--;
         }
@@ -121,11 +127,11 @@ public class EntityHerobrineOne extends EntityLeveledMob implements RangedAttack
     }
 
     @Override
-    public void onDeath(DamageSource cause) {
+    public void die(DamageSource cause) {
         level.broadcastEntityEvent(this, this.deathParticleByte);
-        this.setPosition(0, 0, 0);
-        this.setDead();
-        super.onDeath(cause);
+        this.setPos(0, 0, 0);
+        this.discard();
+        super.die(cause);
     }
 
     @Override
@@ -157,8 +163,8 @@ public class EntityHerobrineOne extends EntityLeveledMob implements RangedAttack
     }
 
     @Override
-    public void setSwingingArms(boolean swingingArms) {
-        this.dataManager.set(SWINGING_ARMS, Boolean.valueOf(swingingArms));
+    public void setAggressive(boolean swingingArms) {
+        this.entityData.set(SWINGING_ARMS, Boolean.valueOf(swingingArms));
         if (swingingArms) {
             float distance = (float) this.getDistanceSq(this.getTarget().posX, getTarget().getBoundingBox().minY, getTarget().posZ);
             float melee_distance = 4;
@@ -189,11 +195,11 @@ public class EntityHerobrineOne extends EntityLeveledMob implements RangedAttack
     }
 
     @Override
-    public void onUpdate() {
-        super.onUpdate();
+    public void tick() {
+        super.tick();
 
         if (this.markedToDespawn) {
-            this.setDead();
+            this.discard();
         }
 
         if (!this.level.isClientSide && this.isSwingingArms() && attackHandler.getCurrentAttack() == fireball) {
@@ -208,36 +214,36 @@ public class EntityHerobrineOne extends EntityLeveledMob implements RangedAttack
      */
     @Override
     @OnlyIn(Dist.CLIENT)
-    public void handleStatusUpdate(byte id) {
+    public void handleEntityEvent(byte id) {
         if (id >= 4 && id <= 6) {
             currentAnimation = attackHandler.getAnimation(id);
             getCurrentAnimation().startAnimation();
         } else if (id == this.passiveParticleByte) {
-            if (rand.nextInt(2) == 0) {
-                ParticleManager.spawnEffect(world, ModUtils.entityPos(this).add(ModRandom.randVec().scale(1.5f)).add(new Vec3(0, 1, 0)), ModColors.AZURE);
+            if (random.nextInt(2) == 0) {
+                ParticleManager.spawnEffect(level, ModUtils.entityPos(this).add(ModRandom.randVec().scale(1.5f)).add(new Vec3(0, 1, 0)), ModColors.AZURE);
             }
         } else if (id == this.deathParticleByte) {
             int particleAmount = 100;
             for (int i = 0; i < particleAmount; i++) {
-                ParticleManager.spawnEffect(this.world, ModUtils.entityPos(this).add(ModRandom.randVec().scale(2f)).add(new Vec3(0, 1, 0)), ModColors.AZURE);
+                ParticleManager.spawnEffect(this.level, ModUtils.entityPos(this).add(ModRandom.randVec().scale(2f)).add(new Vec3(0, 1, 0)), ModColors.AZURE);
             }
         } else if (id == this.fireballParticleByte) {
             int fireballParticles = 5;
             for (int i = 0; i < fireballParticles; i++) {
                 Vec3 pos = new Vec3(ModRandom.getFloat(0.5f), this.getEyeHeight() + 1.0f, ModRandom.getFloat(0.5f)).add(ModUtils.entityPos(this));
-                ParticleManager.spawnCustomSmoke(world, pos, ProjectileFireball.FIREBALL_COLOR, Vec3.ZERO);
+                ParticleManager.spawnCustomSmoke(level, pos, ProjectileFireball.FIREBALL_COLOR, Vec3.ZERO);
             }
-        } else if (id == this.slashParticleByte) {
+        } else if (id == EntityHerobrineOne.slashParticleByte) {
             Vec3 color = new Vec3(0.5, 0.2, 0.3);
             float particleHeight = 1.2f;
             for (float r = 0.5f; r <= 2; r += 0.5f) {
                 for (float sector = 0; sector < 360; sector += 10) {
                     Vec3 pos = new Vec3(Math.cos(sector) * r, particleHeight, Math.sin(sector) * r).add(ModUtils.entityPos(this));
-                    ParticleManager.spawnEffect(world, pos, ModColors.AZURE);
+                    ParticleManager.spawnEffect(level, pos, ModColors.AZURE);
                 }
             }
         } else {
-            super.handleStatusUpdate(id);
+            super.handleEntityEvent(id);
         }
     }
 
@@ -247,17 +253,17 @@ public class EntityHerobrineOne extends EntityLeveledMob implements RangedAttack
     }
 
     @Override
-    public void readEntityFromNBT(CompoundTag compound) {
+    public void readAdditionalSaveData(CompoundTag compound) {
         this.markedToDespawn = true;
     }
 
     @Override
-    protected void entityInit() {
-        super.entityInit();
-        this.dataManager.register(SWINGING_ARMS, Boolean.valueOf(false));
+    protected void defineSynchedData() {
+        super.defineSynchedData();
+        this.entityData.define(SWINGING_ARMS, Boolean.valueOf(false));
     }
 
     public boolean isSwingingArms() {
-        return this.dataManager.get(SWINGING_ARMS).booleanValue();
+        return this.entityData.get(SWINGING_ARMS).booleanValue();
     }
 }

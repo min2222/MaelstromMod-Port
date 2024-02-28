@@ -1,23 +1,5 @@
 package com.barribob.mm.entity.entities;
 
-import net.minecraft.ChatFormatting;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.BossEvent;
-import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.util.Mth;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.SoundEvent;
-import net.minecraft.world.phys.Vec3;
-import net.minecraft.util.text.TextComponentString;
-import net.minecraft.util.text.TextComponentTranslation;
-import net.minecraft.server.level.ServerBossEvent;
-import net.minecraft.world.level.Level;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;
@@ -41,6 +23,26 @@ import com.barribob.mm.util.handlers.LootTableHandler;
 import com.barribob.mm.util.handlers.ParticleManager;
 import com.barribob.mm.util.handlers.SoundsHandler;
 
+import net.minecraft.ChatFormatting;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerBossEvent;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.util.Mth;
+import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.text.TextComponentTranslation;
+import net.minecraft.world.BossEvent.BossBarColor;
+import net.minecraft.world.BossEvent.BossBarOverlay;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
+
 public class EntityMaelstromIllager extends EntityMaelstromMob {
     private final byte summonMob = 4;
     private final byte magicMissile = 5;
@@ -57,14 +59,14 @@ public class EntityMaelstromIllager extends EntityMaelstromMob {
             int mobCount = phase2() ? getMobConfig().getInt("summoning_algorithm.second_phase_mobs_per_spawn") :
                     getMobConfig().getInt("summoning_algorithm.first_phase_mobs_per_spawn");
             for (int i = 0; i < mobCount; i++) {
-                ModUtils.spawnMob(world, getPosition(), getLevel(), getMobConfig().getConfig("summoning_algorithm"));
+                ModUtils.spawnMob(level, blockPosition(), getLevel(), getMobConfig().getConfig("summoning_algorithm"));
             }
-            actor.playSound(SoundEvents.ILLAGER_CAST_SPELL, 1.0F, 0.4F / (world.rand.nextFloat() * 0.4F + 0.8F));
+            actor.playSound(SoundEvents.EVOKER_CAST_SPELL, 1.0F, 0.4F / (level.random.nextFloat() * 0.4F + 0.8F));
         }
     };
 
     // Responsible for the boss bar
-    private final ServerBossEvent bossInfo = (new ServerBossEvent(this.getDisplayName(), BossEvent.Color.PURPLE, BossEvent.Overlay.NOTCHED_20));
+    private final ServerBossEvent bossInfo = (new ServerBossEvent(this.getDisplayName(), BossBarColor.PURPLE, BossBarOverlay.NOTCHED_20));
 
     public EntityMaelstromIllager(Level worldIn) {
         super(worldIn);
@@ -72,12 +74,12 @@ public class EntityMaelstromIllager extends EntityMaelstromMob {
         this.healthScaledAttackFactor = 0.2;
         if (!level.isClientSide) {
             attackHandler.setAttack(magicMissile, (IAction) (actor, target) -> {
-                ModUtils.throwProjectile(actor, target, new ProjectileHorrorAttack(world, actor, getAttack() * getConfigFloat("maelstrom_missile_damage")), 6.0f, 1.2f,
+                ModUtils.throwProjectile(actor, target, new ProjectileHorrorAttack(level, actor, getAttack() * getConfigFloat("maelstrom_missile_damage")), 6.0f, 1.2f,
                         ModUtils.getRelativeOffset(actor, new Vec3(0, 0, 1)));
-                actor.playSound(SoundEvents.BLAZE_SHOOT, 1.0F, 1.0F / (getRNG().nextFloat() * 0.4F + 0.8F));
+                actor.playSound(SoundEvents.BLAZE_SHOOT, 1.0F, 1.0F / (getRandom().nextFloat() * 0.4F + 0.8F));
             });
             attackHandler.setAttack(wisp, (IAction) (actor, target) -> {
-                ModProjectile proj = new ProjectileMaelstromWisp(world, actor, getAttack() * getConfigFloat("ring_damage"));
+                ModProjectile proj = new ProjectileMaelstromWisp(level, actor, getAttack() * getConfigFloat("ring_damage"));
                 proj.setTravelRange(15f);
                 ModUtils.throwProjectile(actor, target, proj, 1.0f, 1.0f);
                 playSoundWithFallback(SoundsHandler.Hooks.ENTITY_ILLAGER_VORTEX, SoundEvents.BLAZE_AMBIENT);
@@ -90,7 +92,7 @@ public class EntityMaelstromIllager extends EntityMaelstromMob {
                         .stoppedByArmorNotShields().build();
 
                 ModUtils.handleAreaImpact(shieldSize, (e) -> getAttack() * getConfigFloat("defensive_burst_damage"), actor, position(), damageSource);
-                playSoundWithFallback(SoundsHandler.Hooks.ENTITY_ILLAGER_DOME, SoundEvents.FIREWORK_BLAST);
+                playSoundWithFallback(SoundsHandler.Hooks.ENTITY_ILLAGER_DOME, SoundEvents.FIREWORK_ROCKET_BLAST);
                 actor.level.broadcastEntityEvent(actor, ModUtils.THIRD_PARTICLE_BYTE);
             });
             attackHandler.setAttack(enemy, spawnEnemy);
@@ -189,25 +191,25 @@ public class EntityMaelstromIllager extends EntityMaelstromMob {
     }
 
     @Override
-    protected void initEntityAI() {
-        super.initEntityAI();
+    protected void registerGoals() {
+        super.registerGoals();
         phase1AttackAI = new EntityAIRangedAttackNoReset<EntityMaelstromMob>(this, 1.25f, 360, 60, 15.0f, 0.5f);
-        this.tasks.addTask(4, phase1AttackAI);
+        this.goalSelector.addGoal(4, phase1AttackAI);
     }
 
     @Override
     protected SoundEvent getAmbientSound() {
-        return SoundEvents.EVOCATION_ILLAGER_AMBIENT;
+        return SoundEvents.EVOKER_AMBIENT;
     }
 
     @Override
     protected SoundEvent getDeathSound() {
-        return SoundEvents.EVOCATION_ILLAGER_DEATH;
+        return SoundEvents.EVOKER_DEATH;
     }
 
     @Override
     protected SoundEvent getHurtSound(DamageSource damageSourceIn) {
-        return SoundEvents.EVOCATION_ILLAGER_HURT;
+        return SoundEvents.EVOKER_HURT;
     }
 
     @Override
@@ -216,15 +218,15 @@ public class EntityMaelstromIllager extends EntityMaelstromMob {
     }
 
     @Override
-    protected ResourceLocation getLootTable() {
+    protected ResourceLocation getDefaultLootTable() {
         return LootTableHandler.MAELSTROM_ILLAGER;
     }
 
     @Override
-    public boolean attackEntityFrom(DamageSource source, float amount) {
+    public boolean hurt(DamageSource source, float amount) {
         if (!this.isSwingingArms()) {
             if (!source.isProjectile()) {
-                Entity entity = source.getImmediateSource();
+                Entity entity = source.getDirectEntity();
 
                 if (entity instanceof LivingEntity) {
                     this.blockUsingShield((LivingEntity) entity);
@@ -239,7 +241,7 @@ public class EntityMaelstromIllager extends EntityMaelstromMob {
         double firstDialogHp = getMobConfig().getDouble("first_dialog_hp");
         double secondDialogHP = getMobConfig().getDouble("second_dialog_hp");
         double secondPhaseHp = getMobConfig().getDouble("second_boss_phase_hp");
-        boolean flag = super.attackEntityFrom(source, amount);
+        boolean flag = super.hurt(source, amount);
 
         String message = "";
         if (prevHealth > firstDialogHp && this.getHealth() <= firstDialogHp) {
@@ -256,8 +258,8 @@ public class EntityMaelstromIllager extends EntityMaelstromMob {
 
         if (message != "") {
             for (Player player : this.bossInfo.getPlayers()) {
-                player.sendMessage(new TextComponentString(ChatFormatting.DARK_PURPLE + "Maelstrom Illager: " + ChatFormatting.WHITE)
-                        .appendSibling(new TextComponentTranslation(ModUtils.LANG_CHAT + message)));
+                player.sendSystemMessage(Component.literal(ChatFormatting.DARK_PURPLE + "Maelstrom Illager: " + ChatFormatting.WHITE)
+                        .append(Component.translatable(ModUtils.LANG_CHAT + message)));
             }
         }
 
@@ -279,8 +281,8 @@ public class EntityMaelstromIllager extends EntityMaelstromMob {
     }
 
     @Override
-    public void onUpdate() {
-        super.onUpdate();
+    public void tick() {
+        super.tick();
 
         if (!phase2() || (phase2() && attackHandler.getCurrentAttack() == enemy)) {
             level.broadcastEntityEvent(this, ModUtils.PARTICLE_BYTE);
@@ -298,8 +300,8 @@ public class EntityMaelstromIllager extends EntityMaelstromMob {
             if (phase2()) {
                 Byte[] attack = {wisp, magicMissile, enemy};
                 double[] weights = {0.5, 0.5, 0.2};
-                attackHandler.setCurrentAttack(ModRandom.choice(attack, this.getRNG(), weights).next());
-                if (this.getTarget() != null && this.getDistance(this.getTarget()) < 4) {
+                attackHandler.setCurrentAttack(ModRandom.choice(attack, this.getRandom(), weights).next());
+                if (this.getTarget() != null && this.distanceTo(this.getTarget()) < 4) {
                     attackHandler.setCurrentAttack(shield);
                     playSoundWithFallback(SoundsHandler.Hooks.ENTITY_ILLAGER_DOME_CHARGE, SoundsHandler.NONE);
                 }
@@ -314,7 +316,7 @@ public class EntityMaelstromIllager extends EntityMaelstromMob {
     }
 
     @Override
-    public void handleStatusUpdate(byte id) {
+    public void handleEntityEvent(byte id) {
         if (id == summonMob) {
             this.currentAnimation = new AnimationOscillateArms(60, this);
             currentAnimation.startAnimation();
@@ -324,23 +326,23 @@ public class EntityMaelstromIllager extends EntityMaelstromMob {
         } else if (id == ModUtils.THIRD_PARTICLE_BYTE) {
             for (int i = 0; i < 1000; i++) {
                 Vec3 unit = new Vec3(0, 1, 0);
-                unit = unit.rotatePitch((float) (Math.PI * ModRandom.getFloat(1)));
-                unit = unit.rotateYaw((float) (Math.PI * ModRandom.getFloat(1)));
+                unit = unit.xRot((float) (Math.PI * ModRandom.getFloat(1)));
+                unit = unit.yRot((float) (Math.PI * ModRandom.getFloat(1)));
                 unit = unit.normalize().scale(shieldSize);
-                ParticleManager.spawnEffect(world, unit.add(position()), ModColors.PURPLE);
+                ParticleManager.spawnEffect(level, unit.add(position()), ModColors.PURPLE);
             }
         } else if (id == ModUtils.SECOND_PARTICLE_BYTE) {
-            ParticleManager.spawnMaelstromPotionParticle(world, rand, ModUtils.getRelativeOffset(this, new Vec3(0, this.getEyeHeight(), 1)).add(position()), true);
+            ParticleManager.spawnMaelstromPotionParticle(level, random, ModUtils.getRelativeOffset(this, new Vec3(0, this.getEyeHeight(), 1)).add(position()), true);
         } else if (id == ModUtils.PARTICLE_BYTE) {
             if (this.isSwingingArms()) {
-                float f = this.renderYawOffset * 0.017453292F + Mth.cos(this.tickCount * 0.6662F) * 0.25F;
+                float f = this.yBodyRot * 0.017453292F + Mth.cos(this.tickCount * 0.6662F) * 0.25F;
                 float f1 = Mth.cos(f);
                 float f2 = Mth.sin(f);
-                ParticleManager.spawnMaelstromPotionParticle(world, rand, new Vec3(this.posX + f1 * 0.6D, this.posY + 1.8D, this.posZ + f2 * 0.6D), true);
-                ParticleManager.spawnMaelstromPotionParticle(world, rand, new Vec3(this.posX - f1 * 0.6D, this.posY + 1.8D, this.posZ - f2 * 0.6D), true);
+                ParticleManager.spawnMaelstromPotionParticle(level, random, new Vec3(this.posX + f1 * 0.6D, this.posY + 1.8D, this.posZ + f2 * 0.6D), true);
+                ParticleManager.spawnMaelstromPotionParticle(level, random, new Vec3(this.posX - f1 * 0.6D, this.posY + 1.8D, this.posZ - f2 * 0.6D), true);
             }
         }
-        super.handleStatusUpdate(id);
+        super.handleEntityEvent(id);
     }
 
     private boolean phase2() {
@@ -348,12 +350,12 @@ public class EntityMaelstromIllager extends EntityMaelstromMob {
     }
 
     @Override
-    public void readEntityFromNBT(CompoundTag compound) {
+    public void readAdditionalSaveData(CompoundTag compound) {
         if (this.hasCustomName()) {
             this.bossInfo.setName(this.getDisplayName());
         }
 
-        super.readEntityFromNBT(compound);
+        super.readAdditionalSaveData(compound);
     }
 
     @Override
@@ -363,9 +365,9 @@ public class EntityMaelstromIllager extends EntityMaelstromMob {
     }
 
     @Override
-    protected void updateAITasks() {
-        this.bossInfo.setPercent(this.getHealth() / this.getMaxHealth());
-        super.updateAITasks();
+    protected void customServerAiStep() {
+        this.bossInfo.setProgress(this.getHealth() / this.getMaxHealth());
+        super.customServerAiStep();
     }
 
     @Override

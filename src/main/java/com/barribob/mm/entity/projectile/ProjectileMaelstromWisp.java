@@ -46,7 +46,7 @@ public class ProjectileMaelstromWisp extends ModProjectile {
     }
 
     @Override
-    public void onUpdate() {
+    public void tick() {
         super.onUpdate();
         DamageSource source = ModDamageSource.builder()
                 .type(ModDamageSource.MAGIC)

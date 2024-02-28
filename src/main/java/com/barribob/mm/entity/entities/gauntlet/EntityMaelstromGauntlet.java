@@ -1,9 +1,5 @@
 package com.barribob.mm.entity.entities.gauntlet;
 
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.phys.Vec3;
-import net.minecraft.world.level.Level;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -14,6 +10,10 @@ import com.barribob.mm.entity.projectile.ModProjectile;
 import com.barribob.mm.entity.projectile.ProjectileMegaFireball;
 import com.barribob.mm.util.ModRandom;
 import com.barribob.mm.util.ModUtils;
+
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
 
 public class EntityMaelstromGauntlet extends EntityAbstractMaelstromGauntlet {
     Supplier<Vec3> position = () -> getTarget() == null ? null : getTarget().position();
@@ -32,11 +32,11 @@ public class EntityMaelstromGauntlet extends EntityAbstractMaelstromGauntlet {
     }
 
     private void spawnMob() {
-        ModUtils.spawnMob(world, this.getPosition(), this.getLevel(), getMobConfig().getConfig("summoning_algorithm"));
+        ModUtils.spawnMob(level, this.blockPosition(), this.getMobLevel(), getMobConfig().getConfig("summoning_algorithm"));
     }
 
     private ModProjectile generateFireball() {
-        ProjectileMegaFireball fireball = new ProjectileMegaFireball(world, this, this.getAttack() * getConfigFloat("fireball_damage"), null, true);
+        ProjectileMegaFireball fireball = new ProjectileMegaFireball(level, this, this.getAttack() * getConfigFloat("fireball_damage"), null, true);
         fireball.setTravelRange(30);
         return fireball;
     }
@@ -44,7 +44,7 @@ public class EntityMaelstromGauntlet extends EntityAbstractMaelstromGauntlet {
     @Override
     protected IGauntletAction getNextAttack(LivingEntity target, float distanceSq, IGauntletAction previousAction) {
         List<IGauntletAction> attacks = new ArrayList<>(Arrays.asList(punchAttack, laserAttack, summonAttack, fireballAttack));
-        int numMinions = (int) ModUtils.getEntitiesInBox(this, getBoundingBox().grow(20, 10, 20)).stream().filter(EntityMaelstromMob::isMaelstromMob).count();
+        int numMinions = (int) ModUtils.getEntitiesInBox(this, getBoundingBox().inflate(20, 10, 20)).stream().filter(EntityMaelstromMob::isMaelstromMob).count();
 
         double defendWeight = previousAction == this.summonAttack || numMinions > 3 || this.getHealth() > spawnHealth ? 0 : 0.8;
         double fireballWeight = distanceSq < Math.pow(25, 2) && this.getHealth() < fireballHealth ? 1 : 0;
@@ -52,6 +52,6 @@ public class EntityMaelstromGauntlet extends EntityAbstractMaelstromGauntlet {
         double punchWeight = ModUtils.canEntityBeSeen(this, target) ? Math.sqrt(distanceSq) / 25 : 3;
 
         double[] weights = {punchWeight, lazerWeight, defendWeight, fireballWeight};
-        return ModRandom.choice(attacks, rand, weights).next();
+        return ModRandom.choice(attacks, random, weights).next();
     }
 }

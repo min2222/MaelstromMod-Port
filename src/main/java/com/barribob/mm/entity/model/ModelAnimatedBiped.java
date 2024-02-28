@@ -2,11 +2,11 @@ package com.barribob.mm.entity.model;
 
 import com.barribob.mm.entity.entities.EntityLeveledMob;
 
-import net.minecraft.client.model.ModelBiped;
+import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.model.ModelRenderer;
+import net.minecraft.util.EnumHandSide;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.util.EnumHandSide;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
@@ -14,7 +14,7 @@ import net.minecraftforge.api.distmarker.OnlyIn;
  * Adds built in animation manipulation via the Animation class
  */
 @OnlyIn(Dist.CLIENT)
-public class ModelAnimatedBiped extends ModelBiped {
+public class ModelAnimatedBiped<T extends LivingEntity> extends HumanoidModel<T> {
     protected static int textureWidth = 64;
     protected static int textureHeight = 64;
     public ModelRenderer centerPivot;

@@ -1,16 +1,5 @@
 package com.barribob.mm.entity.entities;
 
-import net.minecraft.server.level.ServerBossEvent;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.BossEvent;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.SoundEvent;
-import net.minecraft.world.phys.Vec3;
-import net.minecraft.world.level.Level;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;
@@ -31,19 +20,32 @@ import com.barribob.mm.util.handlers.LootTableHandler;
 import com.barribob.mm.util.handlers.ParticleManager;
 import com.barribob.mm.util.handlers.SoundsHandler;
 
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerBossEvent;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.BossEvent.BossBarColor;
+import net.minecraft.world.BossEvent.BossBarOverlay;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
+
 public class EntityIronShade extends EntityMaelstromMob {
     private ComboAttack attackHandler = new ComboAttack();
     private byte frontFlip = 4;
     private byte spin = 5;
     private int spinDuration = 30;
     private int maxSpinDuration = 30;
-    private final ServerBossEvent bossInfo = (new ServerBossEvent(this.getDisplayName(), BossEvent.Color.PURPLE, BossEvent.Overlay.NOTCHED_6));
+    private final ServerBossEvent bossInfo = (new ServerBossEvent(this.getDisplayName(), BossBarColor.PURPLE, BossBarOverlay.NOTCHED_6));
 
     public EntityIronShade(Level worldIn) {
         super(worldIn);
         this.healthScaledAttackFactor = 0.2;
         this.setSize(0.9f, 2.2f);
-        if (!worldIn.isRemote) {
+        if (!worldIn.isClientSide) {
             attackHandler.setAttack(frontFlip, (IAction) (actor, target) -> {
                 DamageSource source = ModDamageSource.builder()
                         .directEntity(this)
@@ -51,7 +53,7 @@ public class EntityIronShade extends EntityMaelstromMob {
                         .type(ModDamageSource.MOB)
                         .disablesShields().build();
 
-                Vec3 pos = this.position().add(ModUtils.yVec(1)).add(this.getLookVec().scale(2.0f));
+                Vec3 pos = this.position().add(ModUtils.yVec(1)).add(this.getLookAngle().scale(2.0f));
                 this.playSound(SoundEvents.PLAYER_ATTACK_SWEEP, 1.0F, 0.8F / (this.getRandom().nextFloat() * 0.4F + 0.8F));
                 ModUtils.handleAreaImpact(1.0f, (e) -> this.getAttack() * getConfigFloat("flip_damage"), this, pos, source, 0.20f, this.getElement() == Element.CRIMSON ? 3 : 0, false);
                 actor.level.broadcastEntityEvent(actor, ModUtils.SECOND_PARTICLE_BYTE);
@@ -61,8 +63,8 @@ public class EntityIronShade extends EntityMaelstromMob {
     }
 
     @Override
-    public void onUpdate() {
-        bossInfo.setPercent(this.getHealth() / this.getMaxHealth());
+    public void tick() {
+        bossInfo.setProgress(this.getHealth() / this.getMaxHealth());
         if (!level.isClientSide && spinDuration < maxSpinDuration && attackHandler.getCurrentAttack() == spin) {
             spinDuration++;
             if (this.tickCount % 5 == 0) {
@@ -71,7 +73,7 @@ public class EntityIronShade extends EntityMaelstromMob {
         } else if (!level.isClientSide && !this.isSwingingArms()) {
             level.broadcastEntityEvent(this, ModUtils.PARTICLE_BYTE);
         }
-        super.onUpdate();
+        super.tick();
     }
 
     @Override
@@ -196,10 +198,10 @@ public class EntityIronShade extends EntityMaelstromMob {
     }
 
     @Override
-    protected void initEntityAI() {
-        super.initEntityAI();
-        this.tasks.addTask(4, new EntityAIRangedAttack<EntityMaelstromMob>(this, 1.3f, 60, 10, 4.5f, 0.4f));
-        this.tasks.addTask(0, new AIJumpAtTarget(this, 0.4f, 0.5f));
+    protected void registerGoals() {
+        super.registerGoals();
+        this.goalSelector.addGoal(4, new EntityAIRangedAttack<EntityMaelstromMob>(this, 1.3f, 60, 10, 4.5f, 0.4f));
+        this.goalSelector.addGoal(0, new AIJumpAtTarget(this, 0.4f, 0.5f));
     }
 
     @Override
@@ -217,7 +219,7 @@ public class EntityIronShade extends EntityMaelstromMob {
     }
 
     @Override
-    public void handleStatusUpdate(byte id) {
+    public void handleEntityEvent(byte id) {
         // We want a special black flame for the non-elemental shade, and red flames for the crimson element.
         Vec3 flameColor = getElement() == Element.NONE ? new Vec3(0.1f, 0, 0.1f) : getElement().sweepColor;
         if (id >= 4 && id <= 6) {
@@ -226,23 +228,23 @@ public class EntityIronShade extends EntityMaelstromMob {
         } else if (id == EntityHerobrineOne.slashParticleByte) {
             ModUtils.performNTimes(4, (i) -> {
                 ModUtils.circleCallback(i, 15, (pos) -> {
-                    ParticleManager.spawnColoredFire(world, rand, position().add(new Vec3(pos.x, this.getEyeHeight() - 0.3f + ModRandom.getFloat(0.2f), pos.y)), flameColor);
+                    ParticleManager.spawnColoredFire(level, random, position().add(new Vec3(pos.x, this.getEyeHeight() - 0.3f + ModRandom.getFloat(0.2f), pos.y)), flameColor);
                 });
             });
         } else if (id == ModUtils.PARTICLE_BYTE) {
-            Vec3 look = this.getVectorForRotation(this.rotationPitch, this.rotationYawHead);
-            Vec3 side = look.rotateYaw((float) Math.PI * -0.5f);
-            Vec3 offset = position().add(side.scale(0.5f * ModRandom.randSign())).add(ModUtils.yVec(rand.nextFloat()));
-            ParticleManager.spawnColoredFire(world, rand, offset, flameColor);
-            offset = position().add(side.scale(0.5f * ModRandom.randSign())).add(look.scale(-rand.nextFloat())).add(ModUtils.yVec(0.1f));
-            ParticleManager.spawnColoredFire(world, rand, offset, flameColor);
+            Vec3 look = this.getVectorForRotation(this.getXRot(), this.yHeadRot);
+            Vec3 side = look.yRot((float) Math.PI * -0.5f);
+            Vec3 offset = position().add(side.scale(0.5f * ModRandom.randSign())).add(ModUtils.yVec(random.nextFloat()));
+            ParticleManager.spawnColoredFire(level, random, offset, flameColor);
+            offset = position().add(side.scale(0.5f * ModRandom.randSign())).add(look.scale(-random.nextFloat())).add(ModUtils.yVec(0.1f));
+            ParticleManager.spawnColoredFire(level, random, offset, flameColor);
         } else if (id == ModUtils.SECOND_PARTICLE_BYTE) {
-            Vec3 pos = this.position().add(ModUtils.yVec(1)).add(this.getLookVec().scale(2.0f));
+            Vec3 pos = this.position().add(ModUtils.yVec(1)).add(this.getLookAngle().scale(2.0f));
             for (int i = 0; i < 30; i++) {
-                ParticleManager.spawnColoredFire(world, rand, pos.add(ModRandom.randVec().add(ModUtils.yVec(ModRandom.getFloat(1.5f)))), flameColor);
+                ParticleManager.spawnColoredFire(level, random, pos.add(ModRandom.randVec().add(ModUtils.yVec(ModRandom.getFloat(1.5f)))), flameColor);
             }
         } else {
-            super.handleStatusUpdate(id);
+            super.handleEntityEvent(id);
         }
     }
 
@@ -262,7 +264,7 @@ public class EntityIronShade extends EntityMaelstromMob {
     }
 
     @Override
-    protected ResourceLocation getLootTable() {
+    protected ResourceLocation getDefaultLootTable() {
         if (getElement() == Element.CRIMSON) {
             return LootTableHandler.CRIMSON_MINIBOSS;
         }
@@ -280,20 +282,20 @@ public class EntityIronShade extends EntityMaelstromMob {
     }
 
     @Override
-    public void setCustomNameTag(String name) {
-        super.setCustomNameTag(name);
+    public void setCustomName(Component name) {
+        super.setCustomName(name);
         this.bossInfo.setName(this.getDisplayName());
     }
 
     @Override
-    public void addTrackingPlayer(ServerPlayer player) {
-        super.addTrackingPlayer(player);
+    public void startSeenByPlayer(ServerPlayer player) {
+        super.startSeenByPlayer(player);
         this.bossInfo.addPlayer(player);
     }
 
     @Override
-    public void removeTrackingPlayer(ServerPlayer player) {
-        super.removeTrackingPlayer(player);
+    public void stopSeenByPlayer(ServerPlayer player) {
+        super.stopSeenByPlayer(player);
         this.bossInfo.removePlayer(player);
     }
 }

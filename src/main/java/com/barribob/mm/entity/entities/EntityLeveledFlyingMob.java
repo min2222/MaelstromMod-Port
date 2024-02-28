@@ -7,16 +7,16 @@ import com.barribob.mm.util.IAnimatedMob;
 import com.barribob.mm.util.IElement;
 import com.barribob.mm.util.ModUtils;
 
-import net.minecraft.entity.EntityFlying;
-import net.minecraft.network.syncher.SynchedEntityData;
-import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.entity.monster.RangedAttackMob;
-import net.minecraft.entity.monster.IMob;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.world.Difficulty;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.EnumDifficulty;
+import net.minecraft.world.entity.FlyingMob;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.monster.Enemy;
+import net.minecraft.world.entity.monster.RangedAttackMob;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
@@ -24,30 +24,30 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 /*
  * Base class that serves as the flying version of EntityLeveledMob
  */
-public abstract class EntityLeveledFlyingMob extends EntityFlying implements IMob, RangedAttackMob, IAnimatedMob, IElement {
+public abstract class EntityLeveledFlyingMob extends FlyingMob implements Enemy, RangedAttackMob, IAnimatedMob, IElement {
     @OnlyIn(Dist.CLIENT)
     protected Animation currentAnimation;
     private float level;
 
-    protected static final EntityDataAccessor<Integer> ELEMENT = SynchedEntityData.<Integer>createKey(EntityLeveledMob.class, EntityDataSerializers.VARINT);
+    protected static final EntityDataAccessor<Integer> ELEMENT = SynchedEntityData.<Integer>createKey(EntityLeveledMob.class, EntityDataSerializers.INT);
 
     public EntityLeveledFlyingMob(Level worldIn) {
         super(worldIn);
     }
 
-    public float getLevel() {
+    public float getMobLevel() {
         return level;
     }
 
-    public void setLevel(float level) {
+    public void setMobLevel(float level) {
         this.level = level;
     }
 
     @Override
-    public void onLivingUpdate() {
-        super.onLivingUpdate();
+    public void aiStep() {
+        super.aiStep();
 
-        if (level.isClientSide && currentAnimation != null && this.getHealth() > 0) {
+        if (this.getLevel().isClientSide && currentAnimation != null && this.getHealth() > 0) {
             currentAnimation.update();
         }
     }
@@ -59,33 +59,33 @@ public abstract class EntityLeveledFlyingMob extends EntityFlying implements IMo
     }
 
     @Override
-    public void onUpdate() {
-        super.onUpdate();
+    public void tick() {
+        super.tick();
 
-        if (!this.level.isClientSide && this.world.getDifficulty() == EnumDifficulty.PEACEFUL) {
-            this.setDead();
+        if (!this.getLevel().isClientSide && this.getLevel().getDifficulty() == Difficulty.PEACEFUL) {
+            this.discard();
         }
 
         /**
          * Periodically check if the animations need to be reinitialized
          */
         if (this.tickCount % 20 == 0) {
-            level.broadcastEntityEvent(this, animationByte);
+        	getLevel().broadcastEntityEvent(this, animationByte);
         }
     }
 
     @Override
-    public void readFromNBT(CompoundTag compound) {
-        level.broadcastEntityEvent(this, animationByte);
-        if (compound.hasKey("element")) {
-            this.setElement(Element.getElementFromId(compound.getInteger("element")));
+    public void readAdditionalSaveData(CompoundTag compound) {
+    	getLevel().broadcastEntityEvent(this, animationByte);
+        if (compound.contains("element")) {
+            this.setElement(Element.getElementFromId(compound.getInt("element")));
         }
 
-        super.readFromNBT(compound);
+        super.readAdditionalSaveData(compound);
     }
 
     public float getAttack() {
-        return ModUtils.getMobDamage(this.getEntityAttribute(Attributes.ATTACK_DAMAGE).getAttributeValue(), 0.0, this.getMaxHealth(), this.getHealth(),
+        return ModUtils.getMobDamage(this.getAttribute(Attributes.ATTACK_DAMAGE).getBaseValue(), 0.0, this.getMaxHealth(), this.getHealth(),
                 this.level, this.getElement());
     }
 
@@ -96,16 +96,16 @@ public abstract class EntityLeveledFlyingMob extends EntityFlying implements IMo
 
     @Override
     protected float applyArmorCalculations(DamageSource source, float damage) {
-        return super.applyArmorCalculations(source, ModUtils.getArmoredDamage(source, damage, getLevel(), getElement()));
+        return super.applyArmorCalculations(source, ModUtils.getArmoredDamage(source, damage, getMobLevel(), getElement()));
     }
 
     @Override
     @OnlyIn(Dist.CLIENT)
-    public void handleStatusUpdate(byte id) {
+    public void handleEntityEvent(byte id) {
         if (id == animationByte && currentAnimation == null) {
             initAnimation();
         } else {
-            super.handleStatusUpdate(id);
+            super.handleEntityEvent(id);
         }
     }
 
@@ -114,23 +114,23 @@ public abstract class EntityLeveledFlyingMob extends EntityFlying implements IMo
     }
 
     @Override
-    protected void entityInit() {
-        super.entityInit();
-        this.dataManager.register(ELEMENT, Integer.valueOf(Element.NONE.id));
+    protected void defineSynchedData() {
+        super.defineSynchedData();
+        this.entityData.define(ELEMENT, Integer.valueOf(Element.NONE.id));
     }
 
     @Override
     public Element getElement() {
-        return this.dataManager == null ? Element.getElementFromId(Element.NONE.id) : Element.getElementFromId(this.dataManager.get(ELEMENT));
+        return Element.getElementFromId(this.entityData.get(ELEMENT));
     }
 
     public void setElement(Element element) {
-        this.dataManager.set(ELEMENT, element.id);
+        this.entityData.set(ELEMENT, element.id);
     }
 
     @Override
-    public void writeEntityToNBT(CompoundTag compound) {
-        compound.setInteger("element", getElement().id);
-        super.writeEntityToNBT(compound);
+    public void addAdditionalSaveData(CompoundTag compound) {
+        compound.putInt("element", getElement().id);
+        super.addAdditionalSaveData(compound);
     }
 }

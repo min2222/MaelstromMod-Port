@@ -100,10 +100,10 @@ public class EntityMaelstromLancer extends EntityMaelstromMob implements IAttack
     }
 
     @Override
-    protected void initEntityAI() {
-        super.initEntityAI();
-        this.tasks.addTask(4, new EntityAITimedAttack<EntityMaelstromLancer>(this, 1.0f, 10, 5, 0.5f, 20.0f));
-        this.tasks.addTask(0, new AIJumpAtTarget(this, 0.4f, 0.5f));
+    protected void registerGoals() {
+        super.registerGoals();
+        this.goalSelector.addGoal(4, new EntityAITimedAttack<EntityMaelstromLancer>(this, 1.0f, 10, 5, 0.5f, 20.0f));
+        this.goalSelector.addGoal(0, new AIJumpAtTarget(this, 0.4f, 0.5f));
     }
 
     @Override
@@ -132,7 +132,7 @@ public class EntityMaelstromLancer extends EntityMaelstromMob implements IAttack
 
     @Override
     @OnlyIn(Dist.CLIENT)
-    public void handleStatusUpdate(byte id) {
+    public void handleEntityEvent(byte id) {
         if (id == 4) {
             getCurrentAnimation().startAnimation();
         } else if (id == ModUtils.PARTICLE_BYTE) {
@@ -142,18 +142,18 @@ public class EntityMaelstromLancer extends EntityMaelstromMob implements IAttack
 
             ParticleManager.spawnEffect(world, this.position().add(ModRandom.randVec()).add(ModUtils.yVec(1)), getElement().particleColor);
         } else {
-            super.handleStatusUpdate(id);
+            super.handleEntityEvent(id);
         }
     }
 
     @Override
-    public void onLivingUpdate() {
+    public void aiStep() {
         if (!level.isClientSide && this.isLeaping()) {
             Vec3 dir = this.getLookVec().scale(2.2);
             Vec3 pos = this.position().add(ModUtils.yVec(0.8f)).add(dir);
             ModUtils.handleAreaImpact(0.2f, (e) -> this.getAttack(), this, pos, ModDamageSource.causeElementalMeleeDamage(this, getElement()), 0.20f, 0, false);
         }
-        super.onLivingUpdate();
+        super.aiStep();
     }
 
     @Override

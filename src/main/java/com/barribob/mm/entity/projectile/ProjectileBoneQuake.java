@@ -21,7 +21,7 @@ public class ProjectileBoneQuake extends ProjectileBeastQuake {
     }
 
     @Override
-    public void onUpdate() {
+    public void tick() {
         if (this.shootingEntity instanceof EntityLeveledMob) {
             EntityMaelstromBeast.spawnBone(world, this.position(), (EntityLeveledMob) this.shootingEntity);
         }

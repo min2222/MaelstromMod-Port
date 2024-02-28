@@ -92,7 +92,7 @@ public class EntityAlternativeMaelstromGauntletStage2 extends EntityAbstractMael
     }
 
     @Override
-    public void handleStatusUpdate(byte id) {
+    public void handleEntityEvent(byte id) {
         if (id == ModUtils.THIRD_PARTICLE_BYTE) {
             for (int i = 0; i < 10; i++) {
                 Vec3 lookVec = ModUtils.getLookVec(getPitch(), rotationYaw);
@@ -100,6 +100,6 @@ public class EntityAlternativeMaelstromGauntletStage2 extends EntityAbstractMael
                 ParticleManager.spawnFluff(world, pos, Vec3.ZERO, lookVec.scale(0.1));
             }
         }
-        super.handleStatusUpdate(id);
+        super.handleEntityEvent(id);
     }
 }

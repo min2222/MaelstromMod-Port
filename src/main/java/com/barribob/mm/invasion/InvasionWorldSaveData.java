@@ -4,9 +4,10 @@ import com.barribob.mm.config.ModConfig;
 import com.barribob.mm.util.Reference;
 
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.level.saveddata.SavedData;
 import net.minecraft.world.storage.WorldSavedData;
 
-public class InvasionWorldSaveData extends WorldSavedData {
+public class InvasionWorldSaveData extends SavedData {
     private int timeUntilInvasion = ModConfig.world.invasionTime * 60 * 1000; // The number of milliseconds until invasion
     private boolean invaded = false;
     private int dimensionTime = 1000; // An additional second when coming out of a dimension to let the server get the correct player position

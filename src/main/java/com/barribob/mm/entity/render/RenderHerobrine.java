@@ -1,19 +1,20 @@
 package com.barribob.mm.entity.render;
 
 import com.barribob.mm.entity.entities.EntityLeveledMob;
+import com.barribob.mm.entity.entities.Herobrine;
 import com.barribob.mm.entity.model.ModelAnimatedBiped;
 import com.barribob.mm.util.Reference;
+import com.mojang.blaze3d.platform.GlStateManager;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.entity.RenderManager;
-import net.minecraft.client.renderer.entity.layers.LayerRenderer;
-import net.minecraft.world.entity.Mob;
+import net.minecraft.client.renderer.entity.EntityRendererProvider;
+import net.minecraft.client.renderer.entity.layers.RenderLayer;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.Mob;
 
-public class RenderHerobrine extends RenderAnimatedBiped {
-    public RenderHerobrine(RenderManager renderManagerIn, ResourceLocation resourceLocation) {
-        super(renderManagerIn, new ModelAnimatedBiped(), 0.5f, resourceLocation);
+public class RenderHerobrine extends RenderAnimatedBiped<Herobrine, ModelAnimatedBiped<Herobrine>> {
+    public RenderHerobrine(EntityRendererProvider.Context renderManagerIn, ResourceLocation resourceLocation) {
+        super(renderManagerIn, new ModelAnimatedBiped<>(), 0.5f, resourceLocation);
         this.addLayer(new LayerHerobrineEyes());
     }
 
@@ -33,7 +34,7 @@ public class RenderHerobrine extends RenderAnimatedBiped {
         }
     }
 
-    private class LayerHerobrineEyes implements LayerRenderer<EntityLeveledMob> {
+    private class LayerHerobrineEyes extends RenderLayer<Herobrine, ModelAnimatedBiped<Herobrine>> {
         private final ResourceLocation EYES = new ResourceLocation(Reference.MOD_ID + ":textures/entity/herobrine_eyes.png");
 
         @Override
@@ -61,11 +62,6 @@ public class RenderHerobrine extends RenderAnimatedBiped {
                 GlStateManager.enableLighting();
                 GlStateManager.disableBlend();
             }
-        }
-
-        @Override
-        public boolean shouldCombineTextures() {
-            return false;
         }
     }
 }

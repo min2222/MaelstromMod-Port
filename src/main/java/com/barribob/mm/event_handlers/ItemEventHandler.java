@@ -34,7 +34,7 @@ public class ItemEventHandler {
 //    }
 
     @SubscribeEvent
-    public static void onLivingUpdateEvent(LivingEvent.LivingUpdateEvent event) {
+    public static void aiStepEvent(LivingEvent.LivingUpdateEvent event) {
         if (event.getEntity() instanceof Player) {
             Player player = (Player) event.getEntity();
             Item heldItem = player.getHeldItem(InteractionHand.MAIN_HAND).getItem();

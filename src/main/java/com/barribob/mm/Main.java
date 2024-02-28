@@ -11,7 +11,9 @@ import com.barribob.mm.config.JsonConfigManager;
 import com.barribob.mm.init.ModBBAnimations;
 import com.barribob.mm.init.ModBlocks;
 import com.barribob.mm.init.ModDimensions;
+import com.barribob.mm.init.ModEnchantments;
 import com.barribob.mm.init.ModEntities;
+import com.barribob.mm.init.ModPotions;
 import com.barribob.mm.init.ModProfessions;
 import com.barribob.mm.init.ModRecipes;
 import com.barribob.mm.init.ModStructures;
@@ -22,17 +24,18 @@ import com.barribob.mm.util.Reference;
 import com.barribob.mm.util.handlers.SoundsHandler;
 import com.barribob.mm.world.gen.WorldGenCustomStructures;
 import com.barribob.mm.world.gen.WorldGenOre;
+import com.typesafe.config.Config;
 
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.storage.loot.functions.LootFunctionManager;
+import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 import net.minecraftforge.fml.common.registry.GameRegistry;
+import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.network.NetworkRegistry;
 import net.minecraftforge.network.simple.SimpleChannel;
@@ -74,39 +77,38 @@ public class Main {
     {
     	IEventBus bus = FMLJavaModLoadingContext.get().getModEventBus();
     	ModBlocks.BLOCKS.register(bus);
+    	SoundsHandler.SOUND_EVENTS.register(bus);
+    	ModEnchantments.ENCHANTMENTS.register(bus);
+    	ModPotions.MOB_EFFECTS.register(bus);
+    	ModEntities.ENTITY_TYPES.register(bus);
+    	bus.addListener(this::setup);
 	}
 
     /**
      * Basically initializes the entire mod by calling all of the init methods in
      * the static classes
      */
-    @EventHandler
-    public static void PreInit(FMLPreInitializationEvent event) {
-        log = event.getModLog();
-
+    public void setup(FMLCommonSetupEvent event) {
         loadConfigs();
+        PROXY.init();
 
         GameRegistry.registerWorldGenerator(new WorldGenOre(), 2);
         GameRegistry.registerWorldGenerator(new WorldGenCustomStructures(), 3);
 
         ModEntities.registerEntities();
-        proxy.init();
 
         ModBBAnimations.registerAnimations();
         ModDimensions.registerDimensions();
         LootFunctionManager.registerFunction(new ModEnchantWithLevels.Serializer());
     }
 
-    @EventHandler
     public static void Init(FMLInitializationEvent event) {
         ModRecipes.init();
-        SoundsHandler.registerSounds();
         ModStructures.registerStructures();
         ModProfessions.associateCareersAndTrades();
     }
 
-    @EventHandler
-    public static void serverLoad(FMLServerStartingEvent event) {
+    public static void serverLoad(RegisterCommandsEvent event) {
         event.registerServerCommand(new CommandDimensionTeleport());
         event.registerServerCommand(new CommandReloadConfigs());
         event.registerServerCommand(new CommandInvasion());

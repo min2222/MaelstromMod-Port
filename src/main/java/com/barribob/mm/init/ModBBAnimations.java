@@ -1,24 +1,5 @@
 package com.barribob.mm.init;
 
-import com.barribob.mm.Main;
-import com.barribob.mm.entity.animation.AnimationManagerServer;
-import com.barribob.mm.packets.MessageBBAnimation;
-import com.barribob.mm.util.Reference;
-import com.google.gson.*;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.resources.IResource;
-import net.minecraft.client.util.JsonException;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.util.JsonUtils;
-import net.minecraftforge.common.crafting.CraftingHelper;
-import net.minecraftforge.common.crafting.JsonContext;
-import net.minecraftforge.fml.common.Loader;
-import net.minecraftforge.fml.common.ModContainer;
-import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.io.IOUtils;
-import org.apache.logging.log4j.LogManager;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -26,6 +7,30 @@ import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+
+import javax.json.JsonException;
+
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.io.IOUtils;
+import org.apache.logging.log4j.LogManager;
+
+import com.barribob.mm.Main;
+import com.barribob.mm.entity.animation.AnimationManagerServer;
+import com.barribob.mm.packets.MessageBBAnimation;
+import com.barribob.mm.util.Reference;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+
+import net.minecraft.client.Minecraft;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.resources.Resource;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraftforge.common.crafting.CraftingHelper;
+import net.minecraftforge.common.crafting.JsonContext;
+import net.minecraftforge.fml.ModContainer;
 
 /**
  * Handle animation registration automatically
@@ -47,7 +52,7 @@ public class ModBBAnimations {
      * @param animationId
      */
     public static void animation(LivingEntity entity, String animationId, boolean remove) {
-        Main.network.sendToAllTracking(new MessageBBAnimation(ModBBAnimations.getAnimationId(animationId), entity.getEntityId(), remove), entity);
+        Main.NETWORK.sendToAllTracking(new MessageBBAnimation(ModBBAnimations.getAnimationId(animationId), entity.getId(), remove), entity);
         JsonObject animation = ModBBAnimations.getAnimation(animationId);
         if (animation.has("loop")) {
             if (animation.get("loop").getAsBoolean()) {
@@ -98,12 +103,11 @@ public class ModBBAnimations {
         String filename = s[0];
         String animName = s[1];
         ResourceLocation loc = new ResourceLocation(Reference.MOD_ID, "animations/" + filename + ".json");
-        JsonParser jsonparser = new JsonParser();
-        IResource resource = null;
+        Resource resource = null;
 
         try {
-            resource = Minecraft.getMinecraft().getResourceManager().getResource(loc);
-            JsonObject animationObject = jsonparser.parse(IOUtils.toString(resource.getInputStream(), StandardCharsets.UTF_8)).getAsJsonObject();
+            resource = Minecraft.getInstance().getResourceManager().getResource(loc).get();
+            JsonObject animationObject = JsonParser.parseString(IOUtils.toString(resource.open(), StandardCharsets.UTF_8)).getAsJsonObject();
             return animationObject.getAsJsonObject("animations").getAsJsonObject(animName);
         } catch (IOException e) {
             System.err.println("Failed to load animation: " + filename + e);

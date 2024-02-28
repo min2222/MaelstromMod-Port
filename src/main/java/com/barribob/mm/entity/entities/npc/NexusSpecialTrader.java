@@ -27,23 +27,23 @@ public class NexusSpecialTrader extends EntityTrader {
     }
 
     @Override
-    protected void initEntityAI() {
-        this.tasks.addTask(9, new EntityAIWatchClosest2(this, Player.class, 5.0F, 1.0F));
+    protected void registerGoals() {
+        this.goalSelector.addGoal(9, new EntityAIWatchClosest2(this, Player.class, 5.0F, 1.0F));
     }
 
     @Override
-    public void onUpdate() {
+    public void tick() {
         super.onUpdate();
         level.broadcastEntityEvent(this, particles);
     }
 
     @Override
-    public void handleStatusUpdate(byte id) {
+    public void handleEntityEvent(byte id) {
         if (id == particles) {
             // Yellow particles
             ParticleManager.spawnEffect(world, ModRandom.randVec().add(ModUtils.entityPos(this).add(new Vec3(0, 2, 0))), new Vec3(0.9, 0.9, 0.5));
         } else {
-            super.handleStatusUpdate(id);
+            super.handleEntityEvent(id);
         }
     }
 

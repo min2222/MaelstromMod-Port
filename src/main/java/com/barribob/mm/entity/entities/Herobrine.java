@@ -1,38 +1,45 @@
 package com.barribob.mm.entity.entities;
 
-import net.minecraft.world.entity.ai.attributes.Attributes;
+import com.barribob.mm.entity.entities.herobrine_state.HerobrineState;
+import com.barribob.mm.entity.entities.herobrine_state.StateCliffKey;
+import com.barribob.mm.entity.entities.herobrine_state.StateCrimsonDimension;
+import com.barribob.mm.entity.entities.herobrine_state.StateCrimsonKey;
+import com.barribob.mm.entity.entities.herobrine_state.StateEnderPearls;
+import com.barribob.mm.entity.entities.herobrine_state.StateFirstBattle;
 
-import com.barribob.mm.entity.entities.herobrine_state.*;
-
-import net.minecraft.entity.ai.EntityAIWatchClosest;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.BossEvent;
-import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.world.phys.Vec3;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerBossEvent;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.BossEvent.BossBarColor;
+import net.minecraft.world.BossEvent.BossBarOverlay;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
 
 /*
  * Controls the herobrine fight, with dialogue and ending
  */
 public class Herobrine extends EntityLeveledMob {
-    public final ServerBossEvent bossInfo = (new ServerBossEvent(this.getDisplayName(), BossEvent.Color.PURPLE, BossEvent.Overlay.NOTCHED_20));
+    public final ServerBossEvent bossInfo = (new ServerBossEvent(this.getDisplayName(), BossBarColor.PURPLE, BossBarOverlay.NOTCHED_20));
     private static final String nbtState = "herobrine_state";
     public HerobrineState state;
 
     @Override
     protected void applyEntityAttributes() {
         super.applyEntityAttributes();
-        this.getEntityAttribute(Attributes.MAX_HEALTH).setBaseValue(20);
+        this.getAttribute(Attributes.MAX_HEALTH).setBaseValue(20);
     }
 
     @Override
-    protected void initEntityAI() {
-        super.initEntityAI();
-        this.tasks.addTask(7, new EntityAIWatchClosest(this, Player.class, 20.0F));
+    protected void registerGoals() {
+        super.registerGoals();
+        this.goalSelector.addGoal(7, new LookAtPlayerGoal(this, Player.class, 20.0F));
     }
 
     public Herobrine(Level worldIn) {
@@ -44,58 +51,58 @@ public class Herobrine extends EntityLeveledMob {
     }
 
     @Override
-    protected boolean canDespawn() {
+	public boolean removeWhenFarAway(double distance) {
         return false;
     }
 
     @Override
-    protected boolean processInteract(Player player, InteractionHand hand) {
+    protected InteractionResult mobInteract(Player player, InteractionHand hand) {
         if (!level.isClientSide) {
             state.rightClick(player);
         }
-        return super.processInteract(player, hand);
+        return super.mobInteract(player, hand);
     }
 
     @Override
-    public void onLivingUpdate() {
-        super.onLivingUpdate();
+    public void aiStep() {
+        super.aiStep();
         state.update();
     }
 
     @Override
-    public boolean attackEntityFrom(DamageSource source, float amount) {
-        if (source.getTrueSource() instanceof Player) {
+    public boolean hurt(DamageSource source, float amount) {
+        if (source.getEntity() instanceof Player) {
             state.leftClick(this);
         }
         return false;
     }
 
     @Override
-    public boolean canRenderOnFire() {
+    public boolean displayFireAnimation() {
         return false;
     }
 
     @Override
-    public void setCustomNameTag(String name) {
-        super.setCustomNameTag(name);
+    public void setCustomName(Component name) {
+        super.setCustomName(name);
         this.bossInfo.setName(this.getDisplayName());
     }
 
     @Override
-    public void addTrackingPlayer(ServerPlayer player) {
-        super.addTrackingPlayer(player);
+    public void startSeenByPlayer(ServerPlayer player) {
+        super.startSeenByPlayer(player);
         this.bossInfo.addPlayer(player);
     }
 
     @Override
-    public void removeTrackingPlayer(ServerPlayer player) {
-        super.removeTrackingPlayer(player);
+    public void stopSeenByPlayer(ServerPlayer player) {
+        super.stopSeenByPlayer(player);
         this.bossInfo.removePlayer(player);
     }
 
     @Override
-    public void readEntityFromNBT(CompoundTag compound) {
-        if (compound.hasKey(nbtState)) {
+    public void readAdditionalSaveData(CompoundTag compound) {
+        if (compound.contains(nbtState)) {
             if (compound.getString(nbtState).equals(new StateCliffKey(this).getNbtString())) {
                 state = new StateCliffKey(this);
             } else if (compound.getString(nbtState).equals(new StateCrimsonKey(this).getNbtString())) {
@@ -106,27 +113,27 @@ public class Herobrine extends EntityLeveledMob {
                 state = new StateCrimsonDimension(this);
             }
         }
-        super.readEntityFromNBT(compound);
+        super.readAdditionalSaveData(compound);
     }
 
     public void teleportOutside() {
-        this.setImmovablePosition(new Vec3(posX, posY, posZ - 5));
+        this.setImmovablePosition(new Vec3(this.getX(), this.getY(), this.getZ() - 5));
         if (!level.isClientSide) {
             level.broadcastEntityEvent(this, (byte) 4);
         }
     }
 
     @Override
-    public void handleStatusUpdate(byte id) {
+    public void handleEntityEvent(byte id) {
         if (id == 4) {
             teleportOutside();
         }
-        super.handleStatusUpdate(id);
+        super.handleEntityEvent(id);
     }
 
     @Override
     public void writeEntityToNBT(CompoundTag compound) {
-        compound.setString(nbtState, state.getNbtString());
+        compound.putString(nbtState, state.getNbtString());
         super.writeEntityToNBT(compound);
     }
 }

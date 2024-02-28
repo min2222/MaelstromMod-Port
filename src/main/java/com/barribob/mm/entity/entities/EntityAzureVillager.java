@@ -1,42 +1,48 @@
 package com.barribob.mm.entity.entities;
 
-import net.minecraft.ChatFormatting;
-import net.minecraft.network.syncher.EntityDataSerializers;
-import net.minecraft.network.syncher.SynchedEntityData;
-import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.*;
-import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.entity.ai.goal.FloatGoal;
-import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
-import net.minecraft.world.item.enchantment.EnchantmentHelper;
-import net.minecraft.entity.*;
-import net.minecraft.entity.ai.*;
-import net.minecraft.entity.passive.EntityVillager.ITradeList;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
-import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.syncher.EntityDataAccessor;
-import net.minecraft.util.Mth;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.SoundEvent;
-import net.minecraft.util.text.TextComponentString;
-import net.minecraft.util.text.TextComponentTranslation;
-import net.minecraft.village.MerchantRecipeList;
-import net.minecraft.world.DifficultyInstance;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.storage.loot.LootTableList;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.api.distmarker.Dist;
+import java.util.List;
 
 import javax.annotation.Nullable;
 
 import com.barribob.mm.init.ModProfessions;
 import com.barribob.mm.util.ModUtils;
 
-import java.util.List;
+import net.minecraft.ChatFormatting;
+import net.minecraft.entity.*;
+import net.minecraft.entity.ai.*;
+import net.minecraft.entity.passive.EntityVillager.ITradeList;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.util.Mth;
+import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.text.TextComponentTranslation;
+import net.minecraft.village.MerchantRecipeList;
+import net.minecraft.world.DifficultyInstance;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.ai.goal.FloatGoal;
+import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
+import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
+import net.minecraft.world.entity.ai.goal.MoveTowardsRestrictionGoal;
+import net.minecraft.world.entity.ai.goal.OpenDoorGoal;
+import net.minecraft.world.entity.ai.goal.RandomStrollGoal;
+import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
+import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.level.Level;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 
 /**
  * Closely sourced from the EntityMob, and EntityIllager to create a mob with
@@ -44,15 +50,15 @@ import java.util.List;
  */
 public class EntityAzureVillager extends EntityTrader implements IMerchant {
     // Used in animation to determine if the entity should render in attack pose
-    protected static final EntityDataAccessor<Byte> ATTACKING = SynchedEntityData.<Byte>createKey(EntityAzureVillager.class, EntityDataSerializers.BYTE);
+    protected static final EntityDataAccessor<Byte> ATTACKING = SynchedEntityData.<Byte>defineId(EntityAzureVillager.class, EntityDataSerializers.BYTE);
     private static final String[] CHAT_MESSAGES = {"azure_villager_1", "azure_villager_2", "azure_villager_3", "azure_villager_4", "azure_villager_5", "azure_villager_6"};
 
     private static int message_counter = 0;
 
     @Override
-    protected void entityInit() {
-        super.entityInit();
-        this.dataManager.register(ATTACKING, Byte.valueOf((byte) 0));
+    protected void defineSynchedData() {
+        super.defineSynchedData();
+        this.entityData.define(ATTACKING, Byte.valueOf((byte) 0));
     }
 
     public EntityAzureVillager(Level worldIn) {
@@ -61,19 +67,19 @@ public class EntityAzureVillager extends EntityTrader implements IMerchant {
     }
 
     @Override
-    protected void initEntityAI() {
-        super.initEntityAI();
-        this.tasks.addTask(0, new FloatGoal(this));
-        this.tasks.addTask(2, new EntityAIMoveIndoors(this));
-        this.tasks.addTask(3, new EntityAIRestrictOpenDoor(this));
-        this.tasks.addTask(4, new EntityAIOpenDoor(this, true));
-        this.tasks.addTask(4, new EntityAIAttackMelee(this, 1.0D, false));
-        this.tasks.addTask(5, new EntityAIMoveTowardsRestriction(this, 0.6D));
-        this.tasks.addTask(8, new EntityAIWander(this, 0.6D));
-        this.tasks.addTask(9, new EntityAIWatchClosest2(this, Player.class, 3.0F, 1.0F));
-        this.tasks.addTask(9, new EntityAIWanderAvoidWater(this, 0.6D));
-        this.tasks.addTask(10, new EntityAIWatchClosest(this, Mob.class, 8.0F));
-        this.targetTasks.addTask(1, new HurtByTargetGoal(this, true, new Class[]{EntityAzureVillager.class}));
+    protected void registerGoals() {
+        super.registerGoals();
+        this.goalSelector.addGoal(0, new FloatGoal(this));
+        this.goalSelector.addGoal(2, new EntityAIMoveIndoors(this));
+        this.goalSelector.addGoal(3, new EntityAIRestrictOpenDoor(this));
+        this.goalSelector.addGoal(4, new OpenDoorGoal(this, true));
+        this.goalSelector.addGoal(4, new MeleeAttackGoal(this, 1.0D, false));
+        this.goalSelector.addGoal(5, new MoveTowardsRestrictionGoal(this, 0.6D));
+        this.goalSelector.addGoal(8, new RandomStrollGoal(this, 0.6D));
+        this.goalSelector.addGoal(9, new EntityAIWatchClosest2(this, Player.class, 3.0F, 1.0F));
+        this.goalSelector.addGoal(9, new WaterAvoidingRandomStrollGoal(this, 0.6D));
+        this.goalSelector.addGoal(10, new LookAtPlayerGoal(this, Mob.class, 8.0F));
+        this.targetSelector.addGoal(1, new HurtByTargetGoal(this).setAlertOthers(EntityAzureVillager.class));
     }
 
     @Override
@@ -83,11 +89,6 @@ public class EntityAzureVillager extends EntityTrader implements IMerchant {
         this.getEntityAttribute(Attributes.FOLLOW_RANGE).setBaseValue(12.0D);
         this.getEntityAttribute(Attributes.ATTACK_DAMAGE).setBaseValue(1);
         this.getEntityAttribute(Attributes.MAX_HEALTH).setBaseValue(20);
-    }
-
-    @Override
-    protected ResourceLocation getLootTable() {
-        return LootTableList.ENTITIES_VILLAGER;
     }
 
     @Override
@@ -107,12 +108,12 @@ public class EntityAzureVillager extends EntityTrader implements IMerchant {
 
     @OnlyIn(Dist.CLIENT)
     protected boolean isAggressive(int mask) {
-        int i = this.dataManager.get(ATTACKING).byteValue();
+        int i = this.entityData.get(ATTACKING).byteValue();
         return (i & mask) != 0;
     }
 
     protected void setAggressive(int mask, boolean value) {
-        int i = this.dataManager.get(ATTACKING).byteValue();
+        int i = this.entityData.get(ATTACKING).byteValue();
 
         if (value) {
             i = i | mask;
@@ -120,7 +121,7 @@ public class EntityAzureVillager extends EntityTrader implements IMerchant {
             i = i & ~mask;
         }
 
-        this.dataManager.set(ATTACKING, Byte.valueOf((byte) (i & 255)));
+        this.entityData.set(ATTACKING, Byte.valueOf((byte) (i & 255)));
     }
 
     @OnlyIn(Dist.CLIENT)
@@ -133,8 +134,8 @@ public class EntityAzureVillager extends EntityTrader implements IMerchant {
     }
 
     @Override
-    protected void updateAITasks() {
-        super.updateAITasks();
+    protected void customServerAiStep() {
+        super.customServerAiStep();
         this.setAggressive(this.getTarget() != null);
     }
 
@@ -142,28 +143,28 @@ public class EntityAzureVillager extends EntityTrader implements IMerchant {
      * Taken from the EntityMob class
      */
     @Override
-    public boolean attackEntityAsMob(Entity entityIn) {
-        float f = (float) this.getEntityAttribute(Attributes.ATTACK_DAMAGE).getAttributeValue();
+    public boolean doHurtTarget(Entity entityIn) {
+        float f = (float) this.getAttribute(Attributes.ATTACK_DAMAGE).getBaseValue();
         int i = 0;
 
         if (entityIn instanceof LivingEntity) {
-            f += EnchantmentHelper.getModifierForCreature(this.getHeldItemMainhand(), ((LivingEntity) entityIn).getCreatureAttribute());
-            i += EnchantmentHelper.getKnockbackModifier(this);
+            f += EnchantmentHelper.getModifierForCreature(this.getMainHandItem(), ((LivingEntity) entityIn).getCreatureAttribute());
+            i += EnchantmentHelper.getKnockbackBonus(this);
         }
 
-        boolean flag = entityIn.attackEntityFrom(DamageSource.causeMobDamage(this), f);
+        boolean flag = entityIn.hurt(DamageSource.mobAttack(this), f);
 
         if (flag) {
             if (i > 0 && entityIn instanceof LivingEntity) {
-                ((LivingEntity) entityIn).knockBack(this, i * 0.5F, Mth.sin(this.rotationYaw * 0.017453292F), (-Mth.cos(this.rotationYaw * 0.017453292F)));
+                ((LivingEntity) entityIn).knockback(i * 0.5F, Mth.sin(this.getYRot() * 0.017453292F), (-Mth.cos(this.getYRot() * 0.017453292F)));
                 this.motionX *= 0.6D;
                 this.motionZ *= 0.6D;
             }
 
-            int j = EnchantmentHelper.getFireAspectModifier(this);
+            int j = EnchantmentHelper.getFireAspect(this);
 
             if (j > 0) {
-                entityIn.setFire(j * 4);
+                entityIn.setSecondsOnFire(j * 4);
             }
 
             if (entityIn instanceof Player) {
@@ -244,9 +245,9 @@ public class EntityAzureVillager extends EntityTrader implements IMerchant {
     }
 
     @Override
-    public void readEntityFromNBT(CompoundTag compound) {
-        super.readEntityFromNBT(compound);
-        if (compound.hasKey("Offers", 10)) {
+    public void readAdditionalSaveData(CompoundTag compound) {
+        super.readAdditionalSaveData(compound);
+        if (compound.contains("Offers", 10)) {
             CompoundTag nbttagcompound = compound.getCompoundTag("Offers");
             this.buyingList = new MerchantRecipeList(nbttagcompound);
         }

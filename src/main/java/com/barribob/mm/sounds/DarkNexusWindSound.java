@@ -4,6 +4,7 @@ import com.barribob.mm.init.ModDimensions;
 
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.resources.sounds.AbstractTickableSoundInstance;
+import net.minecraft.client.resources.sounds.SoundInstance;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
@@ -16,10 +17,10 @@ public class DarkNexusWindSound extends AbstractTickableSoundInstance {
     private int time;
 
     public DarkNexusWindSound(LocalPlayer player) {
-        super(SoundEvents.ELYTRA_FLYING, SoundSource.PLAYERS);
+        super(SoundEvents.ELYTRA_FLYING, SoundSource.PLAYERS, SoundInstance.createUnseededRandom());
         this.player = player;
-        this.repeat = true;
-        this.repeatDelay = 0;
+        this.looping = true;
+        this.delay = 0;
         this.volume = 0.1F;
     }
 
@@ -27,11 +28,11 @@ public class DarkNexusWindSound extends AbstractTickableSoundInstance {
     public void tick() {
         ++this.time;
 
-        if (!this.player.isDeadOrDying() && (this.time <= 20 || this.player.dimension == ModDimensions.DARK_NEXUS.getId())) {
-            this.xPosF = (float) this.player.posX;
-            this.yPosF = (float) this.player.posY;
-            this.zPosF = (float) this.player.posZ;
-            float velocity = Mth.sqrt(this.player.motionX * this.player.motionX + this.player.motionZ * this.player.motionZ + this.player.motionY * this.player.motionY);
+        if (!this.player.isDeadOrDying() && (this.time <= 20 || this.player.level.dimension() == ModDimensions.DARK_NEXUS.getId())) {
+            this.x = (float) this.player.getX();
+            this.y = (float) this.player.getY();
+            this.z = (float) this.player.getZ();
+            float velocity = (float) Math.sqrt(this.player.getDeltaMovement().x * this.player.getDeltaMovement().x + this.player.getDeltaMovement().z * this.player.getDeltaMovement().z + this.player.getDeltaMovement().y * this.player.getDeltaMovement().y);
             float f1 = velocity / 2.0F;
 
             this.volume = 0.1f + Mth.clamp(f1 * f1, 0.0F, 1.0F);

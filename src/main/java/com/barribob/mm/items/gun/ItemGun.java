@@ -77,13 +77,13 @@ public abstract class ItemGun extends ItemBase implements ILeveledItem, Reloadab
     }
 
     private float getEnchantedCooldown(ItemStack stack) {
-        int reload = EnchantmentHelper.getEnchantmentLevel(ModEnchantments.reload, stack);
+        int reload = stack.getEnchantmentLevel(ModEnchantments.reload);
         return this.maxCooldown * (1 - reload * 0.1f);
     }
 
     public float getEnchantedDamage(ItemStack stack) {
         float maxPower = ModEnchantments.gun_power.getMaxLevel();
-        float power = EnchantmentHelper.getEnchantmentLevel(ModEnchantments.gun_power, stack);
+        float power = stack.getEnchantmentLevel(ModEnchantments.gun_power);
         float maxDamageBonus = (float) Math.pow(ModConfig.balance.progression_scale, 2); // Maximum damage is two levels above
         float enchantmentBonus = 1 + ((power / maxPower) * (maxDamageBonus - 1));
         return this.damage * ModConfig.balance.weapon_damage * enchantmentBonus * this.getMultiplier();
@@ -94,8 +94,8 @@ public abstract class ItemGun extends ItemBase implements ILeveledItem, Reloadab
      */
     @Override
     public float getCooldownForDisplay(ItemStack stack) {
-        if (stack.hasTagCompound() && stack.getTagCompound().hasKey("cooldown")) {
-            return stack.getTagCompound().getInteger("cooldown") / this.getEnchantedCooldown(stack);
+        if (stack.hasTag() && stack.getOrCreateTag().contains("cooldown")) {
+            return stack.getOrCreateTag().getInt("cooldown") / this.getEnchantedCooldown(stack);
         }
 
         return 0;
@@ -108,13 +108,13 @@ public abstract class ItemGun extends ItemBase implements ILeveledItem, Reloadab
      * @return
      */
     private ItemStack findAmmo(Player player) {
-        if (player.getHeldItem(InteractionHand.OFF_HAND).getItem() instanceof ItemAmmoCase) {
-            return player.getHeldItem(InteractionHand.OFF_HAND);
-        } else if (player.getHeldItem(InteractionHand.MAIN_HAND).getItem() instanceof ItemAmmoCase) {
-            return player.getHeldItem(InteractionHand.MAIN_HAND);
+        if (player.getItemInHand(InteractionHand.OFF_HAND).getItem() instanceof ItemAmmoCase) {
+            return player.getItemInHand(InteractionHand.OFF_HAND);
+        } else if (player.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof ItemAmmoCase) {
+            return player.getItemInHand(InteractionHand.MAIN_HAND);
         } else {
-            for (int i = 0; i < player.inventory.getSizeInventory(); ++i) {
-                ItemStack itemstack = player.inventory.getStackInSlot(i);
+            for (int i = 0; i < player.getInventory().getContainerSize(); ++i) {
+                ItemStack itemstack = player.getInventory().getItem(i);
 
                 if (itemstack.getItem() instanceof ItemAmmoCase) {
                     return itemstack;

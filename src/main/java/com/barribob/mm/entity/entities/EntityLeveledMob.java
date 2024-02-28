@@ -4,7 +4,6 @@ import java.util.PriorityQueue;
 
 import com.barribob.mm.Main;
 import com.barribob.mm.config.ModConfig;
-import com.barribob.mm.entity.ai.ModGroundNavigator;
 import com.barribob.mm.entity.animation.Animation;
 import com.barribob.mm.entity.animation.AnimationNone;
 import com.barribob.mm.entity.util.LeapingEntity;
@@ -15,6 +14,8 @@ import com.barribob.mm.util.ModRandom;
 import com.barribob.mm.util.ModUtils;
 import com.barribob.mm.util.handlers.LevelHandler;
 import com.barribob.mm.util.handlers.SoundsHandler;
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -56,6 +57,10 @@ public abstract class EntityLeveledMob extends PathfinderMob implements IAnimate
         if(getMobConfig().hasPath("nbt_spawn_data")) {
             this.readFromNBT(ModUtils.parseNBTFromConfig(getMobConfig().getConfig("nbt_spawn_data")));
         }
+    }
+    
+    public float getRenderSizeModifier() {
+    	return 1.0F;
     }
 
     public Config getMobConfig() {
@@ -205,7 +210,7 @@ public abstract class EntityLeveledMob extends PathfinderMob implements IAnimate
 
     @Override
     public void addAdditionalSaveData(CompoundTag compound) {
-        compound.putFloat("level", getLevel());
+        compound.putFloat("level", getMobLevel());
         compound.putBoolean("isImmovable", this.isImmovable());
         compound.putInt("element", getElement().id);
         compound.putInt("experienceValue", this.xpReward);
@@ -248,12 +253,12 @@ public abstract class EntityLeveledMob extends PathfinderMob implements IAnimate
      */
     public float getAttack() {
         return ModUtils.getMobDamage(this.getAttribute(Attributes.ATTACK_DAMAGE).getBaseValue(), healthScaledAttackFactor, this.getMaxHealth(),
-                this.getHealth(), this.getLevel(), this.getElement());
+                this.getHealth(), this.getMobLevel(), this.getElement());
     }
 
     @Override
     protected float applyArmorCalculations(DamageSource source, float damage) {
-        return super.applyArmorCalculations(source, ModUtils.getArmoredDamage(source, damage, getLevel(), getElement()));
+        return super.applyArmorCalculations(source, ModUtils.getArmoredDamage(source, damage, getMobLevel(), getElement()));
     }
 
     @Override
@@ -333,7 +338,7 @@ public abstract class EntityLeveledMob extends PathfinderMob implements IAnimate
     }
 
     public void playSoundWithFallback(SoundEvent sound) {
-        playSoundWithFallback(sound, SoundsHandler.NONE);
+        playSoundWithFallback(sound, SoundsHandler.NONE.get());
     }
 
     @Override

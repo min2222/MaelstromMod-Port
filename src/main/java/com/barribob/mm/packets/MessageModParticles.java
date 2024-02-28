@@ -13,7 +13,7 @@ import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 /**
  * Taken from the minecraft particle packet.
  */
-public class MessageModParticles implements IMessage {
+public class MessageModParticles {
     private EnumModParticles particleType;
     float xCoord;
     float yCoord;

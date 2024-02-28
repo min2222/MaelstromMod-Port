@@ -37,7 +37,7 @@ public class ProjectileChaosFireball extends ProjectileGun {
     }
 
     @Override
-    public void onUpdate() {
+    public void tick() {
         if ((this.tickCount / 5.0f) % 5 == 0) {
             this.playSound(SoundEvents.BLOCK_FIRE_EXTINGUISH, 0.2f, ModRandom.getFloat(0.2f) + 1.0f);
         }
@@ -86,11 +86,11 @@ public class ProjectileChaosFireball extends ProjectileGun {
     }
 
     @Override
-    public void handleStatusUpdate(byte id) {
+    public void handleEntityEvent(byte id) {
         if (id == ModUtils.PARTICLE_BYTE) {
             ParticleManager.spawnSwirl2(world, position(), ModColors.RED, Vec3.ZERO);
         }
-        super.handleStatusUpdate(id);
+        super.handleEntityEvent(id);
     }
 
     @Override

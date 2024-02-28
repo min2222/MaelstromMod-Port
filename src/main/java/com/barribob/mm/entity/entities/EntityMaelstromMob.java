@@ -42,8 +42,7 @@ import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.fml.common.registry.EntityEntry;
-import net.minecraftforge.fml.common.registry.EntityRegistry;
+import net.minecraftforge.registries.ForgeRegistries;
 
 /**
  * The base mob that most mobs in this mod will extend A lot of these methods are from the EntityMob class to make it behave similarly
@@ -54,13 +53,10 @@ public abstract class EntityMaelstromMob extends EntityLeveledMob implements Ran
     public static final Predicate<LivingEntity> CAN_TARGET = entity -> {
         boolean isConfigFriend = false;
         if (entity != null) {
-            EntityEntry entry = EntityRegistry.getEntry(entity.getClass());
-            if(entry != null) {
-                ResourceLocation registryName = entry.getRegistryName();
-                if(registryName != null) {
-                    isConfigFriend = Main.maelstromFriendsConfig.getStringList("maelstrom_friends")
-                            .contains(registryName.toString());
-                }
+            ResourceLocation registryName = ForgeRegistries.ENTITY_TYPES.getKey(entity.getType());
+            if(registryName != null) {
+                isConfigFriend = Main.maelstromFriendsConfig.getStringList("maelstrom_friends")
+                        .contains(registryName.toString());
             }
         }
 
@@ -110,8 +106,8 @@ public abstract class EntityMaelstromMob extends EntityLeveledMob implements Ran
     @Override
     protected void applyEntityAttributes() {
         super.applyEntityAttributes();
-        this.getEntityAttribute(Attributes.MOVEMENT_SPEED).setBaseValue(0.23000000417232513D);
-        this.getEntityAttribute(Attributes.FOLLOW_RANGE).setBaseValue(20.0D);
+        this.getAttribute(Attributes.MOVEMENT_SPEED).setBaseValue(0.23000000417232513D);
+        this.getAttribute(Attributes.FOLLOW_RANGE).setBaseValue(20.0D);
     }
 
     @Override
@@ -192,10 +188,10 @@ public abstract class EntityMaelstromMob extends EntityLeveledMob implements Ran
     public void spawnExplosionParticle() {
         if (this.level.isClientSide) {
             for (int i = 0; i < 20; ++i) {
-                double d0 = this.rand.nextGaussian() * 0.02D;
-                double d1 = this.rand.nextGaussian() * 0.02D;
-                double d2 = this.rand.nextGaussian() * 0.02D;
-                ParticleManager.spawnMaelstromLargeSmoke(world, rand, new Vec3(this.posX + this.rand.nextFloat() * this.width * 2.0F - this.width - d0 * 10.0D,
+                double d0 = this.random.nextGaussian() * 0.02D;
+                double d1 = this.random.nextGaussian() * 0.02D;
+                double d2 = this.random.nextGaussian() * 0.02D;
+                ParticleManager.spawnMaelstromLargeSmoke(level, rand, new Vec3(this.posX + this.rand.nextFloat() * this.width * 2.0F - this.width - d0 * 10.0D,
                         this.posY + this.rand.nextFloat() * this.height - d1 * 10.0D, this.posZ + this.rand.nextFloat() * this.width * 2.0F - this.width - d2 * 10.0D));
             }
         } else {
@@ -222,7 +218,7 @@ public abstract class EntityMaelstromMob extends EntityLeveledMob implements Ran
     }
 
     @Override
-    public void setSwingingArms(boolean swingingArms) {
+    public void setAggressive(boolean swingingArms) {
         this.entityData.set(SWINGING_ARMS, Boolean.valueOf(swingingArms));
     }
 
@@ -275,7 +271,7 @@ public abstract class EntityMaelstromMob extends EntityLeveledMob implements Ran
 
     @Override
     protected boolean canDespawn() {
-        if (this.dimension == ModDimensions.CRIMSON_KINGDOM.getId() || this.dimension == ModDimensions.NEXUS.getId()) {
+        if (this.level.dimension() == ModDimensions.CRIMSON_KINGDOM.getId() || this.level.dimension() == ModDimensions.NEXUS.getId()) {
             // Allow despawn after about twenty minutes of being idle
             return this.tickCount > 20 * 60 * 20;
         }

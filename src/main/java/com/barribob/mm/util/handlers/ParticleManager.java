@@ -28,7 +28,7 @@ public class ParticleManager {
     public static void spawnMaelstromParticle(Level worldIn, Random rand, Vec3 pos) {
         Particle particle = new ParticleSuspendedTown.Factory().createParticle(0, worldIn, pos.x, pos.y, pos.z, 0.0D, 0.0D, 0.0D);
         setMaelstromColor(particle);
-        Minecraft.getMinecraft().effectRenderer.addEffect(particle);
+        Minecraft.getInstance().particleEngine.add(particle);
     }
 
     /**
@@ -212,15 +212,15 @@ public class ParticleManager {
 
     public static void spawnFirework(Level world, Vec3 pos, Vec3 color, Vec3 vel) {
         Particle particle = new ParticleFirework.Factory().createParticle(0, world, pos.x, pos.y, pos.z, vel.x, vel.y, vel.z);
-        particle.setRBGColorF((float) color.x, (float) color.y, (float) color.z);
-        Minecraft.getMinecraft().effectRenderer.addEffect(particle);
+        particle.setColor((float) color.x, (float) color.y, (float) color.z);
+        Minecraft.getInstance().particleEngine.add(particle);
     }
 
     public static void spawnParticleSphere(Level world, Vec3 pos, float radius) {
         for (int i = 0; i < 1000; i++) {
             Vec3 unit = new Vec3(0, 1, 0);
-            unit = unit.rotatePitch((float) (Math.PI * ModRandom.getFloat(1)));
-            unit = unit.rotateYaw((float) (Math.PI * ModRandom.getFloat(1)));
+            unit = unit.xRot((float) (Math.PI * ModRandom.getFloat(1)));
+            unit = unit.yRot((float) (Math.PI * ModRandom.getFloat(1)));
             unit = unit.normalize().scale(radius);
             ParticleManager.spawnEffect(world, pos.add(unit), ModColors.MAELSTROM);
         }
@@ -234,7 +234,7 @@ public class ParticleManager {
      */
     private static void setMaelstromColor(Particle particle) {
         float f = ModRandom.getFloat(0.2f);
-        particle.setRBGColorF(0.3f + f, 0.2f + f, 0.4f + f);
+        particle.setColor(0.3f + f, 0.2f + f, 0.4f + f);
     }
 
     /**
@@ -244,6 +244,6 @@ public class ParticleManager {
      */
     private static void setMaelstromLightColor(Particle particle) {
         float f = ModRandom.getFloat(0.2f);
-        particle.setRBGColorF(0.8f + f, 0.5f + f, 0.8f + f);
+        particle.setColor(0.8f + f, 0.5f + f, 0.8f + f);
     }
 }

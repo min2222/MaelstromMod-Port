@@ -45,7 +45,7 @@ public class EntityMaelstromTowerDestroyer extends Entity {
     }
 
     @Override
-    public void onUpdate() {
+    public void tick() {
         super.onUpdate();
 
         if (level.isClientSide) {
@@ -77,7 +77,7 @@ public class EntityMaelstromTowerDestroyer extends Entity {
     }
 
     @Override
-    protected void readEntityFromNBT(CompoundTag compound) {
+    protected void readAdditionalSaveData(CompoundTag compound) {
     }
 
     @Override

@@ -1,17 +1,22 @@
 package com.barribob.mm.util;
 
+import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.BufferUploader;
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.Tesselator;
+import com.mojang.blaze3d.vertex.VertexFormat.Mode;
+import com.mojang.math.Vector3f;
+
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.renderer.BufferBuilder;
-import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.OpenGlHelper;
-import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.entity.RenderManager;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
@@ -23,30 +28,25 @@ public class RenderUtils {
     /*
      * Draws an element above the entity kind of like a name tag
      */
-    public static void drawElement(FontRenderer fontRendererIn, String str, float x, float y, float z, int verticalShift, float viewerYaw, float viewerPitch,
+    public static void drawElement(PoseStack stack, Font fontRendererIn, String str, float x, float y, float z, int verticalShift, float viewerYaw, float viewerPitch,
                                    boolean isThirdPersonFrontal, boolean isSneaking, int ticks, float partialTicks, float scale) {
-        GlStateManager.pushMatrix();
-        GlStateManager.translate(x, y, z);
-        GlStateManager.glNormal3f(0.0F, 1.0F, 0.0F);
-        GlStateManager.rotate(-viewerYaw, 0.0F, 1.0F, 0.0F);
-        GlStateManager.rotate((isThirdPersonFrontal ? -1 : 1) * viewerPitch, 1.0F, 0.0F, 0.0F);
-        GlStateManager.scale(-0.025F * scale, -0.025F * scale, 0.025F * scale);
-        GlStateManager.disableLighting();
-        GlStateManager.enableAlpha();
-        GlStateManager.enableBlend();
-        GlStateManager.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
+    	stack.pushPose();
+        stack.translate(x, y, z);
+        stack.mulPose(Vector3f.YP.rotationDegrees(-viewerYaw));
+        stack.mulPose(Vector3f.XP.rotationDegrees((isThirdPersonFrontal ? -1 : 1) * viewerPitch));
+        stack.scale(-0.025F * scale, -0.025F * scale, 0.025F * scale);
+        RenderSystem.enableBlend();
+        RenderSystem.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
         // Oscillating color
         float alpha = (float) ((Math.sin((ticks + partialTicks) * 0.1) * 0.15f) + 0.8f);
-        fontRendererIn.drawString(str, -fontRendererIn.getStringWidth(str) / 2, verticalShift, ModColors.toIntegerColor(255, 255, 255, (int) (alpha * 255)));
-        GlStateManager.enableLighting();
-        GlStateManager.disableBlend();
-        GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
-        GlStateManager.popMatrix();
+        fontRendererIn.draw(stack, str, -fontRendererIn.width(str) / 2, verticalShift, ModColors.toIntegerColor(255, 255, 255, (int) (alpha * 255)));
+        RenderSystem.disableBlend();
+        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+        stack.popPose();
     }
 
-    public static void drawLazer(RenderManager renderManager, Vec3 startPos, Vec3 endPos, Vec3 offset, Vec3 color, Mob entity, float partialTicks) {
-        renderManager.renderEngine.bindTexture(GUARDIAN_BEAM_TEXTURE);
-        drawBeam(renderManager, startPos, endPos, offset, color, entity, partialTicks);
+    public static void drawLazer(PoseStack stack, Vec3 startPos, Vec3 endPos, Vec3 offset, Vec3 color, Mob entity, float partialTicks) {
+        drawBeam(stack, startPos, endPos, offset, color, entity, partialTicks);
     }
 
     /**
@@ -60,41 +60,42 @@ public class RenderUtils {
      * @param entity
      * @param partialTicks
      */
-    public static void drawBeam(RenderManager renderManager, Vec3 startPos, Vec3 endPos, Vec3 offset, Vec3 color, Entity entity, float partialTicks) {
-        drawBeam(renderManager, startPos, endPos, offset, color, entity, partialTicks, new Vec3(1, 1, 1));
+    public static void drawBeam(PoseStack stack, Vec3 startPos, Vec3 endPos, Vec3 offset, Vec3 color, Entity entity, float partialTicks) {
+        drawBeam(stack, startPos, endPos, offset, color, entity, partialTicks, new Vec3(1, 1, 1));
     }
 
-    public static void drawBeam(RenderManager renderManager, Vec3 startPos, Vec3 endPos, Vec3 offset, Vec3 color, Entity entity, float partialTicks, Vec3 scale) {
-        Tessellator tessellator = Tessellator.getInstance();
-        BufferBuilder bufferbuilder = tessellator.getBuffer();
-        GlStateManager.glTexParameteri(3553, 10242, 10497);
-        GlStateManager.glTexParameteri(3553, 10243, 10497);
-        GlStateManager.disableLighting();
-        GlStateManager.disableCull();
-        GlStateManager.disableBlend();
-        GlStateManager.depthMask(true);
-        OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, 240.0F, 240.0F);
-        GlStateManager.tryBlendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
+    public static void drawBeam(PoseStack stack, Vec3 startPos, Vec3 endPos, Vec3 offset, Vec3 color, Entity entity, float partialTicks, Vec3 scale) {
+    	Tesselator tessellator = Tesselator.getInstance();
+        BufferBuilder bufferbuilder = tessellator.getBuilder();
+        RenderSystem.texParameter(3553, 10242, 10497);
+        RenderSystem.texParameter(3553, 10243, 10497);
+        RenderSystem.disableCull();
+        RenderSystem.disableBlend();
+        RenderSystem.depthMask(true);
+        RenderSystem.blendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
 
-        float time = entity.world.getTotalWorldTime() + partialTicks;
+        float time = entity.level.getGameTime() + partialTicks;
         float f3 = time * 0.5F % 1.0F;
         double timeLooped = time * 0.05D * -1.5D;
 
-        GlStateManager.pushMatrix();
-        GlStateManager.translate((float) offset.x, (float) offset.y + entity.getEyeHeight(), (float) offset.z);
+        stack.pushPose();
+        stack.translate((float) offset.x, (float) offset.y + entity.getEyeHeight(), (float) offset.z);
 
         Vec3 line = endPos.subtract(startPos);
-        double lineLength = line.lengthVector();
+        double lineLength = line.length();
         Vec3 lineDir = line.normalize();
 
         float angle1 = (float) Math.acos(lineDir.y);
         float angle2 = (float) Math.atan2(lineDir.z, lineDir.x);
 
-        GlStateManager.rotate((float) Math.toDegrees((Math.PI / 2F + -angle2)), 0.0F, 1.0F, 0.0F);
-        GlStateManager.rotate((float) Math.toDegrees(angle1), 1.0F, 0.0F, 0.0F);
-        GlStateManager.scale(scale.x, scale.y, scale.z);
+        stack.mulPose(Vector3f.YP.rotationDegrees((float) Math.toDegrees((Math.PI / 2F + -angle2))));
+        stack.mulPose(Vector3f.XP.rotationDegrees((float) Math.toDegrees(angle1)));
+        stack.scale((float)scale.x, (float)scale.y, (float)scale.z);
 
-        bufferbuilder.begin(7, DefaultVertexFormats.POSITION_TEX_COLOR);
+        RenderSystem.enableTexture();
+        RenderSystem.setShaderTexture(0, GUARDIAN_BEAM_TEXTURE);
+        RenderSystem.setShader(GameRenderer::getPositionTexColorNormalShader);
+        bufferbuilder.begin(Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR_NORMAL);
 
         int red = (int) (color.x * 255);
         int green = (int) (color.y * 255);
@@ -118,26 +119,26 @@ public class RenderUtils {
         double d19 = 0.0D + Math.sin(timeLooped + (Math.PI * 3D / 2D)) * 0.2D;
         double d22 = -1.0F + f3;
         double d23 = lineLength * 2.5D + d22;
-        bufferbuilder.pos(d12, lineLength, d13).tex(0.4999D, d23).color(red, green, blue, 255).endVertex();
-        bufferbuilder.pos(d12, 0.0D, d13).tex(0.4999D, d22).color(red, green, blue, 255).endVertex();
-        bufferbuilder.pos(d14, 0.0D, d15).tex(0.0D, d22).color(red, green, blue, 255).endVertex();
-        bufferbuilder.pos(d14, lineLength, d15).tex(0.0D, d23).color(red, green, blue, 255).endVertex();
-        bufferbuilder.pos(d16, lineLength, d17).tex(0.4999D, d23).color(red, green, blue, 255).endVertex();
-        bufferbuilder.pos(d16, 0.0D, d17).tex(0.4999D, d22).color(red, green, blue, 255).endVertex();
-        bufferbuilder.pos(d18, 0.0D, d19).tex(0.0D, d22).color(red, green, blue, 255).endVertex();
-        bufferbuilder.pos(d18, lineLength, d19).tex(0.0D, d23).color(red, green, blue, 255).endVertex();
+        bufferbuilder.vertex(stack.last().pose(), (float)d12, (float)lineLength, (float)d13).uv(0.4999F, (float)d23).color(red, green, blue, 255).normal(stack.last().normal(), 0.0F, 1.0F, 0.0F).endVertex();
+        bufferbuilder.vertex(stack.last().pose(), (float)d12, 0.0F, (float)d13).uv(0.4999F, (float)d22).color(red, green, blue, 255).normal(stack.last().normal(), 0.0F, 1.0F, 0.0F).endVertex();
+        bufferbuilder.vertex(stack.last().pose(), (float)d14, 0.0F, (float)d15).uv(0.0F, (float)d22).color(red, green, blue, 255).normal(stack.last().normal(), 0.0F, 1.0F, 0.0F).endVertex();
+        bufferbuilder.vertex(stack.last().pose(), (float)d14, (float)lineLength, (float)d15).uv(0.0F, (float)d23).color(red, green, blue, 255).normal(stack.last().normal(), 0.0F, 1.0F, 0.0F).endVertex();
+        bufferbuilder.vertex(stack.last().pose(), (float)d16, (float)lineLength, (float)d17).uv(0.4999F, (float)d23).color(red, green, blue, 255).normal(stack.last().normal(), 0.0F, 1.0F, 0.0F).endVertex();
+        bufferbuilder.vertex(stack.last().pose(), (float)d16, 0.0F, (float)d17).uv(0.4999F, (float)d22).color(red, green, blue, 255).normal(stack.last().normal(), 0.0F, 1.0F, 0.0F).endVertex();
+        bufferbuilder.vertex(stack.last().pose(), (float)d18, 0.0F, (float)d19).uv(0.0F, (float)d22).color(red, green, blue, 255).normal(stack.last().normal(), 0.0F, 1.0F, 0.0F).endVertex();
+        bufferbuilder.vertex(stack.last().pose(), (float)d18, (float)lineLength, (float)d19).uv(0.0F, (float)d23).color(red, green, blue, 255).normal(stack.last().normal(), 0.0F, 1.0F, 0.0F).endVertex();
         double d24 = 0.0D;
 
         if (entity.tickCount % 2 == 0) {
             d24 = 0.5D;
         }
 
-        bufferbuilder.pos(d4, lineLength, d5).tex(0.5D, d24 + 0.5D).color(red, green, blue, 255).endVertex();
-        bufferbuilder.pos(d6, lineLength, d7).tex(1.0D, d24 + 0.5D).color(red, green, blue, 255).endVertex();
-        bufferbuilder.pos(d10, lineLength, d11).tex(1.0D, d24).color(red, green, blue, 255).endVertex();
-        bufferbuilder.pos(d8, lineLength, d9).tex(0.5D, d24).color(red, green, blue, 255).endVertex();
-        tessellator.draw();
-        GlStateManager.popMatrix();
+        bufferbuilder.vertex(stack.last().pose(), (float)d4, (float)lineLength, (float)d5).uv(0.5F, (float)d24 + 0.5F).color(red, green, blue, 255).normal(stack.last().normal(), 0.0F, 1.0F, 0.0F).endVertex();
+        bufferbuilder.vertex(stack.last().pose(), (float)d6, (float)lineLength, (float)d7).uv(1.0F, (float)d24 + 0.5F).color(red, green, blue, 255).normal(stack.last().normal(), 0.0F, 1.0F, 0.0F).endVertex();
+        bufferbuilder.vertex(stack.last().pose(), (float)d10, (float)lineLength, (float)d11).uv(1.0F, (float)d24).color(red, green, blue, 255).normal(stack.last().normal(), 0.0F, 1.0F, 0.0F).endVertex();
+        bufferbuilder.vertex(stack.last().pose(), (float)d8, (float)lineLength, (float)d9).uv(0.5F, (float)d24).color(red, green, blue, 255).normal(stack.last().normal(), 0.0F, 1.0F, 0.0F).endVertex();
+        BufferUploader.drawWithShader(bufferbuilder.end());
+        stack.popPose();
     }
 
     /**

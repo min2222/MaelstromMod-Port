@@ -5,15 +5,15 @@ import com.barribob.mm.util.Element;
 import com.barribob.mm.util.IElement;
 
 import net.minecraft.network.syncher.EntityDataAccessor;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.item.Item;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
-import net.minecraft.world.level.Level;
-import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 
 /**
  * The base projectile class for most projectiles in the mod
@@ -36,7 +36,7 @@ public class ModProjectile extends EntityModThrowable implements IElement {
         super(worldIn, throwerIn);
         this.travelRange = 20.0f;
         this.setDamage(damage);
-        this.startPos = new Vec3(this.posX, this.posY, this.posZ);
+        this.startPos = this.position();
         if (throwerIn instanceof IElement) {
             this.setElement(((IElement) throwerIn).getElement());
         }
@@ -44,12 +44,12 @@ public class ModProjectile extends EntityModThrowable implements IElement {
 
     public ModProjectile(Level worldIn) {
         super(worldIn);
-        this.startPos = new Vec3(this.posX, this.posY, this.posZ);
+        this.startPos = this.position();
     }
 
     public ModProjectile(Level worldIn, double x, double y, double z) {
         super(worldIn, x, y, z);
-        this.startPos = new Vec3(this.posX, this.posY, this.posZ);
+        this.startPos = this.position();
     }
 
     protected double getDistanceTraveled() {
@@ -80,7 +80,7 @@ public class ModProjectile extends EntityModThrowable implements IElement {
     }
 
     @Override
-    public void onUpdate() {
+    public void tick() {
         super.onUpdate();
 
         this.level.broadcastEntityEvent(this, this.PARTICLE_BYTE);
@@ -111,7 +111,7 @@ public class ModProjectile extends EntityModThrowable implements IElement {
      */
     @Override
     @OnlyIn(Dist.CLIENT)
-    public void handleStatusUpdate(byte id) {
+    public void handleEntityEvent(byte id) {
         if (id == this.IMPACT_PARTICLE_BYTE) {
             spawnImpactParticles();
         }

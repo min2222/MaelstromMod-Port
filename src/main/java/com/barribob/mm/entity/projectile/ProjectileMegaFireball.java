@@ -87,7 +87,7 @@ public class ProjectileMegaFireball extends ProjectileAbstractMegaFireball {
     }
 
     @Override
-    public void onUpdate() {
+    public void tick() {
         if (this.tickCount % 3 == 0) {
             this.playSound(SoundEvents.BLOCK_FIRE_EXTINGUISH, 0.2f, ModRandom.getFloat(0.2f) + 1.0f);
         }

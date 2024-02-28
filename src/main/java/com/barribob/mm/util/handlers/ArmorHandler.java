@@ -13,7 +13,7 @@ public class ArmorHandler {
     public static float getElementalArmor(Entity entity, Element element) {
         float totalArmor = 0;
 
-        for (ItemStack equipment : entity.getArmorInventoryList()) {
+        for (ItemStack equipment : entity.getArmorSlots()) {
             if (equipment.getItem() instanceof ModArmorBase) {
                 totalArmor += ((ModArmorBase) equipment.getItem()).getElementalArmor(element);
             }
@@ -28,7 +28,7 @@ public class ArmorHandler {
     public static float getMaelstromArmor(Entity entity) {
         float totalArmor = 0;
 
-        for (ItemStack equipment : entity.getArmorInventoryList()) {
+        for (ItemStack equipment : entity.getArmorSlots()) {
             if (equipment.getItem() instanceof ModArmorBase) {
                 totalArmor += ((ModArmorBase) equipment.getItem()).getMaelstromArmor(equipment);
             }
@@ -44,7 +44,7 @@ public class ArmorHandler {
     public static int getMaelstromArmorBars(Entity entity) {
         double totalArmor = 0;
 
-        for (ItemStack equipment : entity.getArmorInventoryList()) {
+        for (ItemStack equipment : entity.getArmorSlots()) {
             if (equipment.getItem() instanceof ModArmorBase) {
                 totalArmor += ((ModArmorBase) equipment.getItem()).getMaelstromArmorBars();
             }

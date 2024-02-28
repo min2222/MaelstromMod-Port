@@ -20,8 +20,8 @@ public class NexusBladesmith extends EntityTrader {
     }
 
     @Override
-    protected void initEntityAI() {
-        this.tasks.addTask(9, new EntityAIWatchClosest2(this, Player.class, 5.0F, 1.0F));
+    protected void registerGoals() {
+        this.goalSelector.addGoal(9, new EntityAIWatchClosest2(this, Player.class, 5.0F, 1.0F));
     }
 
     @Override

@@ -32,7 +32,7 @@ public class ProjectileHomingFlame extends ModProjectile {
     }
 
     @Override
-    public void onUpdate() {
+    public void tick() {
         Vec3 prevVel = ModUtils.getEntityVelocity(this);
         super.onUpdate();
         ModUtils.setEntityVelocity(this, prevVel);

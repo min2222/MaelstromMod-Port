@@ -13,27 +13,27 @@ import com.barribob.mm.util.handlers.ParticleManager;
 import com.barribob.mm.util.handlers.SoundsHandler;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.util.Mth;
-import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.MoverType;
-import net.minecraft.world.entity.ai.goal.Goal;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.entity.ai.EntityMoveHelper;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
-import net.minecraft.pathfinding.PathNavigateFlying;
-import net.minecraft.pathfinding.PathNavigateGround;
-import net.minecraft.util.SoundEvent;
-import net.minecraft.world.phys.Vec3;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.util.Mth;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.MoverType;
+import net.minecraft.world.entity.ai.control.MoveControl;
+import net.minecraft.world.entity.ai.goal.Goal;
+import net.minecraft.world.entity.ai.navigation.FlyingPathNavigation;
+import net.minecraft.world.entity.ai.navigation.GroundPathNavigation;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
 public class EntityMaelstromHealer extends EntityMaelstromMob implements IAcceleration {
     Vec3 acceleration = Vec3.ZERO;
-    protected static final EntityDataAccessor<Boolean> FLYING = SynchedEntityData.<Boolean>createKey(EntityMaelstromHealer.class, EntityDataSerializers.BOOLEAN);
+    protected static final EntityDataAccessor<Boolean> FLYING = SynchedEntityData.<Boolean>defineId(EntityMaelstromHealer.class, EntityDataSerializers.BOOLEAN);
     private Goal flyingAI = new AIFlyingSupport(this, 1.2f, 3.5f, 10f, 60);
     private float timeSinceNoTarget = 0;
 
@@ -43,10 +43,10 @@ public class EntityMaelstromHealer extends EntityMaelstromMob implements IAccele
     }
 
     @Override
-    public void onUpdate() {
-        super.onUpdate();
+    public void tick() {
+        super.tick();
 
-        Vec3 motion = new Vec3(this.motionX, this.motionY, this.motionZ);
+        Vec3 motion = this.getDeltaMovement()
         this.acceleration = motion.scale(0.1).add(this.acceleration.scale(0.9));
 
         if (this.level.isClientSide) {
@@ -54,20 +54,20 @@ public class EntityMaelstromHealer extends EntityMaelstromMob implements IAccele
         }
 
         // Switch to flying mode
-        if (!this.isFlying() && ((!this.onGround && ModUtils.isAirBelow(world, getPosition(), 4)) || this.getTarget() != null)) {
+        if (!this.isFlying() && ((!this.onGround && ModUtils.isAirBelow(level, blockPosition(), 4)) || this.getTarget() != null)) {
             this.setFlying(true);
-            this.tasks.addTask(4, flyingAI);
-            this.moveHelper = new FlyingMoveHelper(this);
-            this.navigator = new PathNavigateFlying(this, world);
+            this.goalSelector.addGoal(4, flyingAI);
+            this.moveControl = new FlyingMoveHelper(this);
+            this.navigation = new FlyingPathNavigation(this, level);
             ModBBAnimations.animation(this, "healer.fly", false);
         }
 
         // Switch to ground mode
-        if (this.isFlying() && !ModUtils.isAirBelow(world, getPosition(), 4) && this.timeSinceNoTarget > 200) {
+        if (this.isFlying() && !ModUtils.isAirBelow(level, blockPosition(), 4) && this.timeSinceNoTarget > 200) {
             this.setFlying(false);
-            this.tasks.removeTask(flyingAI);
-            this.moveHelper = new EntityMoveHelper(this);
-            this.navigator = new PathNavigateGround(this, world);
+            this.goalSelector.removeGoal(flyingAI);
+            this.moveControl = new MoveControl(this);
+            this.navigation = new GroundPathNavigation(this, level);
             ModBBAnimations.animation(this, "healer.fly", true);
             ModBBAnimations.animation(this, "healer.fold_wing", false);
         }
@@ -76,14 +76,14 @@ public class EntityMaelstromHealer extends EntityMaelstromMob implements IAccele
             this.timeSinceNoTarget++;
         }
 
-        if (rand.nextInt(20) == 0) {
+        if (random.nextInt(20) == 0) {
             level.broadcastEntityEvent(this, ModUtils.PARTICLE_BYTE);
         }
     }
 
     @Override
-    public void setAttackTarget(LivingEntity entity) {
-        super.setAttackTarget(entity);
+    public void setTarget(LivingEntity entity) {
+        super.setTarget(entity);
         if (entity != null) {
             this.timeSinceNoTarget = 0;
         }
@@ -91,17 +91,17 @@ public class EntityMaelstromHealer extends EntityMaelstromMob implements IAccele
 
     @Override
     @OnlyIn(Dist.CLIENT)
-    public void handleStatusUpdate(byte id) {
+    public void handleEntityEvent(byte id) {
         if (id == ModUtils.PARTICLE_BYTE) {
             if (this.getElement().equals(Element.NONE)) {
-                ParticleManager.spawnMaelstromPotionParticle(world, rand, this.position().add(ModRandom.randVec()).add(ModUtils.yVec(1)), false);
+                ParticleManager.spawnMaelstromPotionParticle(level, random, this.position().add(ModRandom.randVec()).add(ModUtils.yVec(1)), false);
             }
 
-            ParticleManager.spawnEffect(world, this.position().add(ModRandom.randVec()).add(ModUtils.yVec(1)), getElement().particleColor);
+            ParticleManager.spawnEffect(level, this.position().add(ModRandom.randVec()).add(ModUtils.yVec(1)), getElement().particleColor);
         } else if (id == ModUtils.SECOND_PARTICLE_BYTE) {
-            ParticleManager.spawnSwirl2(world, this.position(), ModColors.PURPLE, Vec3.ZERO);
+            ParticleManager.spawnSwirl2(level, this.position(), ModColors.PURPLE, Vec3.ZERO);
         }
-        super.handleStatusUpdate(id);
+        super.handleEntityEvent(id);
     }
 
     public Vec3 getAcceleration() {
@@ -165,24 +165,24 @@ public class EntityMaelstromHealer extends EntityMaelstromMob implements IAccele
     }
 
     public boolean isFlying() {
-        return this.dataManager == null ? false : this.dataManager.get(FLYING);
+        return this.entityData.get(FLYING);
     }
 
     protected void setFlying(boolean immovable) {
-        this.dataManager.set(FLYING, immovable);
+        this.entityData.set(FLYING, immovable);
     }
 
     @Override
-    protected void entityInit() {
-        super.entityInit();
-        this.dataManager.register(FLYING, Boolean.valueOf(false));
+    protected void defineSynchedData() {
+        super.defineSynchedData();
+        this.entityData.define(FLYING, Boolean.valueOf(false));
     }
 
     @Override
     public void performRangedAttack(LivingEntity target, float distanceFactor) {
         ModBBAnimations.animation(this, "healer.summon_orb", false);
         this.addEvent(() -> {
-            EntityHealerOrb orb = new EntityHealerOrb(world, this, target);
+            EntityHealerOrb orb = new EntityHealerOrb(level, this, target);
             level.addFreshEntity(orb);
             level.broadcastEntityEvent(this, ModUtils.SECOND_PARTICLE_BYTE);
         }, 10);

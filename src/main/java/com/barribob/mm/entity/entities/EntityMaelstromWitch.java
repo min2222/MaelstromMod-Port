@@ -9,21 +9,23 @@ import com.barribob.mm.util.ModRandom;
 import com.barribob.mm.util.handlers.LootTableHandler;
 
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.world.item.Items;
-import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.SoundEvent;
-import net.minecraft.world.BossEvent;
 import net.minecraft.server.level.ServerBossEvent;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.BossEvent.BossBarColor;
+import net.minecraft.world.BossEvent.BossBarOverlay;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
 public class EntityMaelstromWitch extends EntityMaelstromMob {
-    private final ServerBossEvent bossInfo = (new ServerBossEvent(this.getDisplayName(), BossEvent.Color.PURPLE, BossEvent.Overlay.NOTCHED_12));
+    private final ServerBossEvent bossInfo = (new ServerBossEvent(this.getDisplayName(), BossBarColor.PURPLE, BossBarOverlay.NOTCHED_12));
     private ComboAttack attackHandler = new ComboAttack();
     private byte lingeringPotions = 4;
     private byte rapidPotions = 5;
@@ -38,7 +40,7 @@ public class EntityMaelstromWitch extends EntityMaelstromMob {
         threshold = this.getMaxHealth() * 0.3f;
         this.healthScaledAttackFactor = 0.2;
         this.setSize(0.9f, 1.8f);
-        if (!worldIn.isRemote) {
+        if (!worldIn.isClientSide) {
             attackHandler.setAttack(lingeringPotions, new ActionThrowPotion(Items.LINGERING_POTION));
             attackHandler.setAttack(rapidPotions, new ActionThrowPotion(Items.SPLASH_POTION));
             attackHandler.setAttack(throwWood, new ActionDarkMissile());
@@ -55,33 +57,33 @@ public class EntityMaelstromWitch extends EntityMaelstromMob {
     }
 
     @Override
-    protected void initEntityAI() {
-        super.initEntityAI();
+    protected void registerGoals() {
+        super.registerGoals();
         rangedAttack = new EntityAIRangedAttack<EntityMaelstromWitch>(this, 1.0f, 60, 30, 12.0f, 0.4f);
         rageRangedAttack = new EntityAIRangedAttack<EntityMaelstromWitch>(this, 1.0f, 35, 30, 12.0f, 0.4f);
-        this.tasks.addTask(4, rangedAttack);
+        this.goalSelector.addGoal(4, rangedAttack);
     }
 
     @Override
-    public void onUpdate() {
-        super.onUpdate();
-        bossInfo.setPercent(this.getHealth() / this.getMaxHealth());
+    public void tick() {
+        super.tick();
+        bossInfo.setProgress(this.getHealth() / this.getMaxHealth());
         if (this.isSwingingArms() && this.tickCount % 3 == 0 && this.getTarget() != null) {
             attackHandler.getCurrentAttackAction().performAction(this, this.getTarget());
         }
     }
 
     @Override
-    public boolean attackEntityFrom(DamageSource source, float amount) {
-        if (source.isMagicDamage()) {
+    public boolean hurt(DamageSource source, float amount) {
+        if (source.isMagic()) {
             return false;
         }
 
         float prevHealth = this.getHealth();
-        boolean flag = super.attackEntityFrom(source, amount);
+        boolean flag = super.hurt(source, amount);
         if (prevHealth > threshold && this.getHealth() < threshold && rangedAttack != null) {
-            this.tasks.removeTask(rangedAttack);
-            this.tasks.addTask(4, rageRangedAttack);
+            this.goalSelector.removeGoal(rangedAttack);
+            this.goalSelector.addGoal(4, rageRangedAttack);
             this.isRaged = true;
         }
         return flag;
@@ -103,12 +105,12 @@ public class EntityMaelstromWitch extends EntityMaelstromMob {
 
     @Override
     @OnlyIn(Dist.CLIENT)
-    public void handleStatusUpdate(byte id) {
+    public void handleEntityEvent(byte id) {
         if (id >= 4 && id <= 6) {
             currentAnimation = attackHandler.getAnimation(id);
             getCurrentAnimation().startAnimation();
         } else {
-            super.handleStatusUpdate(id);
+            super.handleEntityEvent(id);
         }
     }
 
@@ -128,47 +130,47 @@ public class EntityMaelstromWitch extends EntityMaelstromMob {
     }
 
     @Override
-    protected ResourceLocation getLootTable() {
+    protected ResourceLocation getDefaultLootTable() {
         return LootTableHandler.SWAMP_BOSS;
     }
 
     @Override
-    protected float getSoundPitch() {
+	public float getVoicePitch() {
         return 0.6f;
     }
 
     @Override
-    public void setCustomNameTag(String name) {
-        super.setCustomNameTag(name);
+    public void setCustomName(Component name) {
+        super.setCustomName(name);
         this.bossInfo.setName(this.getDisplayName());
     }
 
     @Override
-    public void addTrackingPlayer(ServerPlayer player) {
-        super.addTrackingPlayer(player);
+    public void startSeenByPlayer(ServerPlayer player) {
+        super.startSeenByPlayer(player);
         this.bossInfo.addPlayer(player);
     }
 
     @Override
-    public void removeTrackingPlayer(ServerPlayer player) {
-        super.removeTrackingPlayer(player);
+    public void stopSeenByPlayer(ServerPlayer player) {
+        super.stopSeenByPlayer(player);
         this.bossInfo.removePlayer(player);
     }
 
     @Override
-    public void writeEntityToNBT(CompoundTag compound) {
-        super.writeEntityToNBT(compound);
-        compound.setBoolean("raged", this.isRaged);
+    public boolean save(CompoundTag compound) {
+        compound.putBoolean("raged", this.isRaged);
+        return super.save(compound);
     }
 
     @Override
-    public void readEntityFromNBT(CompoundTag compound) {
-        super.readEntityFromNBT(compound);
-        if (compound.hasKey("raged")) {
+    public void readAdditionalSaveData(CompoundTag compound) {
+        super.readAdditionalSaveData(compound);
+        if (compound.contains("raged")) {
             this.isRaged = compound.getBoolean("raged");
             if (isRaged && rangedAttack != null) {
-                this.tasks.removeTask(rangedAttack);
-                this.tasks.addTask(4, rageRangedAttack);
+                this.goalSelector.removeGoal(rangedAttack);
+                this.goalSelector.addGoal(4, rageRangedAttack);
             }
         }
     }

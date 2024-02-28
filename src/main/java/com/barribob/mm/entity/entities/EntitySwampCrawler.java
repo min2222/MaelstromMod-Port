@@ -1,16 +1,5 @@
 package com.barribob.mm.entity.entities;
 
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.entity.ai.goal.FloatGoal;
-import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
-import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
-import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
-import net.minecraft.world.entity.monster.RangedAttackMob;
-
 import com.barribob.mm.entity.ai.AIMeleeAndRange;
 import com.barribob.mm.entity.animation.AnimationOpenJaws;
 import com.barribob.mm.entity.projectile.ProjectileSwampSpittle;
@@ -19,15 +8,29 @@ import com.barribob.mm.util.ModUtils;
 import com.barribob.mm.util.handlers.LevelHandler;
 import com.barribob.mm.util.handlers.SoundsHandler;
 
-import net.minecraft.entity.ai.*;
 import net.minecraft.entity.monster.IMob;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.Difficulty;
+import net.minecraft.world.EnumDifficulty;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.ai.goal.FloatGoal;
+import net.minecraft.world.entity.ai.goal.LeapAtTargetGoal;
+import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
+import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
+import net.minecraft.world.entity.ai.goal.RandomStrollGoal;
+import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
+import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
+import net.minecraft.world.entity.monster.RangedAttackMob;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
-import net.minecraft.util.SoundEvent;
-import net.minecraft.world.EnumDifficulty;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.common.ForgeMod;
 
 public class EntitySwampCrawler extends EntityLeveledMob implements RangedAttackMob, IMob {
     private AIMeleeAndRange attackAI;
@@ -45,9 +48,9 @@ public class EntitySwampCrawler extends EntityLeveledMob implements RangedAttack
     }
 
     @Override
-    protected void initEntityAI() {
-        this.tasks.addTask(0, new FloatGoal(this));
-        this.tasks.addTask(3, new EntityAILeapAtTarget(this, 0.5F) {
+    protected void registerGoals() {
+        this.goalSelector.addGoal(0, new FloatGoal(this));
+        this.goalSelector.addGoal(3, new LeapAtTargetGoal(this, 0.5F) {
             @Override
             public boolean canUse() {
                 return super.canUse() && attackAI != null && !attackAI.isRanged();
@@ -59,19 +62,19 @@ public class EntitySwampCrawler extends EntityLeveledMob implements RangedAttack
                 super.start();
             }
         });
-        this.tasks.addTask(6, new EntityAIWander(this, 0.6D));
-        this.tasks.addTask(7, new EntityAIWatchClosest(this, Player.class, 6.0F));
-        this.tasks.addTask(8, new RandomLookAroundGoal(this));
-        this.targetTasks.addTask(2, new HurtByTargetGoal(this, false, new Class[0]));
-        this.targetTasks.addTask(3, new NearestAttackableTargetGoal(this, Player.class, true));
+        this.goalSelector.addGoal(6, new RandomStrollGoal(this, 0.6D));
+        this.goalSelector.addGoal(7, new LookAtPlayerGoal(this, Player.class, 6.0F));
+        this.goalSelector.addGoal(8, new RandomLookAroundGoal(this));
+        this.targetSelector.addGoal(2, new HurtByTargetGoal(this));
+        this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, Player.class, true));
         attackAI = new AIMeleeAndRange<EntitySwampCrawler>(this, 1.0f, true, 1.0f, 30, 8.0f, 100, 1.0f, 0.1f);
-        this.tasks.addTask(4, attackAI);
+        this.goalSelector.addGoal(4, attackAI);
     }
 
     @Override
-    public boolean attackEntityAsMob(Entity entityIn) {
+    public boolean doHurtTarget(Entity entityIn) {
         if (entityIn instanceof LivingEntity) {
-            entityIn.attackEntityFrom(DamageSource.causeMobDamage(this), this.getAttack());
+            entityIn.hurt(DamageSource.mobAttack(this), this.getAttack());
             return true;
         }
         return false;
@@ -80,10 +83,10 @@ public class EntitySwampCrawler extends EntityLeveledMob implements RangedAttack
     @Override
     protected void applyEntityAttributes() {
         super.applyEntityAttributes();
-        this.getEntityAttribute(Attributes.MOVEMENT_SPEED).setBaseValue(0.30D);
-        this.getEntityAttribute(SWIM_SPEED).setBaseValue(1.0D);
-        this.getEntityAttribute(Attributes.ATTACK_DAMAGE).setBaseValue(5);
-        this.getEntityAttribute(Attributes.MAX_HEALTH).setBaseValue(25);
+        this.getAttribute(Attributes.MOVEMENT_SPEED).setBaseValue(0.30D);
+        this.getAttribute(ForgeMod.SWIM_SPEED.get()).setBaseValue(1.0D);
+        this.getAttribute(Attributes.ATTACK_DAMAGE).setBaseValue(5);
+        this.getAttribute(Attributes.MAX_HEALTH).setBaseValue(25);
     }
 
     @Override
@@ -102,23 +105,23 @@ public class EntitySwampCrawler extends EntityLeveledMob implements RangedAttack
     }
 
     @Override
-    protected SoundEvent getSplashSound() {
+    protected SoundEvent getSwimSplashSound() {
         return SoundEvents.HOSTILE_SPLASH;
     }
 
     @Override
     protected SoundEvent getHurtSound(DamageSource damageSourceIn) {
-        return SoundsHandler.ENTTIY_CRAWLER_HURT;
+        return SoundsHandler.ENTTIY_CRAWLER_HURT.get();
     }
 
     @Override
     protected SoundEvent getDeathSound() {
-        return SoundsHandler.ENTTIY_CRAWLER_HURT;
+        return SoundsHandler.ENTTIY_CRAWLER_HURT.get();
     }
 
     @Override
     protected SoundEvent getAmbientSound() {
-        return SoundsHandler.ENTTIY_CRAWLER_AMBIENT;
+        return SoundsHandler.ENTTIY_CRAWLER_AMBIENT.get();
     }
 
     @Override
@@ -132,21 +135,21 @@ public class EntitySwampCrawler extends EntityLeveledMob implements RangedAttack
     }
 
     @Override
-    public void onUpdate() {
-        super.onUpdate();
+    public void tick() {
+        super.tick();
 
-        if (!this.level.isClientSide && this.world.getDifficulty() == EnumDifficulty.PEACEFUL) {
-            this.setDead();
+        if (!this.level.isClientSide && this.level.getDifficulty() == Difficulty.PEACEFUL) {
+            this.discard();
         }
     }
 
     @Override
     public void performRangedAttack(LivingEntity target, float distanceFactor) {
-        ModUtils.throwProjectile(this, target, new ProjectileSwampSpittle(world, this, this.getAttack()));
+        ModUtils.throwProjectile(this, target, new ProjectileSwampSpittle(level, this, this.getAttack()));
     }
 
     @Override
-    public void setSwingingArms(boolean swingingArms) {
+    public void setAggressive(boolean swingingArms) {
         if (swingingArms) {
             this.level.broadcastEntityEvent(this, (byte) 4);
         }
@@ -154,11 +157,11 @@ public class EntitySwampCrawler extends EntityLeveledMob implements RangedAttack
 
     @Override
     @OnlyIn(Dist.CLIENT)
-    public void handleStatusUpdate(byte id) {
+    public void handleEntityEvent(byte id) {
         if (id == 4) {
             getCurrentAnimation().startAnimation();
         } else {
-            super.handleStatusUpdate(id);
+            super.handleEntityEvent(id);
         }
     }
 }

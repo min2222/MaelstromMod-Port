@@ -1,44 +1,26 @@
 package com.barribob.mm.init;
 
-import net.minecraft.world.item.enchantment.Enchantment;
-
-import com.barribob.mm.enchantments.*;
+import com.barribob.mm.enchantments.EnchantmentCriticalHit;
+import com.barribob.mm.enchantments.EnchantmentEnflame;
+import com.barribob.mm.enchantments.EnchantmentImpact;
+import com.barribob.mm.enchantments.EnchantmentMaelstromDestroyer;
+import com.barribob.mm.enchantments.EnchantmentPower;
+import com.barribob.mm.enchantments.EnchantmentReload;
 import com.barribob.mm.util.Reference;
 
 import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraftforge.event.RegistryEvent;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.common.registry.GameRegistry.ObjectHolder;
-import net.minecraftforge.registries.IForgeRegistry;
+import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraftforge.registries.DeferredRegister;
+import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraftforge.registries.RegistryObject;
 
-/**
- * Based on Jabelar's enchantment tutorial
- * https://jabelarminecraft.blogspot.com/p/minecraft-modding_6.html
- */
-@ObjectHolder(Reference.MOD_ID)
 public class ModEnchantments {
-    public static final Enchantment reload = null;
-    public static final Enchantment gun_power = null;
-    public static final Enchantment impact = null;
-    public static final Enchantment gun_flame = null;
-    public static final Enchantment maelstrom_destroyer = null;
-    public static final Enchantment critical_hit = null;
-
-    @Mod.EventBusSubscriber(modid = Reference.MOD_ID)
-    public static class RegistrationHandler {
-        @SubscribeEvent
-        public static void onRegisterEnchantments(final RegistryEvent.Register<Enchantment> event) {
-            final IForgeRegistry<Enchantment> registry = event.getRegistry();
-
-            EquipmentSlot[] weaponSlots = new EquipmentSlot[]{EquipmentSlot.MAINHAND, EquipmentSlot.OFFHAND};
-
-            registry.register(new EnchantmentReload("reload", Enchantment.Rarity.UNCOMMON, weaponSlots));
-            registry.register(new EnchantmentPower("gun_power", Enchantment.Rarity.COMMON, weaponSlots));
-            registry.register(new EnchantmentImpact("impact", Enchantment.Rarity.RARE, weaponSlots));
-            registry.register(new EnchantmentEnflame("gun_flame", Enchantment.Rarity.RARE, weaponSlots));
-            registry.register(new EnchantmentMaelstromDestroyer("maelstrom_destroyer", Enchantment.Rarity.RARE, weaponSlots));
-            registry.register(new EnchantmentCriticalHit("critical_hit", Enchantment.Rarity.RARE, weaponSlots));
-        }
-    }
+	public static final DeferredRegister<Enchantment> ENCHANTMENTS = DeferredRegister.create(ForgeRegistries.ENCHANTMENTS, Reference.MOD_ID);
+    public static final EquipmentSlot[] WEAPON_SLOTS = new EquipmentSlot[]{EquipmentSlot.MAINHAND, EquipmentSlot.OFFHAND};
+    public static final RegistryObject<Enchantment> RELOAD = ENCHANTMENTS.register("reload", () -> new EnchantmentReload("reload", Enchantment.Rarity.UNCOMMON, WEAPON_SLOTS));
+    public static final RegistryObject<Enchantment> GUN_POWER = ENCHANTMENTS.register("gun_power", () -> new EnchantmentPower("gun_power", Enchantment.Rarity.COMMON, WEAPON_SLOTS));
+    public static final RegistryObject<Enchantment> IMPACT = ENCHANTMENTS.register("impact", () -> new EnchantmentImpact("impact", Enchantment.Rarity.RARE, WEAPON_SLOTS));
+    public static final RegistryObject<Enchantment> GUN_FLAME = ENCHANTMENTS.register("gun_flame", () -> new EnchantmentEnflame("gun_flame", Enchantment.Rarity.RARE, WEAPON_SLOTS));
+    public static final RegistryObject<Enchantment> MAELSTROM_DESTROYER = ENCHANTMENTS.register("maelstrom_destroyer", () -> new EnchantmentMaelstromDestroyer("maelstrom_destroyer", Enchantment.Rarity.RARE, WEAPON_SLOTS));
+    public static final RegistryObject<Enchantment> CRITICAL_HIT = ENCHANTMENTS.register("critical_hit", () -> new EnchantmentCriticalHit("critical_hit", Enchantment.Rarity.RARE, WEAPON_SLOTS));
 }

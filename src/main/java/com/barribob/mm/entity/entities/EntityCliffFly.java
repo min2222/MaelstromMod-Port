@@ -1,14 +1,5 @@
 package com.barribob.mm.entity.entities;
 
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.entity.ai.EntityAIFindEntityNearestPlayer;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.util.SoundEvent;
-import net.minecraft.world.level.Level;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;
@@ -26,20 +17,29 @@ import com.barribob.mm.util.ModUtils;
 import com.barribob.mm.util.handlers.LevelHandler;
 import com.barribob.mm.util.handlers.SoundsHandler;
 
+import net.minecraft.entity.ai.EntityAIFindEntityNearestPlayer;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.level.Level;
+
 public class EntityCliffFly extends EntityLeveledFlyingMob {
     public EntityCliffFly(Level worldIn) {
         super(worldIn);
-        this.moveHelper = new FlyingMoveHelper(this);
+        this.moveControl = new FlyingMoveHelper(this);
         this.setSize(1.0f, 1.8f);
-        this.setLevel(LevelHandler.CLIFF_OVERWORLD);
+        this.setMobLevel(LevelHandler.CLIFF_OVERWORLD);
     }
 
     @Override
-    protected void initEntityAI() {
-        this.tasks.addTask(5, new AIRandomFly(this));
-        this.tasks.addTask(7, new AILookAround(this));
-        this.tasks.addTask(7, new AIFlyingRangedAttack(this, 40, 20, 30, 1.0f));
-        this.targetTasks.addTask(1, new EntityAIFindEntityNearestPlayer(this));
+    protected void registerGoals() {
+        this.goalSelector.addGoal(5, new AIRandomFly(this));
+        this.goalSelector.addGoal(7, new AILookAround(this));
+        this.goalSelector.addGoal(7, new AIFlyingRangedAttack(this, 40, 20, 30, 1.0f));
+        this.targetSelector.addTask(1, new EntityAIFindEntityNearestPlayer(this));
     }
 
     @Override
@@ -53,13 +53,13 @@ public class EntityCliffFly extends EntityLeveledFlyingMob {
     @Override
     public void performRangedAttack(LivingEntity target, float distanceFactor) {
         for (int i = 0; i < 5; i++) {
-            ModUtils.throwProjectile(this, target, new ProjectileSwampSpittle(world, this, this.getAttack()));
+            ModUtils.throwProjectile(this, target, new ProjectileSwampSpittle(this.getLevel(), this, this.getAttack()));
             this.playSound(SoundEvents.BLAZE_SHOOT, 1.0F, 1.0F / (this.getRandom().nextFloat() * 0.4F + 0.8F));
         }
     }
 
     @Override
-    public void setSwingingArms(boolean swingingArms) {
+    public void setAggressive(boolean swingingArms) {
 
     }
 
@@ -89,8 +89,8 @@ public class EntityCliffFly extends EntityLeveledFlyingMob {
     }
 
     @Override
-    protected float getSoundPitch() {
-        return super.getSoundPitch() * 1.5f;
+	public float getVoicePitch() {
+        return super.getVoicePitch() * 1.5f;
     }
 
     @Override

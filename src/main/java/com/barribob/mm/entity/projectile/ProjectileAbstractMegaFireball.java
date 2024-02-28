@@ -50,7 +50,7 @@ public abstract class ProjectileAbstractMegaFireball extends ProjectileGun {
     protected abstract void onImpact(@Nullable HitResult result);
 
     @Override
-    public void onUpdate() {
+    public void tick() {
 
         Vec3 vel = ModUtils.getEntityVelocity(this);
         super.onUpdate();

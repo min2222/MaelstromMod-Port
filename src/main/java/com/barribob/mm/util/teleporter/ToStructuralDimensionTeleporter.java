@@ -8,6 +8,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.Teleporter;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.portal.PortalForcer;
 import net.minecraft.world.gen.feature.WorldGenerator;
 
 import javax.annotation.Nullable;
@@ -16,7 +17,7 @@ import com.barribob.mm.init.ModBlocks;
 import com.barribob.mm.init.ModDimensions;
 import com.barribob.mm.world.dimension.nexus.DimensionNexus;
 
-public class ToStructuralDimensionTeleporter extends Teleporter {
+public class ToStructuralDimensionTeleporter extends PortalForcer {
     private BlockPos portalOffset;
     private int spacing;
     private WorldGenerator structure;

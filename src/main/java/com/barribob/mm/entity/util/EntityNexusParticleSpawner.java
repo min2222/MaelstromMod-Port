@@ -26,7 +26,7 @@ public class EntityNexusParticleSpawner extends Entity {
     }
 
     @Override
-    public void onUpdate() {
+    public void tick() {
         super.onUpdate();
         if (this.tickCount % 10 == 0) {
             level.broadcastEntityEvent(this, ModUtils.PARTICLE_BYTE);
@@ -38,7 +38,7 @@ public class EntityNexusParticleSpawner extends Entity {
 
     @Override
     @OnlyIn(Dist.CLIENT)
-    public void handleStatusUpdate(byte id) {
+    public void handleEntityEvent(byte id) {
         if (id == ModUtils.PARTICLE_BYTE) {
             ModUtils.performNTimes(20, (i) -> {
                 ModUtils.circleCallback(i * 2, 600 - this.tickCount, (pos) -> {
@@ -47,11 +47,11 @@ public class EntityNexusParticleSpawner extends Entity {
                 });
             });
         }
-        super.handleStatusUpdate(id);
+        super.handleEntityEvent(id);
     }
 
     @Override
-    protected void readEntityFromNBT(CompoundTag compound) {
+    protected void readAdditionalSaveData(CompoundTag compound) {
     }
 
     @Override

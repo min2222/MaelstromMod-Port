@@ -31,28 +31,25 @@ import com.barribob.mm.packets.MessageModParticles;
 import com.barribob.mm.particle.EnumModParticles;
 import com.barribob.mm.util.handlers.LevelHandler;
 import com.google.common.collect.Sets;
+import com.typesafe.config.Config;
 import com.typesafe.config.ConfigRenderOptions;
 
 import net.minecraft.ChatFormatting;
-import net.minecraft.block.BlockLiquid;
-import net.minecraft.client.resources.language.I18n;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.entity.*;
-import net.minecraft.entity.ai.EntityAITasks.EntityAITaskEntry;
-import net.minecraft.entity.monster.EntityEnderman;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.JsonToNBT;
 import net.minecraft.nbt.NBTException;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
+import net.minecraft.util.RandomSource;
 import net.minecraft.util.math.*;
-import net.minecraft.util.text.TextComponentString;
-import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.world.chunk.storage.AnvilChunkLoader;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
@@ -63,20 +60,26 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.ai.goal.GoalSelector;
 import net.minecraft.world.entity.ai.goal.WrappedGoal;
+import net.minecraft.world.entity.monster.EnderMan;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.gen.feature.WorldGenerator;
-import net.minecraft.world.gen.structure.StructureBoundingBox;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.level.ClipContext;
+import net.minecraft.world.level.ClipContext.Fluid;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.material.Material;
+import net.minecraft.world.level.storage.LevelData;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
-import net.minecraft.world.storage.MapStorage;
+import net.minecraftforge.entity.PartEntity;
 import net.minecraftforge.event.ForgeEventFactory;
 import net.minecraftforge.fml.common.registry.EntityEntry;
 import net.minecraftforge.fml.common.registry.EntityRegistry;
@@ -113,20 +116,20 @@ public final class ModUtils {
     public static Consumer<String> getPlayerAreaMessager(Entity entity) {
         return (message) -> {
             if (message != "") {
-                for (Player player : entity.world.getPlayers(Player.class, (p) -> p.distanceToSqr(entity) < 100)) {
-                    player.sendMessage(new TextComponentString(ChatFormatting.DARK_PURPLE + entity.getDisplayName().getFormattedText() + ": " + ChatFormatting.WHITE)
-                            .appendSibling(new TextComponentTranslation(ModUtils.LANG_CHAT + message)));
+                for (Player player : entity.level.getNearbyPlayer(Player.class, (p) -> p.distanceToSqr(entity) < 100)) {
+                    player.sendSystemMessage(Component.literal(ChatFormatting.DARK_PURPLE + entity.getDisplayName().getString() + ": " + ChatFormatting.WHITE)
+                            .append(Component.translatable(ModUtils.LANG_CHAT + message)));
                 }
             }
         };
     }
 
     public static String translateDesc(String key, Object... params) {
-        return I18n.format(ModUtils.LANG_DESC + key, params);
+        return Component.translatable(ModUtils.LANG_DESC + key, params).getString();
     }
 
     public static String translateDialog(String key) {
-        return I18n.format(ModUtils.LANG_CHAT + key);
+        return Component.translatable(ModUtils.LANG_CHAT + key).getString();
     }
 
     public static String getDisplayLevel(float level) {
@@ -146,7 +149,7 @@ public final class ModUtils {
      * @param world
      * @return
      */
-    public static boolean chunksGenerated(StructureBoundingBox box, Level world) {
+    public static boolean chunksGenerated(BoundingBox box, Level world) {
         return world.isChunkGeneratedAt(box.minX >> 4, box.minZ >> 4) || world.isChunkGeneratedAt(box.minX >> 4, box.maxZ >> 4)
                 || world.isChunkGeneratedAt(box.maxX >> 4, box.minZ >> 4) || world.isChunkGeneratedAt(box.maxX >> 4, box.maxZ >> 4);
     }
@@ -167,7 +170,7 @@ public final class ModUtils {
      * Returns all EntityLivingBase entities in a certain bounding box
      */
     public static List<LivingEntity> getEntitiesInBox(Entity entity, AABB bb) {
-        List<Entity> list = entity.world.getEntitiesOfClassExcludingEntity(entity, bb);
+        List<Entity> list = entity.level.getEntities(entity, bb);
 
         Predicate<Entity> isInstance = i -> i instanceof LivingEntity;
         Function<Entity, LivingEntity> cast = i -> (LivingEntity) i;
@@ -179,7 +182,7 @@ public final class ModUtils {
      * Returns the entity's position in vector form
      */
     public static Vec3 entityPos(Entity entity) {
-        return new Vec3(entity.posX, entity.posY, entity.posZ);
+        return entity.position();
     }
 
     /*
@@ -191,7 +194,7 @@ public final class ModUtils {
             int x = rand.nextInt(16) + 8;
             int y = rand.nextInt(randY) + baseY;
             int z = rand.nextInt(16) + 8;
-            gen.generate(worldIn, rand, pos.add(x, y, z));
+            gen.generate(worldIn, rand, pos.offset(x, y, z));
         }
     }
 
@@ -233,16 +236,16 @@ public final class ModUtils {
             return;
         }
 
-        List<Entity> list = source.world.getEntitiesOfClassExcludingEntity(source, new AABB(pos.x, pos.y, pos.z, pos.x, pos.y, pos.z).grow(radius));
+        List<Entity> list = source.level.getEntities(source, new AABB(pos.x, pos.y, pos.z, pos.x, pos.y, pos.z).inflate(radius));
 
-        Predicate<Entity> isInstance = i -> i instanceof LivingEntity || i instanceof MultiPartEntityPart || i.canBeCollidedWith();
+        Predicate<Entity> isInstance = i -> i instanceof LivingEntity || i instanceof PartEntity || i.canBeCollidedWith();
         double radiusSq = Math.pow(radius, 2);
 
         list.stream().filter(isInstance).forEach((entity) -> {
 
             // Get the hitbox size of the entity because otherwise explosions are less
             // effective against larger mobs
-            double avgEntitySize = entity.getBoundingBox().getAverageEdgeLength() * 0.75;
+            double avgEntitySize = entity.getBoundingBox().getSize() * 0.75;
 
             // Choose the closest distance from the center or the head to encourage
             // headshots
@@ -260,14 +263,14 @@ public final class ModUtils {
             double damageFactorSq = Math.pow(damageFactor, 2);
             double damage = maxDamage.apply(entity) * damageFactorSq;
             if (damage > 0 && adjustedDistanceSq < radiusSq) {
-                entity.setFire((int) (fireFactor * damageFactorSq));
-                if(entity.attackEntityFrom(damageSource, (float) damage)) {
+                entity.setSecondsOnFire((int) (fireFactor * damageFactorSq));
+                if(entity.hurt(damageSource, (float) damage)) {
                     double entitySizeFactor = avgEntitySize == 0 ? 1 : Math.max(0.5, Math.min(1, 1 / avgEntitySize));
                     double entitySizeFactorSq = Math.pow(entitySizeFactor, 2);
 
                     // Velocity depends on the entity's size and the damage dealt squared
                     Vec3 velocity = getCenter(entity.getBoundingBox()).subtract(pos).normalize().scale(damageFactorSq).scale(knockbackFactor).scale(entitySizeFactorSq);
-                    entity.addVelocity(velocity.x, velocity.y, velocity.z);
+                    entity.push(velocity.x, velocity.y, velocity.z);
                 }
             }
         });
@@ -292,18 +295,18 @@ public final class ModUtils {
                                           BiConsumer<ModProjectile, Entity> beforeHit, BiConsumer<ModProjectile, Entity> afterHit, Boolean resetHurtTime) {
         if (hitEntity != null && projectile != null && projectile.shootingEntity != null && hitEntity != projectile.shootingEntity) {
             beforeHit.accept(projectile, hitEntity);
-            if (projectile.isBurning() && !(hitEntity instanceof EntityEnderman)) {
-                hitEntity.setFire(5);
+            if (projectile.isOnFire() && !(hitEntity instanceof EnderMan)) {
+                hitEntity.setSecondsOnFire(5);
             }
             if (resetHurtTime) {
-                hitEntity.hurtResistantTime = 0;
+                hitEntity.invulnerableTime = 0;
             }
-            hitEntity.attackEntityFrom(damageSource, damage);
+            hitEntity.hurt(damageSource, damage);
             if (knockback > 0) {
-                float f1 = Mth.sqrt(projectile.motionX * projectile.motionX + projectile.motionZ * projectile.motionZ);
+                float f1 = (float) Math.sqrt(projectile.getDeltaMovement().x * projectile.getDeltaMovement().x + projectile.getDeltaMovement().z * projectile.getDeltaMovement().z);
 
                 if (f1 > 0.0F) {
-                    hitEntity.addVelocity(projectile.motionX * knockback * 0.6000000238418579D / f1, 0.1D, projectile.motionZ * knockback * 0.6000000238418579D / f1);
+                    hitEntity.push(projectile.getDeltaMovement().x * knockback * 0.6000000238418579D / f1, 0.1D, projectile.getDeltaMovement().z * knockback * 0.6000000238418579D / f1);
                 }
             }
             afterHit.accept(projectile, hitEntity);
@@ -311,8 +314,8 @@ public final class ModUtils {
     }
 
     public static Vec3 getRelativeOffset(LivingEntity actor, Vec3 offset) {
-        Vec3 look = ModUtils.getVectorForRotation(0, actor.renderYawOffset);
-        Vec3 side = look.rotateYaw((float) Math.PI * 0.5f);
+        Vec3 look = ModUtils.getVectorForRotation(0, actor.yBodyRot);
+        Vec3 side = look.yRot((float) Math.PI * 0.5f);
         return look.scale(offset.x).add(yVec((float) offset.y)).add(side.scale(offset.z));
     }
 
@@ -336,19 +339,19 @@ public final class ModUtils {
 
     public static void throwProjectile(LivingEntity actor, Vec3 target, ModProjectile projectile, float inaccuracy, float velocity, Vec3 offset) {
         Vec3 pos = projectile.position().add(offset);
-        projectile.setPosition(pos.x, pos.y, pos.z);
+        projectile.setPos(pos.x, pos.y, pos.z);
         throwProjectile(actor, target, projectile, inaccuracy, velocity);
     }
 
     public static void throwProjectile(LivingEntity actor, LivingEntity target, ModProjectile projectile, float inaccuracy, float velocity, Vec3 offset) {
         Vec3 pos = projectile.position().add(offset);
-        projectile.setPosition(pos.x, pos.y, pos.z);
+        projectile.setPos(pos.x, pos.y, pos.z);
         throwProjectile(actor, target, projectile, inaccuracy, velocity);
     }
 
     public static void throwProjectile(LivingEntity actor, LivingEntity target, ModProjectile projectile, float inaccuracy, float velocity) {
-        double d0 = target.posY + target.getEyeHeight() - 0.9;
-        throwProjectile(actor, new Vec3(target.posX, d0, target.posZ), projectile, inaccuracy, velocity);
+        double d0 = target.getY() + target.getEyeHeight() - 0.9;
+        throwProjectile(actor, new Vec3(target.getX(), d0, target.getZ()), projectile, inaccuracy, velocity);
     }
 
     public static void throwProjectile(LivingEntity actor, Vec3 target, ModProjectile projectile, float inaccuracy, float velocity) {
@@ -375,11 +378,11 @@ public final class ModUtils {
         BlockPos pos = new BlockPos(entity.getX(), Math.floor(entity.getBoundingBox().minY), entity.getZ());
         if (world.getBlockState(pos).getBlock() == Blocks.WATER) {
             if (entity.getDeltaMovement().y < 0) {
-                entity.posY += -entity.motionY; // player is falling, so motionY is negative, but we want to reverse that
-                entity.motionY = 0.0D; // no longer falling
+                entity.setPos(entity.position().add(0, -entity.getDeltaMovement().y, 0)); // player is falling, so motionY is negative, but we want to reverse that
+                entity.setDeltaMovement(entity.getDeltaMovement().x, 0, entity.getDeltaMovement().z); // no longer falling
             }
             entity.fallDistance = 0.0F; // otherwise I believe it adds up, which may surprise you when you come down
-            entity.onGround = true;
+            entity.setOnGround(true);
         }
     }
 
@@ -447,7 +450,7 @@ public final class ModUtils {
 
     public static float getEnchantedDamage(ItemStack stack, float level, float damage) {
         float maxPower = ModEnchantments.gun_power.getMaxLevel();
-        float power = EnchantmentHelper.getEnchantmentLevel(ModEnchantments.gun_power, stack);
+        float power = stack.getEnchantmentLevel(ModEnchantments.gun_power);
         float maxDamageBonus = (float) Math.pow(ModConfig.balance.progression_scale, 2); // Maximum damage is two levels above
         float enchantmentBonus = 1 + ((power / maxPower) * (maxDamageBonus - 1));
         return damage * enchantmentBonus * LevelHandler.getMultiplierFromLevel(level);
@@ -458,7 +461,7 @@ public final class ModUtils {
     }
 
     public static InvasionWorldSaveData getInvasionData(Level world) {
-        MapStorage storage = world.getMapStorage();
+    	LevelData storage = world.getLevelData();
         InvasionWorldSaveData instance = (InvasionWorldSaveData) storage.getOrLoadData(InvasionWorldSaveData.class, InvasionWorldSaveData.DATA_NAME);
 
         if (instance == null) {
@@ -480,7 +483,7 @@ public final class ModUtils {
     }
 
     public static void doSweepAttack(Player player, @Nullable LivingEntity target, Element element, Consumer<LivingEntity> perEntity, float maxDistanceSq, float areaSize) {
-        float attackDamage = (float) player.getEntityAttribute(Attributes.ATTACK_DAMAGE).getAttributeValue();
+        float attackDamage = (float) player.getAttribute(Attributes.ATTACK_DAMAGE).getBaseValue();
         float sweepDamage = Math.min(0.15F + EnchantmentHelper.getSweepingDamageRatio(player), 1) * attackDamage;
 
         AABB box;
@@ -488,26 +491,26 @@ public final class ModUtils {
         if (target != null) {
             box = target.getBoundingBox();
         } else {
-            Vec3 center = ModUtils.getAxisOffset(player.getLookVec(), new Vec3(areaSize * 1.5, 0, 0)).add(player.getEyePosition(1));
-            box = makeBox(center, center).grow(areaSize * 0.5, areaSize, areaSize * 0.5);
+            Vec3 center = ModUtils.getAxisOffset(player.getLookAngle(), new Vec3(areaSize * 1.5, 0, 0)).add(player.getEyePosition(1));
+            box = makeBox(center, center).inflate(areaSize * 0.5, areaSize, areaSize * 0.5);
         }
 
-        for (LivingEntity entitylivingbase : player.world.getEntitiesOfClass(LivingEntity.class, box.grow(areaSize, 0.25D, areaSize))) {
-            if (entitylivingbase != player && entitylivingbase != target && !player.isOnSameTeam(entitylivingbase) && player.distanceToSqr(entitylivingbase) < maxDistanceSq) {
-                entitylivingbase.knockBack(player, 0.4F, Mth.sin(player.rotationYaw * 0.017453292F), (-Mth.cos(player.rotationYaw * 0.017453292F)));
-                entitylivingbase.attackEntityFrom(ModDamageSource.causeElementalPlayerDamage(player, element), sweepDamage);
+        for (LivingEntity entitylivingbase : player.level.getEntitiesOfClass(LivingEntity.class, box.inflate(areaSize, 0.25D, areaSize))) {
+            if (entitylivingbase != player && entitylivingbase != target && !player.isAlliedTo(entitylivingbase) && player.distanceToSqr(entitylivingbase) < maxDistanceSq) {
+                entitylivingbase.knockback(0.4F, Mth.sin(player.getYRot() * 0.017453292F), (-Mth.cos(player.getYRot() * 0.017453292F)));
+                entitylivingbase.hurt(ModDamageSource.causeElementalPlayerDamage(player, element), sweepDamage);
                 perEntity.accept(entitylivingbase);
             }
         }
 
-        player.world.playSound((Player) null, player.posX, player.posY, player.posZ, SoundEvents.PLAYER_ATTACK_SWEEP, player.getSoundCategory(), 1.0F, 0.9F);
+        player.level.playSound((Player) null, player.getX(), player.getY(), player.getZ(), SoundEvents.PLAYER_ATTACK_SWEEP, player.getSoundSource(), 1.0F, 0.9F);
 
         // Spawn colored sweep particles
         if (!player.level.isClientSide && player instanceof ServerPlayer) {
-            Main.network.sendTo(new MessageModParticles(EnumModParticles.SWEEP_ATTACK, getCenter(box), Vec3.ZERO, element.sweepColor), (ServerPlayer) player);
+            Main.NETWORK.sendTo(new MessageModParticles(EnumModParticles.SWEEP_ATTACK, getCenter(box), Vec3.ZERO, element.sweepColor), (ServerPlayer) player);
         }
 
-        Entity particle = new ParticleSpawnerSwordSwing(player.world);
+        Entity particle = new ParticleSpawnerSwordSwing(player.level);
         ModUtils.setEntityPosition(particle, getCenter(box));
         player.level.addFreshEntity(particle);
     }
@@ -540,7 +543,7 @@ public final class ModUtils {
     public static float getArmoredDamage(DamageSource source, float amount, float level, Element element) {
         amount *= ModConfig.balance.mob_armor;
 
-        if (!source.isUnblockable()) {
+        if (!source.isBypassArmor()) {
             if (element != element.NONE) {
                 amount /= ModConfig.balance.elemental_factor;
             }
@@ -557,18 +560,17 @@ public final class ModUtils {
     public static void leapTowards(LivingEntity entity, Vec3 target, float horzVel, float yVel) {
         Vec3 dir = target.subtract(entity.position()).normalize();
         Vec3 leap = new Vec3(dir.x, 0, dir.z).normalize().scale(horzVel).add(ModUtils.yVec(yVel));
-        entity.motionX += leap.x;
-        if (entity.motionY < 0.1) {
-            entity.motionY += leap.y;
+        entity.setDeltaMovement(entity.getDeltaMovement().add(leap.x, 0, 0));
+        if (entity.getDeltaMovement().y < 0.1) {
+            entity.setDeltaMovement(entity.getDeltaMovement().add(0, leap.y, 0));
         }
-        entity.motionZ += leap.z;
+        entity.setDeltaMovement(entity.getDeltaMovement().add(0, 0, leap.z));
 
         // Normalize to make sure the velocity doesn't go beyond what we expect
-        double horzMag = Math.sqrt(Math.pow(entity.motionX, 2) + Math.pow(entity.motionZ, 2));
+        double horzMag = Math.sqrt(Math.pow(entity.getDeltaMovement().x, 2) + Math.pow(entity.getDeltaMovement().z, 2));
         double scale = horzVel / horzMag;
         if (scale < 1) {
-            entity.motionX *= scale;
-            entity.motionZ *= scale;
+            entity.setDeltaMovement(entity.getDeltaMovement().multiply(scale, 1, scale));
         }
     }
 
@@ -604,7 +606,7 @@ public final class ModUtils {
     public static Vec3 findEntityGroupCenter(Entity mob, double d) {
         Vec3 groupCenter = mob.position();
         float numMobs = 1;
-        for (LivingEntity entity : ModUtils.getEntitiesInBox(mob, new AABB(mob.getPosition()).grow(d))) {
+        for (LivingEntity entity : ModUtils.getEntitiesInBox(mob, new AABB(mob.blockPosition()).inflate(d))) {
             if (entity instanceof EntityMaelstromMob && !(entity instanceof EntityMaelstromHealer)) {
                 groupCenter = groupCenter.add(entity.position());
                 numMobs += 1;
@@ -617,7 +619,7 @@ public final class ModUtils {
     public static boolean isAirBelow(Level world, BlockPos pos, int blocksBelow) {
         boolean hasGround = false;
         for (int i = 0; i >= -blocksBelow; i--) {
-            if (!world.isAirBlock(pos.add(new BlockPos(0, i, 0)))) {
+            if (!world.isEmptyBlock(pos.offset(new BlockPos(0, i, 0)))) {
                 hasGround = true;
             }
         }
@@ -625,15 +627,15 @@ public final class ModUtils {
     }
 
     public static void facePosition(Vec3 pos, Entity entity, float maxYawIncrease, float maxPitchIncrease) {
-        double d0 = pos.x - entity.posX;
-        double d2 = pos.z - entity.posZ;
-        double d1 = pos.y - entity.posY;
+        double d0 = pos.x - entity.getX();
+        double d2 = pos.z - entity.getZ();
+        double d1 = pos.y - entity.getY();
 
-        double d3 = Mth.sqrt(d0 * d0 + d2 * d2);
+        double d3 = Math.sqrt(d0 * d0 + d2 * d2);
         float f = (float) (Mth.atan2(d2, d0) * (180D / Math.PI)) - 90.0F;
         float f1 = (float) (-(Mth.atan2(d1, d3) * (180D / Math.PI)));
-        entity.rotationPitch = updateRotation(entity.rotationPitch, f1, maxPitchIncrease);
-        entity.rotationYaw = updateRotation(entity.rotationYaw, f, maxYawIncrease);
+        entity.setXRot(updateRotation(entity.getXRot(), f1, maxPitchIncrease));
+        entity.setYRot(updateRotation(entity.getYRot(), f, maxYawIncrease));
     }
 
     private static float updateRotation(float angle, float targetAngle, float maxIncrease) {
@@ -688,14 +690,14 @@ public final class ModUtils {
                 .scale(Math.cos(theta))
                 .add(k.cross(v)
                         .scale(Math.sin(theta)))
-                .add(k.scale(k.dotProduct(v))
+                .add(k.scale(k.dot(v))
                         .scale(1 - Math.cos(theta)));
     }
 
     // http://www.java-gaming.org/index.php/topic,28253
     public static double unsignedAngle(Vec3 a, Vec3 b) {
-        double dot = a.dotProduct(b);
-        double cos = dot / (a.lengthVector() * b.lengthVector());
+        double dot = a.dot(b);
+        double cos = dot / (a.length() * b.length());
         return Math.acos(cos);
     }
 
@@ -730,17 +732,17 @@ public final class ModUtils {
                     BlockState iblockstate = world.getBlockState(blockpos);
                     Block block = iblockstate.getBlock();
 
-                    if (!block.isAir(iblockstate, world, blockpos) && iblockstate.getMaterial() != Material.FIRE) {
+                    if (!iblockstate.isAir() && iblockstate.getMaterial() != Material.FIRE) {
                         if (ForgeEventFactory.getMobGriefingEvent(world, entity)) {
                             if (block != Blocks.COMMAND_BLOCK &&
                                     block != Blocks.REPEATING_COMMAND_BLOCK &&
                                     block != Blocks.CHAIN_COMMAND_BLOCK &&
                                     block != Blocks.BEDROCK &&
-                                    !(block instanceof BlockLiquid)) {
-                                if (world.getClosestPlayer(blockpos.getX(), blockpos.getY(), blockpos.getZ(), 20, false) != null) {
+                                    !(block instanceof LiquidBlock)) {
+                                if (world.getNearestPlayer(blockpos.getX(), blockpos.getY(), blockpos.getZ(), 20, false) != null) {
                                     world.destroyBlock(blockpos, false);
                                 } else {
-                                    world.setBlockToAir(blockpos);
+                                    world.setBlockAndUpdate(blockpos, Blocks.AIR.defaultBlockState());
                                 }
                             }
                         }
@@ -773,7 +775,7 @@ public final class ModUtils {
      * @return
      */
     public static List<Entity> findEntitiesInLine(Vec3 start, Vec3 end, Level world, @Nullable Entity toExclude) {
-        return world.getEntitiesInAABBexcluding(toExclude, new AABB(start.x, start.y, start.z, end.x, end.y, end.z), (e) -> {
+        return world.getEntities(toExclude, new AABB(start.x, start.y, start.z, end.x, end.y, end.z), (e) -> {
             HitResult raytraceresult = e.getBoundingBox().calculateIntercept(start, end);
             return raytraceresult != null;
         });
@@ -935,7 +937,7 @@ public final class ModUtils {
                 if(spawnPos.getY() < lowestY) continue;
             }
 
-            if (!findGround || world.getBlockState(spawnPos.down()).isSideSolid(world, spawnPos.down(), Direction.UP)) {
+            if (!findGround || world.getBlockState(spawnPos.below()).isFaceSturdy(world, spawnPos.below(), Direction.UP)) {
                 Entity mob = createMobFromSpawnData(data, world, x + 0.5, spawnPos.getY(), z + 0.5);
 
                 if (!(mob instanceof EntityLeveledMob)) continue;
@@ -986,21 +988,19 @@ public final class ModUtils {
     }
 
     public static void setEntityPosition(Entity entity, Vec3 vec) {
-        entity.setPosition(vec.x, vec.y, vec.z);
+        entity.setPos(vec.x, vec.y, vec.z);
     }
 
     public static void setEntityVelocity(Entity entity, Vec3 vec) {
-        entity.motionX = vec.x;
-        entity.motionY = vec.y;
-        entity.motionZ = vec.z;
+    	entity.setDeltaMovement(vec);
     }
 
     public static void addEntityVelocity(Entity entity, Vec3 vec) {
-        entity.addVelocity(vec.x, vec.y, vec.z);
+        entity.push(vec.x, vec.y, vec.z);
     }
 
     public static Vec3 getEntityVelocity(Entity entity) {
-        return new Vec3(entity.motionX, entity.motionY, entity.motionZ);
+    	return entity.getDeltaMovement();
     }
 
     /**
@@ -1026,7 +1026,7 @@ public final class ModUtils {
     public static BlockPos findGroundBelow(Level world, BlockPos pos) {
         for (int i = pos.getY(); i > 0; i--) {
             BlockPos tempPos = new BlockPos(pos.getX(), i, pos.getZ());
-            if (world.getBlockState(tempPos).isSideSolid(world, tempPos, Direction.UP)) {
+            if (world.getBlockState(tempPos).isFaceSturdy(world, tempPos, Direction.UP)) {
                 return tempPos;
             }
         }
@@ -1044,9 +1044,9 @@ public final class ModUtils {
      * Lets entities see you through glass
      */
     public static boolean canEntityBeSeen(Entity viewer, Entity target) {
-        HitResult result = viewer.world.rayTraceBlocks(viewer.getEyePosition(1), target.getEyePosition(1), false, true, false);
-        if (result != null && result.typeOfHit == HitResult.Type.BLOCK) {
-            BlockState blockState = viewer.world.getBlockState(result.getBlockPos());
+        HitResult result = viewer.level.clip(new ClipContext(viewer.getEyePosition(1), target.getEyePosition(1), ClipContext.Block.COLLIDER, Fluid.NONE, viewer));
+        if (result != null && result.getType() == HitResult.Type.BLOCK) {
+            BlockState blockState = viewer.level.getBlockState(((BlockHitResult)result).getBlockPos());
             if (blockState.isFullCube()) {
                 return false;
             }
@@ -1063,8 +1063,8 @@ public final class ModUtils {
     LivingEntity getLivingEntity(@Nullable Entity entity) {
         if (entity instanceof LivingEntity) {
             return (LivingEntity) entity;
-        } else if (entity instanceof MultiPartEntityPart && ((MultiPartEntityPart) entity).parent instanceof LivingEntity) {
-            return (LivingEntity) ((MultiPartEntityPart) entity).parent;
+        } else if (entity instanceof PartEntity && ((PartEntity) entity).getParent() instanceof LivingEntity) {
+            return (LivingEntity) ((PartEntity) entity).getParent();
         }
         return null;
     }
@@ -1081,7 +1081,7 @@ public final class ModUtils {
     LivingEntity closestEntityExcluding(@Nullable Entity entityToExclude, AABB box, Predicate<LivingEntity> condition) {
         LivingEntity closestEntity = null;
         for (LivingEntity entity : ModUtils.getEntitiesInBox(entityToExclude, box)) {
-            if (condition.test(entity) && (closestEntity == null || entity.getDistance(entityToExclude) < closestEntity.getDistance(entityToExclude))) {
+            if (condition.test(entity) && (closestEntity == null || entity.distanceTo(entityToExclude) < closestEntity.distanceTo(entityToExclude))) {
                 closestEntity = entity;
             }
         }
@@ -1114,24 +1114,24 @@ public final class ModUtils {
         try {
             return JsonToNBT.getTagFromJson(config.root().render(ConfigRenderOptions.concise()));
         } catch (NBTException e) {
-            Main.log.error("Malformed NBT tag", e);
+            Main.LOG.error("Malformed NBT tag", e);
         }
         return new CompoundTag();
     }
 
     public static boolean canBlockDamageSource(DamageSource damageSourceIn, LivingEntity entity)
     {
-        if (!damageSourceIn.isUnblockable() && entity.isActiveItemStackBlocking())
+        if (!damageSourceIn.isBypassArmor() && entity.isBlocking())
         {
-            Vec3 vec3d = damageSourceIn.getDamageLocation();
+            Vec3 vec3d = damageSourceIn.getSourcePosition();
 
             if (vec3d != null)
             {
-                Vec3 vec3d1 = entity.getLook(1.0F);
-                Vec3 vec3d2 = vec3d.subtractReverse(new Vec3(entity.posX, entity.posY, entity.posZ)).normalize();
+                Vec3 vec3d1 = entity.getViewVector(1.0F);
+                Vec3 vec3d2 = vec3d.subtract(entity.position()).normalize();
                 vec3d2 = new Vec3(vec3d2.x, 0.0D, vec3d2.z);
 
-                if (vec3d2.dotProduct(vec3d1) < 0.0D)
+                if (vec3d2.dot(vec3d1) < 0.0D)
                 {
                     return true;
                 }
@@ -1206,14 +1206,14 @@ public final class ModUtils {
 
     public static boolean attemptTeleport(Vec3 pos, LivingEntity entity)
     {
-        double d0 = entity.posX;
-        double d1 = entity.posY;
-        double d2 = entity.posZ;
+        double d0 = entity.getX();
+        double d1 = entity.getY();
+        double d2 = entity.getZ();
         ModUtils.setEntityPosition(entity, pos);
         boolean flag = false;
-        BlockPos blockpos = new BlockPos(entity);
-        Level world = entity.world;
-        Random random = entity.getRNG();
+        BlockPos blockpos = entity.blockPosition();
+        Level world = entity.level;
+        RandomSource random = entity.getRandom();
 
         if (world.isBlockLoaded(blockpos))
         {
@@ -1282,15 +1282,15 @@ public final class ModUtils {
     }
 
     public static void avoidOtherEntities(Entity entity, double speed, int detectionSize, Predicate<? super Entity> filter) {
-        double boundingBoxEdgeLength = entity.getBoundingBox().getAverageEdgeLength() * 0.5;
+        double boundingBoxEdgeLength = entity.getBoundingBox().getSize() * 0.5;
         double distanceSq = Math.pow(detectionSize + boundingBoxEdgeLength, 2);
 
         BiFunction<Vec3, Entity, Vec3> accumulator = (vec, e) ->
                 vec.add(entity.position().subtract(e.position()).normalize())
                         .scale((distanceSq - entity.distanceToSqr(e)) / distanceSq);
 
-        Vec3 avoid = entity.world.getEntitiesInAABBexcluding(entity,
-                entity.getBoundingBox().grow(detectionSize),
+        Vec3 avoid = entity.level.getEntities(entity,
+                entity.getBoundingBox().inflate(detectionSize),
                 filter::test).parallelStream()
                 .reduce(Vec3.ZERO, accumulator, Vec3::add)
                 .scale(speed);

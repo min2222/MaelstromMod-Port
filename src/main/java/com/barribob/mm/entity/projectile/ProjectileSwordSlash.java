@@ -30,7 +30,7 @@ public class ProjectileSwordSlash extends ModProjectile {
     }
 
     @Override
-    public void onUpdate() {
+    public void tick() {
         super.onUpdate();
         if (!level.isClientSide && this.shootingEntity != null) {
             if (this.world instanceof ServerLevel) {

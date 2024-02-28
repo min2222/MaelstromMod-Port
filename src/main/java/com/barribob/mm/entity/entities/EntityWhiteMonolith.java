@@ -42,7 +42,7 @@ public class EntityWhiteMonolith extends EntityLeveledMob {
     }
 
     @Override
-    public void onUpdate() {
+    public void tick() {
         super.onUpdate();
         this.setRotation(0, 0);
         this.setRotationYawHead(0);
@@ -95,7 +95,7 @@ public class EntityWhiteMonolith extends EntityLeveledMob {
     }
 
     @Override
-    public void handleStatusUpdate(byte id) {
+    public void handleEntityEvent(byte id) {
         if (id == ModUtils.PARTICLE_BYTE) {
             ModUtils.performNTimes(5, (i) -> {
                 this.world.spawnParticle(ParticleTypes.EXPLOSION_LARGE, this.posX + ModRandom.getFloat(5),
@@ -107,7 +107,7 @@ public class EntityWhiteMonolith extends EntityLeveledMob {
             Vec3 pos = ModRandom.randVec().scale(2).add(ModUtils.yVec(2));
             world.spawnParticle(ParticleTypes.ENCHANTMENT_TABLE, pos.x, pos.y, pos.z, 0, 2.0f, 0);
         }
-        super.handleStatusUpdate(id);
+        super.handleEntityEvent(id);
     }
 
     // Cannot be attacked

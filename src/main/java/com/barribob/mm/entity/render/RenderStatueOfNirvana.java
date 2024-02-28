@@ -9,9 +9,10 @@ import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.client.renderer.entity.layers.LayerRenderer;
+import net.minecraft.client.renderer.entity.layers.RenderLayer;
 import net.minecraft.resources.ResourceLocation;
 
-public class RenderStatueOfNirvana extends RenderModEntity<EntityGoldenBoss> {
+public class RenderStatueOfNirvana extends RenderModEntity<EntityGoldenBoss, ModelStatueOfNirvana> {
     private final ResourceLocation STATUE = new ResourceLocation(Reference.MOD_ID, "textures/entity/statue.png");
     private final ResourceLocation STATUE_ATTACKING = new ResourceLocation(Reference.MOD_ID, "textures/entity/statue_attacking.png");
     private final ResourceLocation DAMAGED_STATUE = new ResourceLocation(Reference.MOD_ID, "textures/entity/statue_damaged.png");
@@ -23,7 +24,7 @@ public class RenderStatueOfNirvana extends RenderModEntity<EntityGoldenBoss> {
         this.addLayer(new LayerEyes());
     }
 
-    private class LayerEyes implements LayerRenderer<EntityGoldenBoss> {
+    private class LayerEyes extends RenderLayer<EntityGoldenBoss, ModelStatueOfNirvana> {
         private final ResourceLocation EYES = new ResourceLocation(Reference.MOD_ID, "textures/entity/statue_eyes.png");
         private final ResourceLocation DAMAGED_EYES = new ResourceLocation(Reference.MOD_ID, "textures/entity/statue_damaged_eye.png");
 
@@ -59,7 +60,7 @@ public class RenderStatueOfNirvana extends RenderModEntity<EntityGoldenBoss> {
     }
 
     @Override
-    protected ResourceLocation getEntityTexture(EntityGoldenBoss entity) {
+	public ResourceLocation getTextureLocation(EntityGoldenBoss entity) {
         if (entity.getAttackCount() == 0) {
             return entity.isSecondPhase() ? DAMAGED_STATUE : STATUE;
         }

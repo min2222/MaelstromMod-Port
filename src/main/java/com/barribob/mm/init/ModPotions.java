@@ -4,18 +4,11 @@ import com.barribob.mm.potions.ModPotion;
 import com.barribob.mm.util.Reference;
 
 import net.minecraft.world.effect.MobEffect;
-import net.minecraftforge.event.RegistryEvent;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.common.registry.GameRegistry.ObjectHolder;
+import net.minecraftforge.registries.DeferredRegister;
+import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraftforge.registries.RegistryObject;
 
-@Mod.EventBusSubscriber()
-@ObjectHolder(Reference.MOD_ID)
 public class ModPotions {
-    public static final MobEffect water_strider = null;
-
-    @SubscribeEvent
-    public static void onPotionRegistry(final RegistryEvent.Register<MobEffect> event) {
-        event.getRegistry().registerAll(new ModPotion("water_strider", false, 0x00ccff, 0, 0));
-    }
+	public static final DeferredRegister<MobEffect> MOB_EFFECTS = DeferredRegister.create(ForgeRegistries.MOB_EFFECTS, Reference.MOD_ID);
+    public static final RegistryObject<ModPotion> WATER_STRIDER = MOB_EFFECTS.register("water_strider", () -> new ModPotion("water_strider", false, 0x00CCFF, 0, 0));
 }

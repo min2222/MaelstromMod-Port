@@ -21,6 +21,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.SwordItem;
 import net.minecraft.item.ItemSword;
 import net.minecraft.world.level.Level;
 
@@ -28,7 +29,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.function.Consumer;
 
-public class ToolSword extends ItemSword implements IHasModel, ISweepAttackOverride, ILeveledItem, IElement {
+public class ToolSword extends SwordItem implements ISweepAttackOverride, ILeveledItem, IElement {
     private float level;
     private Consumer<List<String>> information = (info) -> {
     };

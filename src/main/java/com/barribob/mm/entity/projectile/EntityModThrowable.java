@@ -18,6 +18,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
@@ -32,7 +33,7 @@ import net.minecraftforge.api.distmarker.OnlyIn;
  * A custom throwable class sourced from entity arrow so that shotgun collisions up close collided
  * (the vanilla throwable class doesn't detect collisions at point blank range)
  */
-public abstract class EntityModThrowable extends ModProjectile {
+public abstract class EntityModThrowable extends Projectile {
     private static final Predicate<Entity> ARROW_TARGETS = Predicates.and(EntitySelectors.NOT_SPECTATING, EntitySelectors.IS_ALIVE, new Predicate<Entity>() {
         @Override
         public boolean apply(@Nullable Entity p_apply_1_) {
@@ -154,7 +155,7 @@ public abstract class EntityModThrowable extends ModProjectile {
      * Called to update the entity's position/logic.
      */
     @Override
-    public void onUpdate() {
+    public void tick() {
         super.onUpdate();
 
         if (this.prevRotationPitch == 0.0F && this.prevRotationYaw == 0.0F) {
@@ -357,7 +358,7 @@ public abstract class EntityModThrowable extends ModProjectile {
      * (abstract) Protected helper method to read subclass entity data from NBT.
      */
     @Override
-    public void readEntityFromNBT(CompoundTag compound) {
+    public void readAdditionalSaveData(CompoundTag compound) {
         this.xTile = compound.getInteger("xTile");
         this.yTile = compound.getInteger("yTile");
         this.zTile = compound.getInteger("zTile");

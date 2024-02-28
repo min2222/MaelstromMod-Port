@@ -1,30 +1,35 @@
 package com.barribob.mm.items.armor;
 
+import java.util.List;
+import java.util.UUID;
+
 import com.barribob.mm.Main;
 import com.barribob.mm.config.ModConfig;
 import com.barribob.mm.init.ModCreativeTabs;
-import com.barribob.mm.init.ModItems;
 import com.barribob.mm.items.ILeveledItem;
-import com.barribob.mm.util.*;
+import com.barribob.mm.util.Element;
+import com.barribob.mm.util.IElement;
+import com.barribob.mm.util.ModUtils;
+import com.barribob.mm.util.Reference;
 import com.barribob.mm.util.handlers.LevelHandler;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
-import net.minecraft.client.model.ModelBiped;
-import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.entity.ai.attributes.AttributeModifier;
-import net.minecraft.item.ItemArmor;
-import net.minecraft.world.item.ItemStack;
+
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.model.ModelBiped;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.item.ArmorItem;
+import net.minecraft.world.item.ArmorMaterials;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-
-import java.util.List;
-import java.util.UUID;
 
 /**
  * The base for armor for the mod
@@ -35,7 +40,7 @@ import java.util.UUID;
  * <p>
  * Also allows for textures independent of the armor material
  */
-public class ModArmorBase extends ItemArmor implements IHasModel, ILeveledItem, IElement {
+public class ModArmorBase extends ArmorItem implements ILeveledItem, IElement {
     private static final UUID[] ARMOR_MODIFIERS = new UUID[]{UUID.fromString("a3578781-e4a8-4d70-9d32-cd952aeae1df"),
             UUID.fromString("e2d1f056-f539-48c7-b353-30d7a367ebd0"), UUID.fromString("db13047a-bb47-4621-a025-65ed22ce461a"),
             UUID.fromString("abb5df20-361d-420a-8ec7-4bdba33378eb")};
@@ -47,20 +52,16 @@ public class ModArmorBase extends ItemArmor implements IHasModel, ILeveledItem, 
     private Element element = Element.NONE;
     private String armorBonusDesc = "";
 
-    public ModArmorBase(String name, ArmorMaterial materialIn, int renderIndex, EquipmentSlot equipmentSlotIn, float level, String textureName) {
-        super(materialIn, renderIndex, equipmentSlotIn);
-        setUnlocalizedName(name);
-        setRegistryName(name);
-        setCreativeTab(ModCreativeTabs.ITEMS);
+    public ModArmorBase(String name, ArmorMaterials materialIn, int renderIndex, EquipmentSlot equipmentSlotIn, float level, String textureName) {
+        super(materialIn, equipmentSlotIn, new Item.Properties().tab(ModCreativeTabs.ITEMS));
         this.level = level;
         this.textureName = textureName;
-        ModItems.ITEMS.add(this);
     }
 
     public float getElementalArmor(Element element) {
         if (element.matchesElement(getElement())) {
             float fullArmorReduction = 1 - (1 / ModConfig.balance.elemental_factor);
-            float armorFraction = this.armor_fractions[this.armorType.getIndex()] / (float) armor_total;
+            float armorFraction = ModArmorBase.armor_fractions[this.slot.getIndex()] / (float) armor_total;
             return fullArmorReduction * armorFraction;
         }
         return 0; // Does not add any reduction at all
@@ -71,7 +72,7 @@ public class ModArmorBase extends ItemArmor implements IHasModel, ILeveledItem, 
      */
     public float getMaelstromArmor(ItemStack stack) {
         float total_armor_reduction = 1 - LevelHandler.getArmorFromLevel(this.level);
-        float armor_type_fraction = this.armor_fractions[this.armorType.getIndex()] / (float) armor_total;
+        float armor_type_fraction = ModArmorBase.armor_fractions[this.slot.getIndex()] / (float) armor_total;
         return total_armor_reduction * armor_type_fraction;
     }
 
@@ -84,13 +85,8 @@ public class ModArmorBase extends ItemArmor implements IHasModel, ILeveledItem, 
         if(ModConfig.gui.disableMaelstromArmorItemTooltips) {
             return 0;
         }
-        float armor_type_fraction = this.armor_fractions[this.armorType.getIndex()] / (float) armor_total;
+        float armor_type_fraction = ModArmorBase.armor_fractions[this.slot.getIndex()] / (float) armor_total;
         return this.getLevel() * armor_type_fraction;
-    }
-
-    @Override
-    public void registerModels() {
-        Main.proxy.registerItemRenderer(this, 0, "inventory");
     }
 
     @Override
@@ -114,7 +110,7 @@ public class ModArmorBase extends ItemArmor implements IHasModel, ILeveledItem, 
             tooltip.add(ModUtils.getDisplayLevel((this.getLevel())));
         }
 
-        if (!element.equals(element.NONE) && !ModConfig.gui.disableElementalVisuals) {
+        if (!element.equals(Element.NONE) && !ModConfig.gui.disableElementalVisuals) {
             tooltip.add(ModUtils.translateDesc("elemental_armor_desc", element.textColor + element.symbol + ChatFormatting.GRAY,
                     ModUtils.ROUND.format(100 * getElementalArmor(element)) + "%"));
         }

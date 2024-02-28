@@ -10,6 +10,7 @@ import com.barribob.mm.util.ModUtils;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.network.PacketDistributor;
 
 public class ActionAerialTeleport implements IAction {
     Vec3 teleportColor;
@@ -27,7 +28,7 @@ public class ActionAerialTeleport implements IAction {
             Vec3 prevPos = actor.position();
             if(canSee && ModUtils.attemptTeleport(pos, actor)){
                 ModUtils.lineCallback(prevPos, pos, 50, (particlePos, j) ->
-                        Main.NETWORK.sendToAllTracking(new MessageModParticles(EnumModParticles.EFFECT, particlePos, Vec3.ZERO, teleportColor), actor));
+                        Main.NETWORK.send(PacketDistributor.TRACKING_ENTITY.with(() -> actor), new MessageModParticles(EnumModParticles.EFFECT, particlePos, Vec3.ZERO, teleportColor)));
                 actor.level.broadcastEntityEvent(actor, ModUtils.SECOND_PARTICLE_BYTE);
                 break;
             }

@@ -54,7 +54,7 @@ public class ProjectileQuake extends ProjectileGun {
     }
 
     @Override
-    public void onUpdate() {
+    public void tick() {
         super.onUpdate();
 
         // Keeps the projectile on the surface of the ground

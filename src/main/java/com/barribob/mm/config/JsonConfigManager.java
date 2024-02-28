@@ -21,7 +21,7 @@ public class JsonConfigManager {
 
         if (!configDirectory.exists()) {
             if (!configDirectory.mkdirs()) {
-                Main.log.error("Failed to create directory for config file: " + configName);
+                Main.LOG.error("Failed to create directory for config file: " + configName);
                 return defaultConfig;
             }
         }
@@ -41,11 +41,11 @@ public class JsonConfigManager {
                 } else {
                     File configBackup = new File(configDirectory,  configVersion.get() + "_" + configName + ".conf");
                     Files.copy(configFile.toPath(), configBackup.toPath(), StandardCopyOption.REPLACE_EXISTING);
-                    Main.log.warn("Config file, " + configFile + " is outdated. Created backup of config (" + configBackup.toString() + "), and using new default.");
+                    Main.LOG.warn("Config file, " + configFile + " is outdated. Created backup of config (" + configBackup.toString() + "), and using new default.");
                 }
             } catch (IllegalArgumentException | IOException e) {
-                Main.log.error("Failed to read config file for " + configFile + "!");
-                Main.log.error(e.toString());
+                Main.LOG.error("Failed to read config file for " + configFile + "!");
+                Main.LOG.error(e.toString());
                 return defaultConfig;
             }
         }
@@ -66,11 +66,11 @@ public class JsonConfigManager {
             try {
                 Files.copy(defaultResourcePath, configFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
             } catch (IOException e) {
-                Main.log.error("Failed to write new config file: " + defaultConfigPath);
-                Main.log.error(e.toString());
+                Main.LOG.error("Failed to write new config file: " + defaultConfigPath);
+                Main.LOG.error(e.toString());
             }
         } else {
-            Main.log.error("Failed to get default config to copy: " + defaultConfigPath);
+            Main.LOG.error("Failed to get default config to copy: " + defaultConfigPath);
         }
     }
 }

@@ -1,19 +1,5 @@
 package com.barribob.mm.entity.entities;
 
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.util.SoundEvent;
-import net.minecraft.util.Mth;
-import net.minecraft.world.BossEvent;
-import net.minecraft.server.level.ServerBossEvent;
-import net.minecraft.world.level.Level;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;
@@ -32,13 +18,29 @@ import com.barribob.mm.util.ModUtils;
 import com.barribob.mm.util.handlers.LootTableHandler;
 import com.barribob.mm.util.handlers.SoundsHandler;
 
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerBossEvent;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.BossEvent.BossBarColor;
+import net.minecraft.world.BossEvent.BossBarOverlay;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.level.Level;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.common.ForgeMod;
+
 public class EntityBeast extends EntityMaelstromMob {
     private ComboAttack attackHandler = new ComboAttack();
     private byte leap = 4;
     private byte spit = 5;
 
     // Responsible for the boss bar
-    private final ServerBossEvent bossInfo = (new ServerBossEvent(this.getDisplayName(), BossEvent.Color.PURPLE, BossEvent.Overlay.NOTCHED_20));
+    private final ServerBossEvent bossInfo = (new ServerBossEvent(this.getDisplayName(), BossBarColor.PURPLE, BossBarOverlay.NOTCHED_20));
 
     public EntityBeast(Level worldIn) {
         super(worldIn);
@@ -49,11 +51,11 @@ public class EntityBeast extends EntityMaelstromMob {
             attackHandler.setAttack(spit, (IAction) (actor, target) -> {
                 for (int i = 0; i < 5; i++) {
                     ProjectileBeastAttack projectile = new ProjectileBeastAttack(actor.level, actor, actor.getAttack() * getConfigFloat("spit_damage"));
-                    double d0 = target.posY + target.getEyeHeight();
-                    double d1 = target.posX - actor.posX;
-                    double d2 = d0 - projectile.posY;
-                    double d3 = target.posZ - actor.posZ;
-                    float f = Mth.sqrt(d1 * d1 + d3 * d3) * 0.2F;
+                    double d0 = target.getY() + target.getEyeHeight();
+                    double d1 = target.getX() - actor.getX();
+                    double d2 = d0 - projectile.getY();
+                    double d3 = target.getZ() - actor.getZ();
+                    float f = (float) (Math.sqrt(d1 * d1 + d3 * d3) * 0.2F);
                     projectile.setElement(getElement());
                     projectile.shoot(d1, d2 + f, d3, 1, 8);
                     actor.playSound(SoundEvents.BLAZE_SHOOT, 1.0F, 1.0F / (actor.getRandom().nextFloat() * 0.4F + 0.8F));
@@ -101,9 +103,9 @@ public class EntityBeast extends EntityMaelstromMob {
     }
 
     @Override
-    protected void initEntityAI() {
-        super.initEntityAI();
-        this.tasks.addTask(4, new EntityAIRangedAttackNoReset<EntityMaelstromMob>(this, 1.0f, 40, 24, 8.0f, 0.5f));
+    protected void registerGoals() {
+        super.registerGoals();
+        this.goalSelector.addGoal(4, new EntityAIRangedAttackNoReset<EntityMaelstromMob>(this, 1.0f, 40, 24, 8.0f, 0.5f));
     }
 
     /**
@@ -117,7 +119,7 @@ public class EntityBeast extends EntityMaelstromMob {
     @Override
     protected void applyEntityAttributes() {
         super.applyEntityAttributes();
-        this.getEntityAttribute(SWIM_SPEED).setBaseValue(1.0D);
+        this.getAttribute(ForgeMod.SWIM_SPEED.get()).setBaseValue(1.0D);
     }
 
     @Override
@@ -134,64 +136,64 @@ public class EntityBeast extends EntityMaelstromMob {
     }
 
     @Override
-    public void onLivingUpdate() {
+    public void aiStep() {
         if (!level.isClientSide && this.isLeaping()) {
             ModUtils.handleAreaImpact(2.5f, (e) -> this.getAttack() * getConfigFloat("leap_damage"), this,
                     this.position(), ModDamageSource.causeElementalMeleeDamage(this, getElement()), 0.3f, 0, false);
         }
-        super.onLivingUpdate();
+        super.aiStep();
     }
 
     @Override
-    public void readEntityFromNBT(CompoundTag compound) {
+    public void readAdditionalSaveData(CompoundTag compound) {
         if (this.hasCustomName()) {
             this.bossInfo.setName(this.getDisplayName());
         }
 
-        super.readEntityFromNBT(compound);
+        super.readAdditionalSaveData(compound);
     }
 
     @Override
-    public void setCustomNameTag(String name) {
-        super.setCustomNameTag(name);
+    public void setCustomName(Component name) {
+        super.setCustomName(name);
         this.bossInfo.setName(this.getDisplayName());
     }
 
     @Override
-    protected void updateAITasks() {
-        this.bossInfo.setPercent(this.getHealth() / this.getMaxHealth());
-        super.updateAITasks();
+    protected void customServerAiStep() {
+        this.bossInfo.setProgress(this.getHealth() / this.getMaxHealth());
+        super.customServerAiStep();
     }
 
     @Override
-    public void addTrackingPlayer(ServerPlayer player) {
-        super.addTrackingPlayer(player);
+    public void startSeenByPlayer(ServerPlayer player) {
+        super.startSeenByPlayer(player);
         this.bossInfo.addPlayer(player);
     }
 
     @Override
-    public void removeTrackingPlayer(ServerPlayer player) {
-        super.removeTrackingPlayer(player);
+    public void stopSeenByPlayer(ServerPlayer player) {
+        super.stopSeenByPlayer(player);
         this.bossInfo.removePlayer(player);
     }
 
     @Override
     protected SoundEvent getAmbientSound() {
-        return SoundsHandler.ENTITY_BEAST_AMBIENT;
+        return SoundsHandler.ENTITY_BEAST_AMBIENT.get();
     }
 
     @Override
     protected SoundEvent getHurtSound(DamageSource damageSourceIn) {
-        return SoundsHandler.ENTITY_BEAST_HURT;
+        return SoundsHandler.ENTITY_BEAST_HURT.get();
     }
 
     @Override
     protected SoundEvent getDeathSound() {
-        return SoundsHandler.ENTITY_BEAST_HURT;
+        return SoundsHandler.ENTITY_BEAST_HURT.get();
     }
 
     @Override
-    protected ResourceLocation getLootTable() {
+    protected ResourceLocation getDefaultLootTable() {
         if (this.getElement() == Element.CRIMSON) {
             return LootTableHandler.CRIMSON_MINIBOSS;
         }
@@ -214,12 +216,12 @@ public class EntityBeast extends EntityMaelstromMob {
 
     @Override
     @OnlyIn(Dist.CLIENT)
-    public void handleStatusUpdate(byte id) {
+    public void handleEntityEvent(byte id) {
         if (id == 4 || id == 5) {
             currentAnimation = attackHandler.getAnimation(id);
             getCurrentAnimation().startAnimation();
         }
-        super.handleStatusUpdate(id);
+        super.handleEntityEvent(id);
     }
 
     @Override

@@ -10,6 +10,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.saveddata.SavedData;
 import net.minecraft.world.storage.WorldSavedData;
 
 import java.util.HashSet;
@@ -17,7 +18,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-public class MultiInvasionWorldSavedData extends WorldSavedData {
+public class MultiInvasionWorldSavedData extends SavedData {
     public static final String DATA_NAME = Reference.MOD_ID + "_MultiInvasionData";
     private int ticks;
     private int invasionIndex;

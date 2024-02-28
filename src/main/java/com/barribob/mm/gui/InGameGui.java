@@ -23,6 +23,8 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.GuiIngameForge;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
+import net.minecraftforge.client.event.RenderGuiOverlayEvent;
+import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
 
 /**
  * Handles armor bar rendering, and gun reload rendering
@@ -41,7 +43,7 @@ public class InGameGui {
      * Sourced from the render hotbar method in GuiIngame to display a cooldown bar
      */
     @OnlyIn(Dist.CLIENT)
-    public static void renderGunReload(RenderGameOverlayEvent.Post event, Player player) {
+    public static void renderGunReload(RenderGuiOverlayEvent.Post event, Player player) {
         if (event.getType().equals(RenderGameOverlayEvent.ElementType.ALL)) {
 
             GlStateManager.enableRescaleNormal();
@@ -133,8 +135,8 @@ public class InGameGui {
      * Renders the maelstrom armor bar
      */
     @OnlyIn(Dist.CLIENT)
-    public static void renderArmorBar(Minecraft mc, RenderGameOverlayEvent.Post event, Player player) {
-        if (event.getType().equals(RenderGameOverlayEvent.ElementType.ALL) && mc.playerController.shouldDrawHUD()) {
+    public static void renderArmorBar(Minecraft mc, RenderGuiOverlayEvent.Post event, Player player) {
+        if (event.getOverlay().equals(VanillaGuiOverlay.ElementType.ALL) && mc.playerController.shouldDrawHUD()) {
             mc.getTextureManager().bindTexture(ICONS);
 
             int startX = event.getResolution().getScaledWidth() / 2 - 91;
@@ -179,7 +181,7 @@ public class InGameGui {
     }
 
     @OnlyIn(Dist.CLIENT)
-    public static void renderManaBar(Minecraft mc, RenderGameOverlayEvent.Post event, Player player) {
+    public static void renderManaBar(Minecraft mc, RenderGuiOverlayEvent.Post event, Player player) {
         if (event.getType().equals(RenderGameOverlayEvent.ElementType.ALL) && mc.playerController.shouldDrawHUD()) {
             mc.getTextureManager().bindTexture(ICONS);
             int width = event.getResolution().getScaledWidth();

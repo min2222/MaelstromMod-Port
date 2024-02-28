@@ -1,38 +1,72 @@
 package com.barribob.mm.init;
 
-import net.minecraft.ChatFormatting;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.effect.MobEffects;
-import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.Item.ToolMaterial;
-import net.minecraft.item.ItemArmor.ArmorMaterial;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.potion.PotionEffect;
-import net.minecraft.util.SoundEvent;
-import net.minecraft.world.level.Level;
-import net.minecraftforge.common.util.EnumHelper;
-
-import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
 import com.barribob.mm.Main;
-import com.barribob.mm.items.*;
+import com.barribob.mm.items.ItemBase;
+import com.barribob.mm.items.ItemCatalyst;
+import com.barribob.mm.items.ItemFoodBase;
+import com.barribob.mm.items.ItemKey;
+import com.barribob.mm.items.ItemModElytra;
+import com.barribob.mm.items.ItemModRecord;
+import com.barribob.mm.items.ItemSingleDescription;
+import com.barribob.mm.items.ItemTradable;
 import com.barribob.mm.items.armor.ArmorNyanHelmet;
 import com.barribob.mm.items.armor.ArmorStrawHat;
 import com.barribob.mm.items.armor.ItemSpeedBoots;
 import com.barribob.mm.items.armor.ModArmorBase;
-import com.barribob.mm.items.gun.*;
+import com.barribob.mm.items.gun.ItemAmmoCase;
+import com.barribob.mm.items.gun.ItemBoomstick;
+import com.barribob.mm.items.gun.ItemExplosiveStaff;
+import com.barribob.mm.items.gun.ItemFireballStaff;
+import com.barribob.mm.items.gun.ItemFlintlock;
+import com.barribob.mm.items.gun.ItemLeapStaff;
+import com.barribob.mm.items.gun.ItemMaelstromCannon;
+import com.barribob.mm.items.gun.ItemMeteorStaff;
+import com.barribob.mm.items.gun.ItemMusket;
+import com.barribob.mm.items.gun.ItemPiercer;
+import com.barribob.mm.items.gun.ItemPotionEffectStaff;
+import com.barribob.mm.items.gun.ItemPumpkin;
+import com.barribob.mm.items.gun.ItemQuakeStaff;
+import com.barribob.mm.items.gun.ItemRepeater;
+import com.barribob.mm.items.gun.ItemRifle;
+import com.barribob.mm.items.gun.ItemRuneStaff;
+import com.barribob.mm.items.gun.ItemSpeedStaff;
+import com.barribob.mm.items.gun.ItemTuningFork;
+import com.barribob.mm.items.gun.ItemWispStaff;
 import com.barribob.mm.items.gun.bullet.BrownstoneCannon;
 import com.barribob.mm.items.gun.bullet.GoldenFireball;
-import com.barribob.mm.items.tools.*;
+import com.barribob.mm.items.tools.ItemMagisteelSword;
+import com.barribob.mm.items.tools.ToolBattleaxe;
+import com.barribob.mm.items.tools.ToolCrusadeSword;
+import com.barribob.mm.items.tools.ToolDagger;
+import com.barribob.mm.items.tools.ToolDragonslayer;
+import com.barribob.mm.items.tools.ToolExplosiveDagger;
+import com.barribob.mm.items.tools.ToolFrostSword;
+import com.barribob.mm.items.tools.ToolLongsword;
+import com.barribob.mm.items.tools.ToolPickaxe;
+import com.barribob.mm.items.tools.ToolSword;
+import com.barribob.mm.items.tools.ToolVenomDagger;
 import com.barribob.mm.util.Element;
 import com.barribob.mm.util.ModUtils;
 import com.barribob.mm.util.Reference;
 import com.barribob.mm.util.handlers.LevelHandler;
+
+import net.minecraft.ChatFormatting;
+import net.minecraft.potion.PotionEffect;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.item.ArmorMaterial;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Item.ToolMaterial;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.level.Level;
+import net.minecraftforge.common.util.EnumHelper;
 
 /**
  * Holds all of our new items
@@ -47,8 +81,6 @@ public class ModItems {
     public static final int STAFF_USE_TIME = 9000;
     private static final ArmorMaterial ARMOR = EnumHelper.addArmorMaterial("maelstrom", Reference.MOD_ID + ":maelstrom", 32, new int[]{3, 6, 8, 3}, 16, SoundEvents.ITEM_ARMOR_EQUIP_GOLD, 0);
     private static final ToolMaterial ENERGETIC_PICKAXE = EnumHelper.addToolMaterial("energetic_pickaxe", 5, 8000, 100, 6, 15);
-
-    public static final List<Item> ITEMS = new ArrayList<Item>();
 
     public static final Item INVISIBLE = new ItemBase("invisible", null);
 

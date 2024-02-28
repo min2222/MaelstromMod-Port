@@ -10,8 +10,6 @@ import com.barribob.mm.util.ModRandom;
 import com.barribob.mm.util.handlers.LootTableHandler;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.entity.ai.EntityAIWanderAvoidWater;
-import net.minecraft.entity.ai.EntityAIWatchClosest;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
@@ -19,6 +17,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
 import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
 import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
@@ -26,7 +25,8 @@ import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.monster.RangedAttackMob;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.api.distmarker.Dist;
@@ -63,13 +63,14 @@ public class EntityAzureGolem extends EntityLeveledMob implements RangedAttackMo
      * Checks if the entity's current position is a valid location to spawn this
      * entity.
      */
+    
     @Override
-    public boolean getCanSpawnHere() {
+    public boolean checkSpawnRules(LevelAccessor pLevel, MobSpawnType pSpawnReason) {
         int i = Mth.floor(this.getX());
         int j = Mth.floor(this.getBoundingBox().minY);
         int k = Mth.floor(this.getZ());
         BlockPos blockpos = new BlockPos(i, j, k);
-        return this.level.getBlockState(blockpos.below()).getBlock() == Blocks.GRASS && this.level.getLight(blockpos) > 8 && super.getCanSpawnHere();
+    	return this.level.getBlockState(blockpos.below()).getBlock() == Blocks.GRASS && this.level.getBrightness(LightLayer.BLOCK, blockpos) > 8 && super.checkSpawnRules(pLevel, pSpawnReason);
     }
 
     @Override
@@ -108,10 +109,10 @@ public class EntityAzureGolem extends EntityLeveledMob implements RangedAttackMo
     }
 
     @Override
-    public void setSwingingArms(boolean swingingArms) {
+    public void setAggressive(boolean swingingArms) {
         if (swingingArms) {
             this.level.broadcastEntityEvent(this, (byte) 4);
-            this.motionY = 0.63f;
+            this.setDeltaMovement(this.getDeltaMovement().x, 0.63F, this.getDeltaMovement().z);
         }
     }
 

@@ -16,7 +16,7 @@ public class AIMeleeAndRange<T extends PathfinderMob & RangedAttackMob> extends 
 
     private int switchTimer;
 
-    private EntityAIRangedAttack rangedAttackAI;
+    private EntityAIRangedAttack<T> rangedAttackAI;
     private MeleeAttackGoal meleeAttackAI;
 
     private Goal attackAI;

@@ -1,20 +1,19 @@
 package com.barribob.mm.entity.entities;
 
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.player.Player;
-
 import com.barribob.mm.entity.ai.EntityAIRangedAttack;
 import com.barribob.mm.entity.animation.AnimationFloatingSkull;
 import com.barribob.mm.entity.projectile.ProjectileSkullAttack;
 import com.barribob.mm.util.ModRandom;
 import com.barribob.mm.util.handlers.ParticleManager;
 
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.util.SoundEvent;
-import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
@@ -24,17 +23,17 @@ public class EntityFloatingSkull extends EntityMaelstromMob {
     }
 
     @Override
-    protected void initEntityAI() {
-        super.initEntityAI();
-        this.tasks.addTask(4, new EntityAIRangedAttack<EntityMaelstromMob>(this, 1.0f, 60, 5, 7.5f, 0.5f));
+    protected void registerGoals() {
+        super.registerGoals();
+        this.goalSelector.addGoal(4, new EntityAIRangedAttack<EntityMaelstromMob>(this, 1.0f, 60, 5, 7.5f, 0.5f));
     }
 
     @Override
-    public void onUpdate() {
-        super.onUpdate();
+    public void tick() {
+        super.tick();
         if (level.isClientSide) {
-            ParticleManager.spawnDarkFlames(world, rand,
-                    new Vec3(this.posX + ModRandom.getFloat(0.5f), this.posY + 0.1f + ModRandom.getFloat(0.1f), this.posZ + ModRandom.getFloat(0.5f)));
+            ParticleManager.spawnDarkFlames(level, random,
+                    new Vec3(this.getX() + ModRandom.getFloat(0.5f), this.getY() + 0.1f + ModRandom.getFloat(0.1f), this.getZ() + ModRandom.getFloat(0.5f)));
         }
     }
 
@@ -70,12 +69,12 @@ public class EntityFloatingSkull extends EntityMaelstromMob {
      */
     @Override
     @OnlyIn(Dist.CLIENT)
-    public void handleStatusUpdate(byte id) {
+    public void handleEntityEvent(byte id) {
         if (id == 4) {
             this.currentAnimation = new AnimationFloatingSkull();
             getCurrentAnimation().startAnimation();
         } else {
-            super.handleStatusUpdate(id);
+            super.handleEntityEvent(id);
         }
     }
 
@@ -86,14 +85,14 @@ public class EntityFloatingSkull extends EntityMaelstromMob {
     @Override
     public void performRangedAttack(LivingEntity target, float distanceFactor) {
         if (!level.isClientSide) {
-            world.playSound((Player) null, this.posX, this.posY, this.posZ, SoundEvents.BLAZE_AMBIENT, SoundSource.NEUTRAL, 0.5F,
-                    0.4F / (world.rand.nextFloat() * 0.4F + 0.8F));
+            level.playSound((Player) null, this.getX(), this.getY(), this.getZ(), SoundEvents.BLAZE_AMBIENT, SoundSource.NEUTRAL, 0.5F,
+                    0.4F / (level.random.nextFloat() * 0.4F + 0.8F));
 
             float inaccuracy = 0.0f;
             float speed = 0.5f;
 
-            ProjectileSkullAttack projectile = new ProjectileSkullAttack(world, this, this.getAttack());
-            projectile.shoot(this, this.rotationPitch, this.rotationYaw, 0.0F, speed, inaccuracy);
+            ProjectileSkullAttack projectile = new ProjectileSkullAttack(level, this, this.getAttack());
+            projectile.shoot(this, this.getXRot(), this.getYRot(), 0.0F, speed, inaccuracy);
             projectile.setTravelRange(9f);
 
             level.addFreshEntity(projectile);

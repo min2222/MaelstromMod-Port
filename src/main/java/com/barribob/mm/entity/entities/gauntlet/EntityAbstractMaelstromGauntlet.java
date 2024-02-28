@@ -662,12 +662,12 @@ public abstract class EntityAbstractMaelstromGauntlet extends EntityMaelstromMob
     }
 
     @Override
-    public void readEntityFromNBT(@Nonnull CompoundTag compound) {
+    public void readAdditionalSaveData(@Nonnull CompoundTag compound) {
         if (this.hasCustomName()) {
             this.bossInfo.setName(this.getDisplayName());
         }
 
-        super.readEntityFromNBT(compound);
+        super.readAdditionalSaveData(compound);
     }
 
     @Override

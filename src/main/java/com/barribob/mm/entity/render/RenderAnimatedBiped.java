@@ -2,21 +2,21 @@ package com.barribob.mm.entity.render;
 
 import com.barribob.mm.entity.model.ModelAnimatedBiped;
 
-import net.minecraft.client.renderer.entity.RenderBiped;
-import net.minecraft.client.renderer.entity.RenderManager;
-import net.minecraft.world.entity.Mob;
+import net.minecraft.client.renderer.entity.EntityRendererProvider;
+import net.minecraft.client.renderer.entity.HumanoidMobRenderer;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.Mob;
 
-public class RenderAnimatedBiped extends RenderBiped {
+public class RenderAnimatedBiped<T extends Mob, M extends ModelAnimatedBiped<T>> extends HumanoidMobRenderer<T, M> {
     private ResourceLocation textures;
 
-    public RenderAnimatedBiped(RenderManager renderManagerIn, ModelAnimatedBiped modelBipedIn, float shadowSize, ResourceLocation textures) {
+    public RenderAnimatedBiped(EntityRendererProvider.Context renderManagerIn, M modelBipedIn, float shadowSize, ResourceLocation textures) {
         super(renderManagerIn, modelBipedIn, shadowSize);
         this.textures = textures;
     }
 
     @Override
-    protected ResourceLocation getEntityTexture(Mob entity) {
+	public ResourceLocation getTextureLocation(T entity) {
         return this.textures;
     }
 }

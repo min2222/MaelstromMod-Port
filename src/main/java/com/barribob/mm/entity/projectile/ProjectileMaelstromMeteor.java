@@ -34,7 +34,7 @@ public class ProjectileMaelstromMeteor extends ModProjectile {
     }
 
     @Override
-    public void onUpdate() {
+    public void tick() {
         this.playSound(SoundEvents.BLOCK_FIRE_EXTINGUISH, 0.5f, ModRandom.getFloat(0.2f) + 1.0f);
         if (this.tickCount > 400) {
             this.setDead();

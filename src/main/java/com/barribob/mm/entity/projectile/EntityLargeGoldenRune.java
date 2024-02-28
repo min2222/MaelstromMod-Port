@@ -37,7 +37,7 @@ public class EntityLargeGoldenRune extends ModProjectile {
     }
 
     @Override
-    public void onUpdate() {
+    public void tick() {
         super.onUpdate();
 
         if (this.tickCount >= this.tickDelay) {

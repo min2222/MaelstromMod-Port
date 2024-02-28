@@ -76,12 +76,12 @@ public class InvasionUtils {
     }
 
     public static Player getPlayerClosestToOrigin(Level world) {
-        return world.playerEntities.stream().reduce(world.playerEntities.get(0),
+        return world.players().stream().reduce(world.players().get(0),
                 (p1, p2) -> p1.getDistanceSq(BlockPos.ORIGIN) < p2.getDistanceSq(BlockPos.ORIGIN) ? p1 : p2);
     }
 
     public static void sendInvasionMessage(Level world, String translation) {
-        world.playerEntities.forEach((p) -> p.sendMessage(
+        world.players().forEach((p) -> p.sendMessage(
                 new TextComponentString("" + ChatFormatting.DARK_PURPLE + new TextComponentTranslation(translation).getFormattedText())));
     }
 
