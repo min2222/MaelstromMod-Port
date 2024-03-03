@@ -3,7 +3,8 @@
  */
 package com.typesafe.config.impl;
 
-import java.util.*;
+import java.util.Iterator;
+import java.util.List;
 
 import com.typesafe.config.ConfigException;
 

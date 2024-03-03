@@ -204,9 +204,9 @@ public class EntityGoldenBoss extends EntityMaelstromMob implements IAttack {
 
     public List<EntityGoldenPillar> goldenPillars() {
         return ModUtils.getEntitiesInBox(this, this.getBoundingBox()
-                .grow(getMobConfig().getDouble("pillar_protection_range"))).stream()
+                .inflate(getMobConfig().getDouble("pillar_protection_range"))).stream()
                 .filter(e -> e instanceof EntityGoldenPillar)
-                .filter(e ->  world.rayTraceBlocks(e.getEyePosition(1), getEyePosition(1), false, true, false) == null)
+                .filter(e ->  level.clip(new ClipContext(e.getEyePosition(1), getEyePosition(1), ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, this)) == null)
                 .map(e -> (EntityGoldenPillar)e)
                 .collect(Collectors.toList());
     }

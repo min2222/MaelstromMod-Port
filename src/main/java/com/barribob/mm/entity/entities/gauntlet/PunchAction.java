@@ -1,16 +1,16 @@
 package com.barribob.mm.entity.entities.gauntlet;
 
-import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.phys.AABB;
-import net.minecraft.world.phys.Vec3;
-
 import java.util.function.Supplier;
 
 import com.barribob.mm.entity.entities.EntityLeveledMob;
 import com.barribob.mm.init.ModBBAnimations;
 import com.barribob.mm.util.ModDamageSource;
 import com.barribob.mm.util.ModUtils;
+
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 
 public class PunchAction implements IGauntletAction {
 
@@ -33,7 +33,7 @@ public class PunchAction implements IGauntletAction {
     @Override
     public void doAction() {
         ModBBAnimations.animation(entity, animation, false);
-        entity.addVelocity(0, 0.5, 0);
+        entity.push(0, 0.5, 0);
         entity.addEvent(() -> {
             Vec3 target = targetSupplier.get();
             if (target == null) return;
@@ -60,9 +60,9 @@ public class PunchAction implements IGauntletAction {
     @Override
     public void update() {
         if (this.isPunching) {
-            double vel = ModUtils.getEntityVelocity(entity).lengthVector();
-            AABB box = entity.getBoundingBox().grow(0.3, 0.3, 0.3);
-            ModUtils.destroyBlocksInAABB(box, entity.world, entity);
+            double vel = ModUtils.getEntityVelocity(entity).length();
+            AABB box = entity.getBoundingBox().inflate(0.3, 0.3, 0.3);
+            ModUtils.destroyBlocksInAABB(box, entity.level, entity);
             float punchDamage = entity.getAttack() * (float) vel * entity.getConfigFloat("punch_damage");
 
             DamageSource source = ModDamageSource.builder()

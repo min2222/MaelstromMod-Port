@@ -1,9 +1,5 @@
 package com.barribob.mm.entity.entities.gauntlet;
 
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.phys.Vec3;
-import net.minecraft.world.level.Level;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -17,6 +13,10 @@ import com.barribob.mm.entity.projectile.ProjectileMegaFireball;
 import com.barribob.mm.util.ModRandom;
 import com.barribob.mm.util.ModUtils;
 import com.barribob.mm.util.handlers.ParticleManager;
+
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
 
 public class EntityAlternativeMaelstromGauntletStage2 extends EntityAbstractMaelstromGauntlet {
     private final IGauntletAction summonAttack;
@@ -35,7 +35,7 @@ public class EntityAlternativeMaelstromGauntletStage2 extends EntityAbstractMael
 
         IGauntletAction punchAttack = new PunchAction("gauntlet.punch", position, () -> {}, this, fist);
         ModRandom.RandomCollection<IGauntletAction> punchAttacks =
-                ModRandom.choice(new IGauntletAction[]{ punchAttack, swirlPunchAttack }, rand, new double[] { 2, 1 });
+                ModRandom.choice(new IGauntletAction[]{ punchAttack, swirlPunchAttack }, random, new double[] { 2, 1 });
         IGauntletAction comboPunchAttack = new ComboPunchAction(punchAttacks, this);
         attacks = new ArrayList<>(Arrays.asList(swirlPunchAttack, laserAttack, summonAttack, fireballAttack, comboPunchAttack));
     }
@@ -45,27 +45,27 @@ public class EntityAlternativeMaelstromGauntletStage2 extends EntityAbstractMael
     }
 
     private boolean trySpawnMob(boolean findGround) {
-        EntityLeveledMob mob = ModUtils.spawnMob(world, this.getPosition(), this.getLevel(), getMobConfig().getConfig(findGround ? "summoning_algorithm" : "aerial_summoning_algorithm"), findGround);
+        EntityLeveledMob mob = ModUtils.spawnMob(level, this.blockPosition(), this.getMobLevel(), getMobConfig().getConfig(findGround ? "summoning_algorithm" : "aerial_summoning_algorithm"), findGround);
         return mob != null;
     }
 
     private ModProjectile generateFireball() {
-        ProjectileMegaFireball fireball = new ProjectileMegaFireball(world, this, this.getAttack() * getConfigFloat("fireball_damage"), null, false);
+        ProjectileMegaFireball fireball = new ProjectileMegaFireball(level, this, this.getAttack() * getConfigFloat("fireball_damage"), null, false);
         fireball.setTravelRange((float) maxFireballDistance);
         return fireball;
     }
 
     private void summonWanderersAndSmoke() {
         level.broadcastEntityEvent(this, ModUtils.THIRD_PARTICLE_BYTE);
-        int chance = getTarget() != null && getTarget().onGround ? 4 : 2;
-        if(rand.nextInt(chance) == 0) {
+        int chance = getTarget() != null && getTarget().isOnGround() ? 4 : 2;
+        if(random.nextInt(chance) == 0) {
             summonCrimsonWanderer();
         }
     }
 
     @Override
     protected IGauntletAction getNextAttack(LivingEntity target, float distanceSq, IGauntletAction previousAction) {
-        int numMinions = (int) ModUtils.getEntitiesInBox(this, getBoundingBox().grow(50)).stream()
+        int numMinions = (int) ModUtils.getEntitiesInBox(this, getBoundingBox().inflate(50)).stream()
                 .filter(EntityMaelstromMob::isMaelstromMob).count();
 
         double summonWeight = previousAction == summonAttack || numMinions > 3 ? 0 : 0.8;
@@ -75,12 +75,12 @@ public class EntityAlternativeMaelstromGauntletStage2 extends EntityAbstractMael
         double comboPunchWeight = 0.8;
 
         double[] weights = {punchWeight, laserWeight, summonWeight, fireballWeight, comboPunchWeight};
-        return ModRandom.choice(attacks, rand, weights).next();
+        return ModRandom.choice(attacks, random, weights).next();
     }
 
     private void summonCrimsonWanderer() {
-        ProjectileCrimsonWanderer shrapnel = new ProjectileCrimsonWanderer(world, this, getAttack() * 0.5f);
-        Vec3 lookVec = ModUtils.getLookVec(getPitch(), rotationYaw);
+        ProjectileCrimsonWanderer shrapnel = new ProjectileCrimsonWanderer(level, this, getAttack() * 0.5f);
+        Vec3 lookVec = ModUtils.getLookVec(getPitch(), getYRot());
         Vec3 shrapnelPos = this.position()
                 .add(ModRandom.randVec().scale(3))
                 .subtract(lookVec.scale(6));
@@ -95,9 +95,9 @@ public class EntityAlternativeMaelstromGauntletStage2 extends EntityAbstractMael
     public void handleEntityEvent(byte id) {
         if (id == ModUtils.THIRD_PARTICLE_BYTE) {
             for (int i = 0; i < 10; i++) {
-                Vec3 lookVec = ModUtils.getLookVec(getPitch(), rotationYaw);
+                Vec3 lookVec = ModUtils.getLookVec(getPitch(), getYRot());
                 Vec3 pos = ModRandom.randVec().scale(3).add(position()).subtract(lookVec.scale(3));
-                ParticleManager.spawnFluff(world, pos, Vec3.ZERO, lookVec.scale(0.1));
+                ParticleManager.spawnFluff(level, pos, Vec3.ZERO, lookVec.scale(0.1));
             }
         }
         super.handleEntityEvent(id);

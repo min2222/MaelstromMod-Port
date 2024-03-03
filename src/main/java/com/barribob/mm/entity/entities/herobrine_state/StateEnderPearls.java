@@ -1,19 +1,17 @@
 package com.barribob.mm.entity.entities.herobrine_state;
 
-import net.minecraft.entity.IMerchant;
-import net.minecraft.entity.passive.EntityVillager;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
-
 import com.barribob.mm.entity.entities.Herobrine;
 import com.barribob.mm.init.ModProfessions;
 import com.barribob.mm.util.TimedMessager;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.TextComponentTranslation;
+import net.minecraft.entity.IMerchant;
+import net.minecraft.network.chat.Component;
 import net.minecraft.village.MerchantRecipe;
 import net.minecraft.village.MerchantRecipeList;
+import net.minecraft.world.entity.npc.Villager;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 
 public class StateEnderPearls extends HerobrineState implements IMerchant {
@@ -24,8 +22,8 @@ public class StateEnderPearls extends HerobrineState implements IMerchant {
 
     public StateEnderPearls(Herobrine herobrine) {
         super(herobrine);
-        for (EntityVillager.ITradeList list : ModProfessions.HEROBRINE_ENDER_PEARLS.getTrades(0)) {
-            list.addMerchantRecipe(this, this.buyingList, this.herobrine.getRNG());
+        for (Villager.ITradeList list : ModProfessions.HEROBRINE_ENDER_PEARLS.getTrades(0)) {
+            list.addMerchantRecipe(this, this.buyingList, this.herobrine.getRandom());
         }
         messager = new TimedMessager(new String[]{"herobrine_pearl_0", "herobrine_pearl_1", ""}, new int[]{40, 100, 100}, (s) -> {
         });
@@ -43,7 +41,7 @@ public class StateEnderPearls extends HerobrineState implements IMerchant {
 
     @Override
     public void rightClick(Player player) {
-        if (herobrine.isEntityAlive() && this.buyingPlayer == null) {
+        if (herobrine.isAlive() && this.buyingPlayer == null) {
             this.setCustomer(player);
             player.displayVillagerTradeGui(this);
         }
@@ -87,19 +85,19 @@ public class StateEnderPearls extends HerobrineState implements IMerchant {
     }
 
     @Override
-    public ITextComponent getDisplayName() {
-        ITextComponent itextcomponent = new TextComponentTranslation("herobrine_trading", new Object[0]);
+    public Component getDisplayName() {
+    	Component itextcomponent = Component.translatable("herobrine_trading", new Object[0]);
         itextcomponent.getStyle().setInsertion(herobrine.getCachedUniqueIdString());
         return itextcomponent;
     }
 
     @Override
-    public Level getWorld() {
+    public Level getLevel() {
         return this.world;
     }
 
     @Override
-    public BlockPos getPos() {
-        return new BlockPos(herobrine);
+    public BlockPos blockPosition() {
+        return herobrine.blockPosition();
     }
 }

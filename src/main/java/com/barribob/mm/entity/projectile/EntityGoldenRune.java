@@ -1,8 +1,5 @@
 package com.barribob.mm.entity.projectile;
 
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.damagesource.DamageSource;
-
 import com.barribob.mm.util.ModColors;
 import com.barribob.mm.util.ModDamageSource;
 import com.barribob.mm.util.ModRandom;
@@ -10,9 +7,11 @@ import com.barribob.mm.util.ModUtils;
 import com.barribob.mm.util.handlers.ParticleManager;
 
 import net.minecraft.util.Mth;
-import net.minecraft.world.phys.HitResult;
-import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.EntityHitResult;
+import net.minecraft.world.phys.Vec3;
 
 public class EntityGoldenRune extends ModProjectile {
 
@@ -37,9 +36,9 @@ public class EntityGoldenRune extends ModProjectile {
 
     @Override
     public void tick() {
-        Vec3 vel = new Vec3(this.motionX, this.motionY, this.motionZ);
+        Vec3 vel = this.getDeltaMovement();
 
-        super.onUpdate();
+        super.tick();
 
         ModUtils.setEntityVelocity(this, vel);
 
@@ -54,12 +53,12 @@ public class EntityGoldenRune extends ModProjectile {
     }
 
     @Override
-    protected void onHit(HitResult result) {
-        if (result.entityHit != null) {
+    protected void onHitEntity(EntityHitResult result) {
+        if (result.getEntity() != null) {
             return;
         }
 
-        super.onHit(result);
+        super.onHitEntity(result);
     }
 
     @Override
@@ -67,14 +66,14 @@ public class EntityGoldenRune extends ModProjectile {
         Vec3 vel = ModUtils.getEntityVelocity(this);
         Vec3 normVel = vel.normalize();
         ModUtils.circleCallback(getBlastRadius(), 36, pos -> {
-            float f1 = Mth.sqrt(normVel.x * normVel.x + normVel.z * normVel.z);
-            Vec3 outer = pos.rotatePitch((float) (Mth.atan2(normVel.y, f1)))
-                    .rotateYaw((float) (Mth.atan2(normVel.x, normVel.z)))
+            float f1 = (float) Math.sqrt(normVel.x * normVel.x + normVel.z * normVel.z);
+            Vec3 outer = pos.xRot((float) (Mth.atan2(normVel.y, f1)))
+                    .yRot((float) (Mth.atan2(normVel.x, normVel.z)))
                     .add(position())
                     .add(vel)
                     .add(ModRandom.randVec()
                             .scale(ModRandom.getFloat(0.1f)));
-            ParticleManager.spawnSwirl(world, outer, ModColors.YELLOW, vel, 5);
+            ParticleManager.spawnSwirl(level, outer, ModColors.YELLOW, vel, 5);
         });
     }
 }

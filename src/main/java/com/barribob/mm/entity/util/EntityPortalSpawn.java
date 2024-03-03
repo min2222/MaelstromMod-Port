@@ -7,6 +7,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraftforge.network.NetworkHooks;
@@ -36,14 +37,14 @@ public abstract class EntityPortalSpawn extends Entity {
 
     protected abstract Block getPortalBlock();
 
-    public EntityPortalSpawn(Level worldIn) {
-        super(worldIn);
+    public EntityPortalSpawn(EntityType<? extends EntityPortalSpawn> type, Level worldIn) {
+        super(type, worldIn);
         this.setNoGravity(true);
         portal = getPortal();
     }
 
-    public EntityPortalSpawn(Level worldIn, double x, double y, double z) {
-        this(worldIn);
+    public EntityPortalSpawn(EntityType<? extends EntityPortalSpawn> type, Level worldIn, double x, double y, double z) {
+        this(type, worldIn);
         this.setPos(x, y, z);
     }
 

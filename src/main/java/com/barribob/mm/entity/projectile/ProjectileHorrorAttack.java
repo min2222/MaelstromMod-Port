@@ -32,16 +32,16 @@ public class ProjectileHorrorAttack extends ModProjectile {
 
     @Override
     protected void spawnParticles() {
-        for (int i = 0; i < this.PARTICLE_AMOUNT; i++) {
-            ParticleManager.spawnColoredSmoke(world, position(), getElement().particleColor, new Vec3(0, 0.1, 0));
+        for (int i = 0; i < ProjectileHorrorAttack.PARTICLE_AMOUNT; i++) {
+            ParticleManager.spawnColoredSmoke(level, position(), getElement().particleColor, new Vec3(0, 0.1, 0));
         }
     }
 
     @Override
     protected void spawnImpactParticles() {
-        for (int i = 0; i < this.IMPACT_PARTICLE_AMOUNT; i++) {
+        for (int i = 0; i < ProjectileHorrorAttack.IMPACT_PARTICLE_AMOUNT; i++) {
             Vec3 vec1 = ModRandom.randVec().scale(EXPOSION_AREA_FACTOR * 0.25).add(position());
-            ParticleManager.spawnColoredExplosion(world, vec1, getElement().particleColor);
+            ParticleManager.spawnColoredExplosion(level, vec1, getElement().particleColor);
         }
     }
 
@@ -55,7 +55,7 @@ public class ProjectileHorrorAttack extends ModProjectile {
                 .stoppedByArmorNotShields().build();
 
         ModUtils.handleAreaImpact(EXPOSION_AREA_FACTOR, (e) -> this.getDamage(), this.shootingEntity, this.position(), source);
-        this.playSound(SoundEvents.GENERIC_EXPLODE, 1.0F, 1.0F / (rand.nextFloat() * 0.4F + 0.8F));
+        this.playSound(SoundEvents.GENERIC_EXPLODE, 1.0F, 1.0F / (random.nextFloat() * 0.4F + 0.8F));
         super.onHit(result);
     }
 }

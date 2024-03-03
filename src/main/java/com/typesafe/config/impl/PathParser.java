@@ -3,13 +3,17 @@
  */
 package com.typesafe.config.impl;
 
+import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+
 import com.typesafe.config.ConfigException;
 import com.typesafe.config.ConfigOrigin;
 import com.typesafe.config.ConfigSyntax;
 import com.typesafe.config.ConfigValueType;
-
-import java.io.StringReader;
-import java.util.*;
 
 final class PathParser {
     static class Element {

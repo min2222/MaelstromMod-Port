@@ -30,7 +30,7 @@ public class ProjectileBeastQuake extends ProjectileQuake {
         for(int j = 0; j < 10; j++) {
             int randHeight = ModRandom.range(4, 6);
             for (int i = 0; i < randHeight; i++) {
-                ParticleManager.spawnDust(world,
+                ParticleManager.spawnDust(level,
                         position()
                                 .add(ModUtils.Y_AXIS.scale(i * 0.5))
                                 .add(ModRandom.randVec().scale(0.5))

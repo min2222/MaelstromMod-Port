@@ -96,6 +96,7 @@ import com.barribob.mm.entity.util.EntityNexusParticleSpawner;
 import com.barribob.mm.entity.util.EntityParticleSpawner;
 import com.barribob.mm.entity.util.EntityPortalSpawn;
 import com.barribob.mm.entity.util.EntityTuningForkLazer;
+import com.barribob.mm.init.ModEntities;
 import com.barribob.mm.init.ModItems;
 import com.barribob.mm.util.Reference;
 
@@ -119,7 +120,7 @@ public class RenderHandler {
         registerModEntityRenderer(EntityBeast.class, new ModelBeast(), "beast.png", "beast.png", "beast.png", "beast_crimson.png");
         registerModEntityRenderer(EntityMaelstromMage.class, new ModelMaelstromMage(), "maelstrom_mage.png", "maelstrom_mage_azure.png", "maelstrom_mage_golden.png", "maelstrom_mage_crimson.png");
         registerModEntityRenderer(EntityFloatingSkull.class, new ModelFloatingSkull(), "floating_skull.png");
-        registerModEntityRenderer(Herobrine.class, (manager) -> new RenderHerobrine(manager, new ResourceLocation(Reference.MOD_ID + ":textures/entity/herobrine_1.png")));
+        registerModEntityRenderer(ModEntities.HEROBRINE.get(), (manager) -> new RenderHerobrine(manager, new ResourceLocation(Reference.MOD_ID + ":textures/entity/herobrine_1.png")));
         registerModEntityRenderer(EntityHerobrineOne.class, (manager) -> new RenderHerobrine(manager, new ResourceLocation(Reference.MOD_ID + ":textures/entity/shadow_clone.png")));
         registerModEntityRenderer(NexusGunTrader.class, new ModelGunTrader(), "gun_trader.png");
         registerModEntityRenderer(NexusMageTrader.class, new ModelMageTrader(), "mage_trader.png");

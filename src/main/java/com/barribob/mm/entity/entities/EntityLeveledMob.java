@@ -17,14 +17,18 @@ import com.barribob.mm.util.handlers.SoundsHandler;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 
+import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.PathfinderMob;
+import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.navigation.PathNavigation;
 import net.minecraft.world.level.Level;
@@ -39,7 +43,7 @@ public abstract class EntityLeveledMob extends PathfinderMob implements IAnimate
     protected static final EntityDataAccessor<Float> LEVEL = SynchedEntityData.<Float>defineId(EntityLeveledMob.class, EntityDataSerializers.FLOAT);
     private float regenStartTimer;
     private static float regenStartTime = 60;
-    protected static final EntityDataAccessor<Integer> ELEMENT = SynchedEntityData.<Integer>createKey(EntityLeveledMob.class, EntityDataSerializers.VARINT);
+    protected static final EntityDataAccessor<Integer> ELEMENT = SynchedEntityData.<Integer>createKey(EntityLeveledMob.class, EntityDataSerializers.INT);
 
     @OnlyIn(Dist.CLIENT)
     protected Animation currentAnimation;
@@ -50,26 +54,24 @@ public abstract class EntityLeveledMob extends PathfinderMob implements IAnimate
     private PriorityQueue<TimedEvent> events = new PriorityQueue<TimedEvent>();
     private boolean leaping = false;
 
-    public EntityLeveledMob(Level worldIn) {
-        super(worldIn);
+    public EntityLeveledMob(EntityType<? extends EntityLeveledMob> type, Level worldIn) {
+        super(type, worldIn);
         this.setLevel(LevelHandler.INVASION);
         this.xpReward = 5;
         if(getMobConfig().hasPath("nbt_spawn_data")) {
-            this.readFromNBT(ModUtils.parseNBTFromConfig(getMobConfig().getConfig("nbt_spawn_data")));
+            this.readAdditionalSaveData(ModUtils.parseNBTFromConfig(getMobConfig().getConfig("nbt_spawn_data")));
         }
     }
     
+    @Override//multiply shadow size in renderer
     public float getRenderSizeModifier() {
     	return 1.0F;
     }
 
     public Config getMobConfig() {
-        EntityEntry entry = EntityRegistry.getEntry(this.getClass());
-        if(entry != null) {
-            String entityName = entry.getName();
-            if (Main.mobsConfig.hasPath(entityName)) {
-                return Main.mobsConfig.getConfig(entityName);
-            }
+        String entityName = this.getEncodeId();
+        if (Main.mobsConfig.hasPath(entityName)) {
+            return Main.mobsConfig.getConfig(entityName);
         }
         return ConfigFactory.empty();
     }
@@ -189,15 +191,12 @@ public abstract class EntityLeveledMob extends PathfinderMob implements IAnimate
     public float getMobLevel() {
         return this.entityData.get(LEVEL);
     }
-
-    @Override
-    protected void applyEntityAttributes() {
-        super.applyEntityAttributes();
-        this.getAttributeMap().registerAttribute(Attributes.ATTACK_DAMAGE);
-        this.getAttributeMap().registerAttribute(Attributes.FLYING_SPEED);
-        this.getEntityAttribute(Attributes.MAX_HEALTH).setBaseValue(20);
-        this.getEntityAttribute(Attributes.ATTACK_DAMAGE).setBaseValue(0);
-        this.getEntityAttribute(Attributes.FLYING_SPEED).setBaseValue(0);
+    
+    public static AttributeSupplier.Builder createAttributes() {
+        return Mob.createMobAttributes()
+    			.add(Attributes.MAX_HEALTH, 20)
+    			.add(Attributes.ATTACK_DAMAGE, 0)
+        		.add(Attributes.FLYING_SPEED, 0);
     }
 
     /**
@@ -279,7 +278,7 @@ public abstract class EntityLeveledMob extends PathfinderMob implements IAnimate
         return this;
     }
 
-    public void doRender(RenderManager renderManager, double x, double y, double z, float entityYaw, float partialTicks) {
+    public void doRender(EntityRendererProvider.Context renderManager, double x, double y, double z, float entityYaw, float partialTicks) {
     }
 
     /**

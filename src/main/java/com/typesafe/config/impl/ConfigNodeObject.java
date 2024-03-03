@@ -1,9 +1,9 @@
 package com.typesafe.config.impl;
 
-import com.typesafe.config.ConfigSyntax;
-
 import java.util.ArrayList;
 import java.util.Collection;
+
+import com.typesafe.config.ConfigSyntax;
 
 final class ConfigNodeObject extends ConfigNodeComplexValue {
     ConfigNodeObject(Collection<AbstractConfigNode> children) {

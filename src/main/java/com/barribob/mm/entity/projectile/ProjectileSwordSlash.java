@@ -8,9 +8,10 @@ import com.barribob.mm.util.ModUtils;
 
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.phys.HitResult;
-import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.EntityHitResult;
+import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.network.PacketDistributor;
 
 public class ProjectileSwordSlash extends ModProjectile {
     private static final int PARTICLE_AMOUNT = 10;
@@ -31,10 +32,10 @@ public class ProjectileSwordSlash extends ModProjectile {
 
     @Override
     public void tick() {
-        super.onUpdate();
+        super.tick();
         if (!level.isClientSide && this.shootingEntity != null) {
-            if (this.world instanceof ServerLevel) {
-                Main.network.sendToAllTracking(new MessageModParticles(EnumModParticles.SWEEP_ATTACK, position(), Vec3.ZERO, this.getElement().sweepColor), this);
+            if (this.level instanceof ServerLevel) {
+                Main.NETWORK.send(PacketDistributor.TRACKING_ENTITY.with(() -> this), new MessageModParticles(EnumModParticles.SWEEP_ATTACK, position(), Vec3.ZERO, this.getElement().sweepColor));
             }
 
             ModUtils.handleAreaImpact(1.5f, (e) -> this.getDamage(), this.shootingEntity, this.position(), ModDamageSource.causeElementalThrownDamage(this, shootingEntity, getElement()),
@@ -43,9 +44,9 @@ public class ProjectileSwordSlash extends ModProjectile {
     }
 
     @Override
-    protected void onHit(HitResult result) {
-        if (result.entityHit == null) {
-            super.onHit(result);
+    protected void onHitEntity(EntityHitResult result) {
+        if (result.getEntity() == null) {
+            super.onHitEntity(result);
             return;
         }
     }

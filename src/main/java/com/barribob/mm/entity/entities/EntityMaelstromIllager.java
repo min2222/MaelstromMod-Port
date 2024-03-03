@@ -59,7 +59,7 @@ public class EntityMaelstromIllager extends EntityMaelstromMob {
             int mobCount = phase2() ? getMobConfig().getInt("summoning_algorithm.second_phase_mobs_per_spawn") :
                     getMobConfig().getInt("summoning_algorithm.first_phase_mobs_per_spawn");
             for (int i = 0; i < mobCount; i++) {
-                ModUtils.spawnMob(level, blockPosition(), getLevel(), getMobConfig().getConfig("summoning_algorithm"));
+                ModUtils.spawnMob(level, blockPosition(), getMobLevel(), getMobConfig().getConfig("summoning_algorithm"));
             }
             actor.playSound(SoundEvents.EVOKER_CAST_SPELL, 1.0F, 0.4F / (level.random.nextFloat() * 0.4F + 0.8F));
         }
@@ -82,7 +82,7 @@ public class EntityMaelstromIllager extends EntityMaelstromMob {
                 ModProjectile proj = new ProjectileMaelstromWisp(level, actor, getAttack() * getConfigFloat("ring_damage"));
                 proj.setTravelRange(15f);
                 ModUtils.throwProjectile(actor, target, proj, 1.0f, 1.0f);
-                playSoundWithFallback(SoundsHandler.Hooks.ENTITY_ILLAGER_VORTEX, SoundEvents.BLAZE_AMBIENT);
+                playSoundWithFallback(SoundsHandler.Hooks.ENTITY_ILLAGER_VORTEX.get(), SoundEvents.BLAZE_AMBIENT);
             });
             attackHandler.setAttack(shield, (IAction) (actor, target) -> {
                 DamageSource damageSource = ModDamageSource.builder()
@@ -92,7 +92,7 @@ public class EntityMaelstromIllager extends EntityMaelstromMob {
                         .stoppedByArmorNotShields().build();
 
                 ModUtils.handleAreaImpact(shieldSize, (e) -> getAttack() * getConfigFloat("defensive_burst_damage"), actor, position(), damageSource);
-                playSoundWithFallback(SoundsHandler.Hooks.ENTITY_ILLAGER_DOME, SoundEvents.FIREWORK_ROCKET_BLAST);
+                playSoundWithFallback(SoundsHandler.Hooks.ENTITY_ILLAGER_DOME.get(), SoundEvents.FIREWORK_ROCKET_BLAST);
                 actor.level.broadcastEntityEvent(actor, ModUtils.THIRD_PARTICLE_BYTE);
             });
             attackHandler.setAttack(enemy, spawnEnemy);
@@ -232,7 +232,7 @@ public class EntityMaelstromIllager extends EntityMaelstromMob {
                     this.blockUsingShield((LivingEntity) entity);
                 }
             }
-            this.playSound(SoundsHandler.ENTITY_CHAOS_KNIGHT_BLOCK, 1.0f, 0.9f + ModRandom.getFloat(0.2f));
+            this.playSound(SoundsHandler.ENTITY_CHAOS_KNIGHT_BLOCK.get(), 1.0f, 0.9f + ModRandom.getFloat(0.2f));
 
             return false;
         }
@@ -294,8 +294,8 @@ public class EntityMaelstromIllager extends EntityMaelstromMob {
     }
 
     @Override
-    public void setSwingingArms(boolean swingingArms) {
-        super.setSwingingArms(swingingArms);
+    public void setAggressive(boolean swingingArms) {
+        super.setAggressive(swingingArms);
         if (this.isSwingingArms()) {
             if (phase2()) {
                 Byte[] attack = {wisp, magicMissile, enemy};
@@ -303,10 +303,10 @@ public class EntityMaelstromIllager extends EntityMaelstromMob {
                 attackHandler.setCurrentAttack(ModRandom.choice(attack, this.getRandom(), weights).next());
                 if (this.getTarget() != null && this.distanceTo(this.getTarget()) < 4) {
                     attackHandler.setCurrentAttack(shield);
-                    playSoundWithFallback(SoundsHandler.Hooks.ENTITY_ILLAGER_DOME_CHARGE, SoundsHandler.NONE);
+                    playSoundWithFallback(SoundsHandler.Hooks.ENTITY_ILLAGER_DOME_CHARGE.get(), SoundsHandler.NONE.get());
                 }
                 else {
-                    playSoundWithFallback(SoundsHandler.Hooks.ENTITY_ILLAGER_SPELL_CHARGE, SoundsHandler.NONE);
+                    playSoundWithFallback(SoundsHandler.Hooks.ENTITY_ILLAGER_SPELL_CHARGE.get(), SoundsHandler.NONE.get());
                 }
                 level.broadcastEntityEvent(this, attackHandler.getCurrentAttack());
             } else {
@@ -338,8 +338,8 @@ public class EntityMaelstromIllager extends EntityMaelstromMob {
                 float f = this.yBodyRot * 0.017453292F + Mth.cos(this.tickCount * 0.6662F) * 0.25F;
                 float f1 = Mth.cos(f);
                 float f2 = Mth.sin(f);
-                ParticleManager.spawnMaelstromPotionParticle(level, random, new Vec3(this.posX + f1 * 0.6D, this.posY + 1.8D, this.posZ + f2 * 0.6D), true);
-                ParticleManager.spawnMaelstromPotionParticle(level, random, new Vec3(this.posX - f1 * 0.6D, this.posY + 1.8D, this.posZ - f2 * 0.6D), true);
+                ParticleManager.spawnMaelstromPotionParticle(level, random, new Vec3(this.getX() + f1 * 0.6D, this.getY() + 1.8D, this.getZ() + f2 * 0.6D), true);
+                ParticleManager.spawnMaelstromPotionParticle(level, random, new Vec3(this.getX() - f1 * 0.6D, this.getY() + 1.8D, this.getZ() - f2 * 0.6D), true);
             }
         }
         super.handleEntityEvent(id);
@@ -359,8 +359,8 @@ public class EntityMaelstromIllager extends EntityMaelstromMob {
     }
 
     @Override
-    public void setCustomNameTag(String name) {
-        super.setCustomNameTag(name);
+    public void setCustomName(Component name) {
+        super.setCustomName(name);
         this.bossInfo.setName(this.getDisplayName());
     }
 
@@ -371,14 +371,14 @@ public class EntityMaelstromIllager extends EntityMaelstromMob {
     }
 
     @Override
-    public void addTrackingPlayer(ServerPlayer player) {
-        super.addTrackingPlayer(player);
+    public void startSeenByPlayer(ServerPlayer player) {
+        super.startSeenByPlayer(player);
         this.bossInfo.addPlayer(player);
     }
 
     @Override
-    public void removeTrackingPlayer(ServerPlayer player) {
-        super.removeTrackingPlayer(player);
+    public void stopSeenByPlayer(ServerPlayer player) {
+        super.stopSeenByPlayer(player);
         this.bossInfo.removePlayer(player);
     }
 }

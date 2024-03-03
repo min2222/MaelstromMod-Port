@@ -1,14 +1,6 @@
 package com.barribob.mm.entity.entities.gauntlet;
 
-import net.minecraft.network.syncher.EntityDataAccessor;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.syncher.EntityDataSerializers;
-import net.minecraft.network.syncher.SynchedEntityData;
-import net.minecraft.world.phys.Vec3;
-import net.minecraft.world.level.Level;
+import java.util.OptionalDouble;
 
 import javax.annotation.Nonnull;
 
@@ -21,11 +13,23 @@ import com.barribob.mm.util.ModRandom;
 import com.barribob.mm.util.ModUtils;
 import com.barribob.mm.util.handlers.ParticleManager;
 
-import java.util.OptionalDouble;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.level.Explosion.BlockInteraction;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.network.NetworkHooks;
 
 public class EntityCrimsonCrystal extends Entity {
     protected static final EntityDataAccessor<Float> CLOSEST_TARGET_DISTANCE =
-            SynchedEntityData.createKey(EntityLeveledMob.class, EntityDataSerializers.FLOAT);
+            SynchedEntityData.defineId(EntityLeveledMob.class, EntityDataSerializers.FLOAT);
     private EntityLeveledMob shootingEntity = null;
     public static final float explosionDistance = (float) Main.mobsConfig.getDouble("alternative_maelstrom_gauntlet_stage_2.crystal_explosion_radius");
     public static float visualActivationDistance = explosionDistance * 4;
@@ -46,34 +50,34 @@ public class EntityCrimsonCrystal extends Entity {
 
     @Override
     public void tick() {
-        super.onUpdate();
+        super.tick();
 
         if (!level.isClientSide) {
 
             if (shootingEntity == null) {
-                this.setDead();
+                this.discard();
                 return;
             }
 
             Vec3 pos = this.position();
-            OptionalDouble optionalDistance = ModUtils.getEntitiesInBox(this, ModUtils.makeBox(pos, pos).grow(20))
+            OptionalDouble optionalDistance = ModUtils.getEntitiesInBox(this, ModUtils.makeBox(pos, pos).inflate(20))
                     .stream()
                     .filter(EntityMaelstromMob.CAN_TARGET)
-                    .mapToDouble((e) -> e.getDistanceSq(this))
+                    .mapToDouble((e) -> e.distanceToSqr(this))
                     .min();
 
             if (optionalDistance.isPresent()) {
-                dataManager.set(CLOSEST_TARGET_DISTANCE, ((float) optionalDistance.getAsDouble()));
+                entityData.set(CLOSEST_TARGET_DISTANCE, ((float) optionalDistance.getAsDouble()));
 
                 if (optionalDistance.getAsDouble() < explosionRadiusSq) {
                     explodeAndDespawn();
                 }
             } else {
-                dataManager.set(CLOSEST_TARGET_DISTANCE, Float.POSITIVE_INFINITY);
+            	entityData.set(CLOSEST_TARGET_DISTANCE, Float.POSITIVE_INFINITY);
             }
 
-            boolean randomExplodeCondition = tickCount > crystalLifespan && rand.nextInt(50) == 0;
-            if (randomExplodeCondition && !isDead) explodeAndDespawn();
+            boolean randomExplodeCondition = tickCount > crystalLifespan && random.nextInt(50) == 0;
+            if (randomExplodeCondition && this.isAlive()) explodeAndDespawn();
 
         } else if (getTargetDistanceSq() < VisualActivationDistanceSq) {
             double distance = Math.sqrt(getTargetDistanceSq());
@@ -82,13 +86,13 @@ public class EntityCrimsonCrystal extends Entity {
             int numParticles = (int) (distanceToExplosion * VisualActivationDistanceSq * 0.02);
             for (int i = 0; i < numParticles; i++) {
                 Vec3 vec = ModRandom.randVec().normalize().scale(explosionDistance);
-                ParticleManager.spawnEffect(world, position().add(vec), getParticleColor());
+                ParticleManager.spawnEffect(level, position().add(vec), getParticleColor());
             }
         }
     }
 
     public void explodeAndDespawn() {
-        this.setDead();
+        this.discard();
         DamageSource source = ModDamageSource.builder()
                 .type(ModDamageSource.EXPLOSION)
                 .directEntity(this)
@@ -97,7 +101,7 @@ public class EntityCrimsonCrystal extends Entity {
                 .stoppedByArmorNotShields().build();
 
         ModUtils.handleAreaImpact(explosionDistance, e -> shootingEntity.getAttack(), this.shootingEntity, position(), source, 1, 0, false);
-        world.newExplosion(shootingEntity, posX, posY, posZ, 1, false, ModUtils.mobGriefing(world, shootingEntity));
+        level.explode(shootingEntity, this.getX(), this.getY(), this.getZ(), 1, false, ModUtils.mobGriefing(level, shootingEntity) ? BlockInteraction.DESTROY : BlockInteraction.NONE);
         playSound(SoundEvents.GENERIC_EXPLODE, 1.0f, 1.0f + ModRandom.getFloat(0.2f));
         level.broadcastEntityEvent(this, ModUtils.PARTICLE_BYTE);
     }
@@ -107,13 +111,13 @@ public class EntityCrimsonCrystal extends Entity {
         if (id == ModUtils.PARTICLE_BYTE) {
             for (int i = 0; i < 20; i++) {
                 Vec3 randPos = radialRandVec();
-                ParticleManager.spawnColoredExplosion(world, randPos, ModColors.RED);
+                ParticleManager.spawnColoredExplosion(level, randPos, ModColors.RED);
             }
 
             for (int i = 0; i < 20; i++) {
                 Vec3 randPos = radialRandVec();
                 Vec3 outVelocity = ModUtils.direction(position(), randPos).scale(0.2f);
-                ParticleManager.spawnFluff(world, randPos, Vec3.ZERO, outVelocity);
+                ParticleManager.spawnFluff(level, randPos, Vec3.ZERO, outVelocity);
             }
         }
         super.handleEntityEvent(id);
@@ -122,11 +126,11 @@ public class EntityCrimsonCrystal extends Entity {
     public Vec3 radialRandVec() {
         return position()
                 .add(ModRandom.randVec().normalize()
-                        .scale(rand.nextDouble() * explosionDistance));
+                        .scale(random.nextDouble() * explosionDistance));
     }
 
     private float getTargetDistanceSq() {
-        return dataManager.get(CLOSEST_TARGET_DISTANCE);
+        return entityData.get(CLOSEST_TARGET_DISTANCE);
     }
 
     public Vec3 getParticleColor() {
@@ -137,8 +141,8 @@ public class EntityCrimsonCrystal extends Entity {
     }
 
     @Override
-    protected void entityInit() {
-        dataManager.register(CLOSEST_TARGET_DISTANCE, Float.POSITIVE_INFINITY);
+    protected void defineSynchedData() {
+        entityData.define(CLOSEST_TARGET_DISTANCE, Float.POSITIVE_INFINITY);
     }
 
     @Override
@@ -147,7 +151,7 @@ public class EntityCrimsonCrystal extends Entity {
     }
 
     @Override
-    protected void writeEntityToNBT(@Nonnull CompoundTag compound) {
+    protected void addAdditionalSaveData(@Nonnull CompoundTag compound) {
 
     }
 
@@ -161,10 +165,15 @@ public class EntityCrimsonCrystal extends Entity {
     }
 
     @Override
-    public boolean attackEntityFrom(DamageSource source, float amount) {
-        if(EntityMaelstromMob.CAN_TARGET.apply(source.getTrueSource()) && !level.isClientSide && !isDead) {
+    public boolean hurt(DamageSource source, float amount) {
+        if(source.getEntity() instanceof LivingEntity living && EntityMaelstromMob.CAN_TARGET.apply(living) && !level.isClientSide && this.isAlive()) {
             explodeAndDespawn();
         }
-        return super.attackEntityFrom(source, amount);
+        return super.hurt(source, amount);
+    }
+    
+    @Override
+    public Packet<?> getAddEntityPacket() {
+    	return NetworkHooks.getEntitySpawningPacket(this);
     }
 }

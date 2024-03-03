@@ -28,7 +28,7 @@ public class ModProjectile extends EntityModThrowable implements IElement {
     protected static final byte IMPACT_PARTICLE_BYTE = 3;
     private static final byte PARTICLE_BYTE = 4;
     private float damage = 0;
-    protected static final EntityDataAccessor<Integer> ELEMENT = SynchedEntityData.<Integer>createKey(ModProjectile.class, EntityDataSerializers.VARINT);
+    protected static final EntityDataAccessor<Integer> ELEMENT = SynchedEntityData.<Integer>defineId(ModProjectile.class, EntityDataSerializers.INT);
     protected float maxAge = 20 * 20;
     private Item itemToRender = ModItems.INVISIBLE;
 
@@ -53,7 +53,7 @@ public class ModProjectile extends EntityModThrowable implements IElement {
     }
 
     protected double getDistanceTraveled() {
-        return this.getDistance(startPos.x, startPos.y, startPos.z);
+        return this.distanceToSqr(startPos.x, startPos.y, startPos.z);
     }
 
     /**
@@ -81,27 +81,27 @@ public class ModProjectile extends EntityModThrowable implements IElement {
 
     @Override
     public void tick() {
-        super.onUpdate();
+        super.tick();
 
-        this.level.broadcastEntityEvent(this, this.PARTICLE_BYTE);
+        this.level.broadcastEntityEvent(this, ModProjectile.PARTICLE_BYTE);
 
         // Despawn if a certain distance away from its origin
         if (this.shootingEntity != null && getDistanceTraveled() > this.travelRange) {
-            this.level.broadcastEntityEvent(this, this.IMPACT_PARTICLE_BYTE);
-            this.setDead();
+            this.level.broadcastEntityEvent(this, ModProjectile.IMPACT_PARTICLE_BYTE);
+            this.discard();
         }
 
         // Despawn if older than a certain age
         if (this.tickCount > this.maxAge) {
-            this.setDead();
+            this.discard();
         }
     }
 
     @Override
     protected void onHit(HitResult result) {
         if (!level.isClientSide) {
-            this.level.broadcastEntityEvent(this, this.IMPACT_PARTICLE_BYTE);
-            this.setDead();
+            this.level.broadcastEntityEvent(this, ModProjectile.IMPACT_PARTICLE_BYTE);
+            this.discard();
         }
     }
 
@@ -112,10 +112,10 @@ public class ModProjectile extends EntityModThrowable implements IElement {
     @Override
     @OnlyIn(Dist.CLIENT)
     public void handleEntityEvent(byte id) {
-        if (id == this.IMPACT_PARTICLE_BYTE) {
+        if (id == ModProjectile.IMPACT_PARTICLE_BYTE) {
             spawnImpactParticles();
         }
-        if (id == this.PARTICLE_BYTE) {
+        if (id == ModProjectile.PARTICLE_BYTE) {
             spawnParticles();
         }
     }
@@ -135,18 +135,18 @@ public class ModProjectile extends EntityModThrowable implements IElement {
     }
 
     @Override
-    protected void entityInit() {
-        super.entityInit();
-        this.dataManager.register(ELEMENT, Integer.valueOf(Element.NONE.id));
+    protected void defineSynchedData() {
+        super.defineSynchedData();
+        this.entityData.define(ELEMENT, Integer.valueOf(Element.NONE.id));
     }
 
     @Override
     public Element getElement() {
-        return this.dataManager == null ? Element.getElementFromId(Element.NONE.id) : Element.getElementFromId(this.dataManager.get(ELEMENT));
+        return Element.getElementFromId(this.entityData.get(ELEMENT));
     }
 
     public ModProjectile setElement(Element element) {
-        this.dataManager.set(ELEMENT, element.id);
+        this.entityData.set(ELEMENT, element.id);
         return this;
     }
 

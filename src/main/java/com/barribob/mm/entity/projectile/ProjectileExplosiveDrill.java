@@ -6,9 +6,10 @@ import com.barribob.mm.util.handlers.ParticleManager;
 
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Explosion.BlockInteraction;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
-import net.minecraft.world.level.Level;
 
 public class ProjectileExplosiveDrill extends ProjectileGun {
     private static final int PARTICLE_AMOUNT = 15;
@@ -30,15 +31,15 @@ public class ProjectileExplosiveDrill extends ProjectileGun {
 
     @Override
     protected void spawnParticles() {
-        for (int i = 0; i < this.PARTICLE_AMOUNT; i++) {
-            ParticleManager.spawnColoredSmoke(world, position().add(ModRandom.randVec()), ModColors.DARK_GREY, Vec3.ZERO);
+        for (int i = 0; i < ProjectileExplosiveDrill.PARTICLE_AMOUNT; i++) {
+            ParticleManager.spawnColoredSmoke(level, position().add(ModRandom.randVec()), ModColors.DARK_GREY, Vec3.ZERO);
         }
     }
 
     @Override
     protected void onHit(HitResult result) {
         if (!level.isClientSide) {
-            world.createExplosion(this.shootingEntity, this.posX, this.posY, this.posZ, 3, true);
+            level.explode(this.shootingEntity, this.getX(), this.getY(), this.getZ(), 3, BlockInteraction.DESTROY);
         }
     }
 }

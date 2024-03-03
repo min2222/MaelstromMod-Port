@@ -3,51 +3,47 @@ package com.barribob.mm.loot.functions;
 import com.barribob.mm.config.ModConfig;
 import com.barribob.mm.init.ModItems;
 import com.barribob.mm.util.ModRandom;
-import com.barribob.mm.util.Reference;
 import com.barribob.mm.util.handlers.LevelHandler;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSerializationContext;
-import net.minecraft.world.item.enchantment.EnchantmentHelper;
-import net.minecraft.init.Enchantments;
-import net.minecraft.resources.ResourceLocation;
+
+import net.minecraft.util.GsonHelper;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.item.ItemSword;
-import net.minecraft.util.JsonUtils;
-import net.minecraft.world.storage.loot.LootContext;
+import net.minecraft.world.item.SwordItem;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.item.enchantment.Enchantments;
+import net.minecraft.world.level.storage.loot.LootContext;
+import net.minecraft.world.level.storage.loot.functions.LootItemConditionalFunction;
+import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 import net.minecraft.world.storage.loot.RandomValueRange;
-import net.minecraft.world.storage.loot.conditions.LootCondition;
-import net.minecraft.world.storage.loot.functions.LootFunction;
 
-import java.util.Random;
-
-public class ModEnchantWithLevels extends LootFunction {
+public class ModEnchantWithLevels extends LootItemConditionalFunction {
     private final RandomValueRange randomLevel;
 
-    protected ModEnchantWithLevels(LootCondition[] conditionsIn, RandomValueRange randomRange) {
+    protected ModEnchantWithLevels(LootItemCondition[] conditionsIn, RandomValueRange randomRange) {
         super(conditionsIn);
         this.randomLevel = randomRange;
     }
 
     @Override
-    public ItemStack apply(ItemStack stack, Random rand, LootContext context) {
-        if (stack.getItem() instanceof ItemSword && rand.nextFloat() < 0.2) {
+    public ItemStack run(ItemStack stack, LootContext context) {
+    	RandomSource rand = context.getRandom();
+        if (stack.getItem() instanceof SwordItem && rand.nextFloat() < 0.2) {
             float sharpnessDamage = 0.5f;
             int level = this.randomLevel.generateInt(rand);
             float swordDamage = ModItems.BASE_MELEE_DAMAGE * ModConfig.balance.weapon_damage * LevelHandler.getMultiplierFromLevel(level); // Calculate the standard sword damage
             int maxSharpness = (int) Math.round((swordDamage * (Math.pow(ModConfig.balance.progression_scale, 2) - 1)) / sharpnessDamage); // Approximate the max sharpness to be about two levels
 
-            stack.addEnchantment(Enchantments.SHARPNESS, Math.max(5, rand.nextInt(maxSharpness) + 1));
+            stack.enchant(Enchantments.SHARPNESS, Math.max(5, rand.nextInt(maxSharpness) + 1));
             return stack;
         }
 
         return EnchantmentHelper.addRandomEnchantment(rand, stack, ModRandom.range(1, 31), true);
     }
 
-    public static class Serializer extends LootFunction.Serializer<ModEnchantWithLevels> {
-        public Serializer() {
-            super(new ResourceLocation(Reference.MOD_ID + ":enchant"), ModEnchantWithLevels.class);
-        }
+    public static class Serializer extends LootItemConditionalFunction.Serializer<ModEnchantWithLevels> {
 
         @Override
         public void serialize(JsonObject object, ModEnchantWithLevels functionClazz, JsonSerializationContext serializationContext) {
@@ -55,8 +51,8 @@ public class ModEnchantWithLevels extends LootFunction {
         }
 
         @Override
-        public ModEnchantWithLevels deserialize(JsonObject object, JsonDeserializationContext deserializationContext, LootCondition[] conditionsIn) {
-            RandomValueRange randomvaluerange = JsonUtils.deserializeClass(object, "level", deserializationContext, RandomValueRange.class);
+        public ModEnchantWithLevels deserialize(JsonObject object, JsonDeserializationContext deserializationContext, LootItemCondition[] conditionsIn) {
+            RandomValueRange randomvaluerange = GsonHelper.deserializeClass(object, "level", deserializationContext, RandomValueRange.class);
             return new ModEnchantWithLevels(conditionsIn, randomvaluerange);
         }
     }

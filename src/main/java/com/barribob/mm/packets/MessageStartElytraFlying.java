@@ -1,53 +1,55 @@
 package com.barribob.mm.packets;
 
+import java.util.function.Supplier;
+
 import com.barribob.mm.event_handlers.ServerElytraEventHandler;
 import com.barribob.mm.init.ModItems;
 
-import io.netty.buffer.ByteBuf;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
-import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
-import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
+import net.minecraftforge.network.NetworkEvent;
 
 /**
  * Message from the client to indicate that the player has attempted to start elytra flying
  */
-public class MessageStartElytraFlying implements IMessage {
-
-    public MessageStartElytraFlying() {
+public class MessageStartElytraFlying {
+	
+	public MessageStartElytraFlying() {
+	}
+	
+    public MessageStartElytraFlying(FriendlyByteBuf buf) {
+    	this.fromBytes(buf);
     }
 
     public MessageStartElytraFlying(int entityId) {
     }
 
-    @Override
-    public void fromBytes(ByteBuf buf) {
+    public void fromBytes(FriendlyByteBuf buf) {
     }
 
-    @Override
-    public void toBytes(ByteBuf buf) {
+    public void toBytes(FriendlyByteBuf buf) {
     }
 
-    public static class Handler implements IMessageHandler<MessageStartElytraFlying, IMessage> {
-        @Override
-        public IMessage onMessage(MessageStartElytraFlying message, MessageContext ctx) {
-            final ServerPlayer player = ctx.getServerHandler().player;
+    public static class Handler {
+        public static boolean onMessage(MessageStartElytraFlying message, Supplier<NetworkEvent.Context> ctx) {
+            final ServerPlayer player = ctx.get().getSender();
 
-            player.getServer().addScheduledTask(() -> {
+            player.getServer().addTickable(() -> {
                 boolean canFly = false;
-                if (!player.onGround && player.motionY < 0.0D && !player.isElytraFlying() && !player.isInWater()) {
-                    ItemStack itemstack = player.getItemStackFromSlot(EquipmentSlot.CHEST);
+                if (!player.isOnGround() && player.getDeltaMovement().y < 0.0D && !player.isFallFlying() && !player.isInWater()) {
+                    ItemStack itemstack = player.getItemBySlot(EquipmentSlot.CHEST);
                     // Hardcoded for security reasons. If an instanceof check is used, someone could extend and add a new elytra item to hack on the client
                     canFly = itemstack.getItem() == ModItems.ELYSIUM_WINGS;
                 }
                 ServerElytraEventHandler.setFlying(player, canFly);
             });
+            
+            ctx.get().setPacketHandled(true);
 
             // No response message
-            return null;
+            return true;
         }
-
     }
 }

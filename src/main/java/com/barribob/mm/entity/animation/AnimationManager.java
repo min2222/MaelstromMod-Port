@@ -1,18 +1,24 @@
 package com.barribob.mm.entity.animation;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.Model;
 import net.minecraft.client.model.ModelRenderer;
+import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.TickEvent.Phase;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.common.gameevent.TickEvent;
-import net.minecraftforge.fml.common.gameevent.TickEvent.Phase;
-
-import java.util.*;
-import java.util.Map.Entry;
 
 /**
  * Manages animations of all entities. All that needs to be done is that it should be added to the entity to start the animation. Animations get automatically removed when the entity is removed or
@@ -24,7 +30,7 @@ import java.util.Map.Entry;
 @OnlyIn(Dist.CLIENT)
 public class AnimationManager {
     private static Map<LivingEntity, Map<String, BBAnimation>> animations = new HashMap<>();
-    private static Map<Model, Map<ModelRenderer, float[]>> defaultModelValues = new HashMap<>();
+    private static Map<Model, Map<ModelPart, float[]>> defaultModelValues = new HashMap<>();
     private static Map<LivingEntity, Set<String>> animationsToRemoveOnceEnded = new HashMap<>();
 
     public static void updateAnimation(LivingEntity entity, String animationId, boolean remove) {
@@ -98,12 +104,12 @@ public class AnimationManager {
      */
     @SubscribeEvent
     public static void onClientTick(TickEvent.ClientTickEvent event) {
-        if (event.phase == Phase.END && !Minecraft.getMinecraft().isGamePaused()) {
+        if (event.phase == Phase.END && !Minecraft.getInstance().isPaused()) {
             List<LivingEntity> entitiesToRemove = new ArrayList<LivingEntity>();
             for (Entry<LivingEntity, Map<String, BBAnimation>> entry : animations.entrySet()) {
                 LivingEntity entity = entry.getKey();
 
-                if (!entity.isAddedToWorld() && entity.isDead) {
+                if (!entity.isAddedToWorld() && entity.isDeadOrDying()) {
                     entitiesToRemove.add(entity);
                     continue;
                 }
@@ -147,11 +153,11 @@ public class AnimationManager {
          * entity who uses the model, so those values have to be reset before each entity get rendered with the model.
          */
         if (defaultModelValues.containsKey(model)) {
-            for (ModelRenderer renderer : model.boxList) {
+            for (ModelPart renderer : model.boxList) {
                 float[] values = defaultModelValues.get(model).get(renderer);
-                renderer.rotateAngleX = values[0];
-                renderer.rotateAngleY = values[1];
-                renderer.rotateAngleZ = values[2];
+                renderer.xRot = values[0];
+                renderer.yRot = values[1];
+                renderer.zRot = values[2];
                 renderer.offsetX = values[3];
                 renderer.offsetY = values[4];
                 renderer.offsetZ = values[5];
@@ -160,12 +166,12 @@ public class AnimationManager {
                 renderer.rotationPointZ = values[8];
             }
         } else {
-            defaultModelValues.put(model, new HashMap<ModelRenderer, float[]>());
-            for (ModelRenderer renderer : model.boxList) {
+            defaultModelValues.put(model, new HashMap<ModelPart, float[]>());
+            for (ModelPart renderer : model.boxList) {
                 defaultModelValues.get(model).put(renderer, new float[]{
-                        renderer.rotateAngleX,
-                        renderer.rotateAngleY,
-                        renderer.rotateAngleZ,
+                        renderer.xRot,
+                        renderer.yRot,
+                        renderer.zRot,
                         renderer.offsetX,
                         renderer.offsetY,
                         renderer.offsetZ,

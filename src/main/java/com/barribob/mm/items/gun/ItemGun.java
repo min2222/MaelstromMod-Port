@@ -1,28 +1,9 @@
 package com.barribob.mm.items.gun;
 
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.world.item.enchantment.EnchantmentHelper;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.init.Enchantments;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.InteractionResultHolder;
-import net.minecraft.util.EnumActionResult;
-import net.minecraft.world.phys.Vec3;
-import net.minecraft.ChatFormatting;
-import net.minecraft.world.level.Level;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.api.distmarker.Dist;
-
 import java.util.List;
 import java.util.function.Consumer;
 
 import com.barribob.mm.config.ModConfig;
-import com.barribob.mm.init.ModCreativeTabs;
 import com.barribob.mm.init.ModEnchantments;
 import com.barribob.mm.init.ModItems;
 import com.barribob.mm.items.ILeveledItem;
@@ -35,6 +16,24 @@ import com.barribob.mm.util.ModRandom;
 import com.barribob.mm.util.ModUtils;
 import com.barribob.mm.util.handlers.LevelHandler;
 
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.enchantment.Enchantments;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
+
 /**
  * The base class for the mod's cooldown weapons. keeps track of cooldown and
  * calls shoot() when the gun sucessfully shoots
@@ -45,16 +44,14 @@ public abstract class ItemGun extends ItemBase implements ILeveledItem, Reloadab
     private float level;
     private final float damage;
     protected BulletFactory factory;
-    private Consumer<List<String>> information = (info) -> {
+    private Consumer<List<Component>> information = (info) -> {
     };
     private Element element = Element.NONE;
 
     public ItemGun(String name, int cooldown, float damage, float level) {
-        super(name, ModCreativeTabs.ITEMS);
-        this.maxStackSize = 1;
+        super(new Item.Properties().durability(ModItems.GUN_USE_TIME / cooldown));
         this.maxCooldown = cooldown;
         this.level = level;
-        this.setMaxDamage(ModItems.GUN_USE_TIME / cooldown);
         this.damage = damage;
         this.factory = new StandardBullet();
     }
@@ -77,13 +74,13 @@ public abstract class ItemGun extends ItemBase implements ILeveledItem, Reloadab
     }
 
     private float getEnchantedCooldown(ItemStack stack) {
-        int reload = stack.getEnchantmentLevel(ModEnchantments.reload);
+        int reload = stack.getEnchantmentLevel(ModEnchantments.RELOAD.get());
         return this.maxCooldown * (1 - reload * 0.1f);
     }
 
     public float getEnchantedDamage(ItemStack stack) {
-        float maxPower = ModEnchantments.gun_power.getMaxLevel();
-        float power = stack.getEnchantmentLevel(ModEnchantments.gun_power);
+        float maxPower = ModEnchantments.GUN_POWER.get().getMaxLevel();
+        float power = stack.getEnchantmentLevel(ModEnchantments.GUN_POWER.get());
         float maxDamageBonus = (float) Math.pow(ModConfig.balance.progression_scale, 2); // Maximum damage is two levels above
         float enchantmentBonus = 1 + ((power / maxPower) * (maxDamageBonus - 1));
         return this.damage * ModConfig.balance.weapon_damage * enchantmentBonus * this.getMultiplier();
@@ -129,26 +126,26 @@ public abstract class ItemGun extends ItemBase implements ILeveledItem, Reloadab
      * Updates the gun's cooldown
      */
     @Override
-    public void onUpdate(ItemStack stack, Level worldIn, Entity entityIn, int itemSlot, boolean isSelected) {
-        super.onUpdate(stack, worldIn, entityIn, itemSlot, isSelected);
+    public void inventoryTick(ItemStack stack, Level worldIn, Entity entityIn, int itemSlot, boolean isSelected) {
+        super.inventoryTick(stack, worldIn, entityIn, itemSlot, isSelected);
         // Use a compound to record the cooldown data for an item stack
-        if (stack.hasTagCompound()) {
-            CompoundTag compound = stack.getTagCompound();
+        if (stack.hasTag()) {
+            CompoundTag compound = stack.getOrCreateTag();
 
             // Decrement the cooldown every tick
-            if (compound.hasKey("cooldown")) {
-                if (entityIn instanceof Player && ((Player) entityIn).getHeldItem(InteractionHand.MAIN_HAND).equals(stack)
-                        || ((Player) entityIn).getHeldItem(InteractionHand.OFF_HAND).equals(stack)) {
-                    int cooldown = compound.getInteger("cooldown") - 1;
-                    compound.setInteger("cooldown", cooldown >= 0 ? cooldown : 0);
+            if (compound.contains("cooldown")) {
+                if (entityIn instanceof Player && ((Player) entityIn).getItemInHand(InteractionHand.MAIN_HAND).equals(stack)
+                        || ((Player) entityIn).getItemInHand(InteractionHand.OFF_HAND).equals(stack)) {
+                    int cooldown = compound.getInt("cooldown") - 1;
+                    compound.putInt("cooldown", cooldown >= 0 ? cooldown : 0);
                 }
             } else {
-                compound.setInteger("cooldown", (int) this.getEnchantedCooldown(stack));
+                compound.putInt("cooldown", (int) this.getEnchantedCooldown(stack));
             }
 
-            stack.setTagCompound(compound);
+            stack.setTag(compound);
         } else {
-            stack.setTagCompound(new CompoundTag());
+            stack.setTag(new CompoundTag());
         }
     }
 
@@ -157,40 +154,42 @@ public abstract class ItemGun extends ItemBase implements ILeveledItem, Reloadab
      * after handling ammo and cooldown
      */
     @Override
-    public InteractionResultHolder<ItemStack> onItemRightClick(Level worldIn, Player playerIn, InteractionHand handIn) {
-        ItemStack itemstack = playerIn.getHeldItem(handIn);
+    public InteractionResultHolder<ItemStack> use(Level worldIn, Player playerIn, InteractionHand handIn) {
+        ItemStack itemstack = playerIn.getItemInHand(handIn);
         ItemStack ammoStack = findAmmo(playerIn);
 
-        if (itemstack.hasTagCompound() && itemstack.getTagCompound().hasKey("cooldown")) {
-            CompoundTag compound = itemstack.getTagCompound();
+        if (itemstack.hasTag() && itemstack.getOrCreateTag().contains("cooldown")) {
+            CompoundTag compound = itemstack.getOrCreateTag();
 
-            if ((playerIn.capabilities.isCreativeMode || !ammoStack.isEmpty()) && compound.getInteger("cooldown") <= 0) {
-                boolean dontConsumeAmmo = playerIn.capabilities.isCreativeMode
-                        || EnchantmentHelper.getEnchantmentLevel(Enchantments.INFINITY, itemstack) > 0;
+            if ((playerIn.getAbilities().instabuild || !ammoStack.isEmpty()) && compound.getInt("cooldown") <= 0) {
+                boolean dontConsumeAmmo = playerIn.getAbilities().instabuild
+                        || itemstack.getEnchantmentLevel(Enchantments.INFINITY_ARROWS) > 0;
 
                 if (!dontConsumeAmmo) {
-                    ammoStack.damageItem(ModUtils.getGunAmmoUse(this.level), playerIn);
-                    itemstack.damageItem(1, playerIn);
+                    ammoStack.hurtAndBreak(ModUtils.getGunAmmoUse(this.level), playerIn, t -> {
+                    });
+                    itemstack.hurtAndBreak(1, playerIn, t -> {
+                    });
 
                     if (ammoStack.isEmpty()) {
-                        playerIn.inventory.deleteStack(ammoStack);
+                        playerIn.getInventory().removeItem(ammoStack);
                     }
                 }
 
                 // Only the server spawns the projectile, otherwise things get weird
-                if (!worldIn.isRemote) {
+                if (!worldIn.isClientSide) {
                     shoot(worldIn, playerIn, handIn, itemstack);
                 } else {
                     spawnShootParticles(worldIn, playerIn, handIn);
                 }
 
-                compound.setInteger("cooldown", (int) this.getEnchantedCooldown(itemstack));
-                itemstack.setTagCompound(compound);
+                compound.putInt("cooldown", (int) this.getEnchantedCooldown(itemstack));
+                itemstack.setTag(compound);
 
-                return new InteractionResultHolder<ItemStack>(EnumActionResult.SUCCESS, itemstack);
+                return new InteractionResultHolder<ItemStack>(InteractionResult.SUCCESS, itemstack);
             }
         }
-        return new InteractionResultHolder(EnumActionResult.FAIL, itemstack);
+        return new InteractionResultHolder<ItemStack>(InteractionResult.FAIL, itemstack);
     }
 
     /**
@@ -199,33 +198,33 @@ public abstract class ItemGun extends ItemBase implements ILeveledItem, Reloadab
     @OnlyIn(Dist.CLIENT)
     protected void spawnShootParticles(Level worldIn, Player playerIn, InteractionHand handIn) {
         // Add the fire and smoke effects when the gun goes off
-        Vec3 flameOffset = playerIn.getLookVec().scale(0.5f);
+        Vec3 flameOffset = playerIn.getLookAngle().scale(0.5f);
 
         if (handIn == InteractionHand.MAIN_HAND) {
-            flameOffset = flameOffset.rotateYaw((float) Math.PI * -0.5f);
+            flameOffset = flameOffset.yRot((float) Math.PI * -0.5f);
         } else {
-            flameOffset = flameOffset.rotateYaw((float) Math.PI * 0.5f);
+            flameOffset = flameOffset.yRot((float) Math.PI * 0.5f);
         }
 
-        flameOffset = flameOffset.add(playerIn.getLookVec());
+        flameOffset = flameOffset.add(playerIn.getLookAngle());
 
-        worldIn.spawnParticle(ParticleTypes.FLAME, playerIn.posX + flameOffset.x, playerIn.posY + playerIn.getEyeHeight() + flameOffset.y, playerIn.posZ + flameOffset.z,
+        worldIn.addParticle(ParticleTypes.FLAME, playerIn.getX() + flameOffset.x, playerIn.getY() + playerIn.getEyeHeight() + flameOffset.y, playerIn.getZ() + flameOffset.z,
                 0, 0, 0);
 
         for (int i = 0; i < SMOKE_PARTICLES; i++) {
             float f = 0.1f;
-            worldIn.spawnParticle(ParticleTypes.SMOKE_NORMAL, playerIn.posX + flameOffset.x + ModRandom.getFloat(f),
-                    playerIn.posY + playerIn.getEyeHeight() + flameOffset.y + ModRandom.getFloat(f), playerIn.posZ + flameOffset.z + ModRandom.getFloat(f), 0, 0, 0);
+            worldIn.addParticle(ParticleTypes.SMOKE, playerIn.getX() + flameOffset.x + ModRandom.getFloat(f),
+                    playerIn.getY() + playerIn.getEyeHeight() + flameOffset.y + ModRandom.getFloat(f), playerIn.getZ() + flameOffset.z + ModRandom.getFloat(f), 0, 0, 0);
         }
     }
 
-    public ItemGun setInformation(Consumer<List<String>> information) {
+    public ItemGun setInformation(Consumer<List<Component>> information) {
         this.information = information;
         return this;
     }
 
     @Override
-    public void addInformation(ItemStack stack, Level worldIn, List<String> tooltip, TooltipFlag flagIn) {
+    public void appendHoverText(ItemStack stack, Level worldIn, List<Component> tooltip, TooltipFlag flagIn) {
         if(!ModConfig.gui.disableMaelstromArmorItemTooltips) {
             tooltip.add(ModUtils.getDisplayLevel(this.level));
         }
@@ -236,13 +235,13 @@ public abstract class ItemGun extends ItemBase implements ILeveledItem, Reloadab
 
         tooltip.add(ModUtils.translateDesc("gun_ammo", ChatFormatting.DARK_PURPLE + "" + ModUtils.getGunAmmoUse(this.level)));
         tooltip.add(ModUtils.getCooldownTooltip(this.getEnchantedCooldown(stack)));
-        if (!element.equals(element.NONE) && !ModConfig.gui.disableElementalVisuals) {
+        if (!element.equals(Element.NONE) && !ModConfig.gui.disableElementalVisuals) {
             tooltip.add(ModUtils.getElementalTooltip(element));
         }
         information.accept(tooltip);
     }
 
-    protected void getDamageTooltip(ItemStack stack, Level worldIn, List<String> tooltip, TooltipFlag flagIn) {
+    protected void getDamageTooltip(ItemStack stack, Level worldIn, List<Component> tooltip, TooltipFlag flagIn) {
         tooltip.add(ModUtils.getDamageTooltip(this.getEnchantedDamage(stack)));
     }
 
@@ -251,17 +250,8 @@ public abstract class ItemGun extends ItemBase implements ILeveledItem, Reloadab
      * material.
      */
     @Override
-    public int getItemEnchantability() {
+    public int getEnchantmentValue(ItemStack stack) {
         return 1;
-    }
-
-    /**
-     * Returns True is the item is renderer in full 3D when hold.
-     */
-    @Override
-    @OnlyIn(Dist.CLIENT)
-    public boolean isFull3D() {
-        return true;
     }
 
     @Override

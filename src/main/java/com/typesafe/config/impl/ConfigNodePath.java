@@ -3,10 +3,10 @@
  */
 package com.typesafe.config.impl;
 
-import com.typesafe.config.ConfigException;
-
 import java.util.ArrayList;
 import java.util.Collection;
+
+import com.typesafe.config.ConfigException;
 
 final class ConfigNodePath extends AbstractConfigNode {
     final private Path path;

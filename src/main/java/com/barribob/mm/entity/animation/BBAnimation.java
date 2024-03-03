@@ -13,7 +13,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 import net.minecraft.client.model.Model;
-import net.minecraft.client.model.ModelRenderer;
+import net.minecraft.client.model.geom.ModelPart;
 
 /**
  * An animation that parses the animation output from block bench.
@@ -60,7 +60,7 @@ public class BBAnimation {
 
         for (Entry<String, JsonElement> elementEntry : animation.getAsJsonObject("bones").entrySet()) {
             JsonObject element = elementEntry.getValue().getAsJsonObject();
-            ModelRenderer component;
+            ModelPart component;
 
             // Use reflection to get the component we want from the model
             try {
@@ -68,7 +68,7 @@ public class BBAnimation {
                 if (!field.isAccessible()) {
                     field.setAccessible(true);
                 }
-                component = ((ModelRenderer) field.get(model));
+                component = ((ModelPart) field.get(model));
             } catch (NoSuchFieldException | SecurityException | IllegalAccessException e) {
                 System.err.println("Animation failure: Failed to access field " + elementEntry.getKey() + " for animationid " + animationId + " " + e);
                 break;
@@ -76,16 +76,16 @@ public class BBAnimation {
 
             if (element.has("rotation")) {
                 float[] rotations = getInterpotatedValues(timeInSeconds, element.getAsJsonObject("rotation").entrySet());
-                component.rotateAngleX += (float) Math.toRadians(rotations[0]);
-                component.rotateAngleY += (float) Math.toRadians(rotations[1]);
-                component.rotateAngleZ += (float) Math.toRadians(rotations[2]);
+                component.xRot += (float) Math.toRadians(rotations[0]);
+                component.yRot += (float) Math.toRadians(rotations[1]);
+                component.zRot += (float) Math.toRadians(rotations[2]);
             }
 
             if (element.has("position")) {
                 float[] offsets = getInterpotatedValues(timeInSeconds, element.getAsJsonObject("position").entrySet());
-                component.rotationPointX += offsets[0];
-                component.rotationPointY -= offsets[1];
-                component.rotationPointZ += offsets[2];
+                component.x += offsets[0];
+                component.y -= offsets[1];
+                component.z += offsets[2];
             }
         }
     }

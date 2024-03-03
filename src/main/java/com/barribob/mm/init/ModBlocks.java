@@ -80,7 +80,7 @@ public class ModBlocks {
 
     public static final Block MEGA_STRUCTURE_BLOCK = new BlockMegaStructure("mega_structure_block");
     public static final Block LIGHTING_UPDATER = new BlockLightingUpdater("lighting_updater", Material.AIR).setLightLevel(0.1f);
-    public static final Block DISAPPEARING_SPAWNER = new BlockDisappearingSpawner("disappearing_spawner", Material.ROCK);
+    public static final Block DISAPPEARING_SPAWNER = new BlockDisappearingSpawner("disappearing_spawner", Material.STONE);
     public static final Block BOSS_SPAWNER = new BlockBossSpawner("nexus_herobrine_spawner");
 
     public static final Block MAELSTROM_CORE = new BlockMaelstromCore("maelstrom_core_block", Material.ROCK, ORE_HARDNESS, STONE_RESISTANCE, SoundType.STONE, ModItems.MAELSTROM_FRAGMENT);

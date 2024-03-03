@@ -11,6 +11,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.EatBlockGoal;
 import net.minecraft.world.entity.ai.goal.FloatGoal;
@@ -22,6 +23,7 @@ import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
@@ -99,12 +101,12 @@ public class EntityDreamElk extends EntityLeveledMob {
      * Checks if the entity's current position is a valid location to spawn this entity.
      */
     @Override
-    public boolean getCanSpawnHere() {
-        int i = Mth.floor(this.posX);
+    public boolean checkSpawnRules(LevelAccessor pLevel, MobSpawnType pSpawnReason) {
+        int i = Mth.floor(this.getY());
         int j = Mth.floor(this.getBoundingBox().minY);
-        int k = Mth.floor(this.posZ);
+        int k = Mth.floor(this.getZ());
         BlockPos blockpos = new BlockPos(i, j, k);
-        return this.world.getBlockState(blockpos.down()).getBlock() == Blocks.GRASS && this.world.getLight(blockpos) > 8 && super.getCanSpawnHere();
+    	return this.level.getBlockState(blockpos.below()).getBlock() == Blocks.GRASS && this.level.getLight(blockpos) > 8 && super.checkSpawnRules(pLevel, pSpawnReason);
     }
 
     /**

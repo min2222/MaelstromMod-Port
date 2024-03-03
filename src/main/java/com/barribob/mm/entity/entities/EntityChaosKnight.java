@@ -40,6 +40,7 @@ import net.minecraft.world.BossEvent.BossBarOverlay;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.Explosion.BlockInteraction;
@@ -80,7 +81,7 @@ public class EntityChaosKnight extends EntityMaelstromMob implements IAttack, Di
             ModUtils.leapTowards(this, away, 0.4f, 0.4f);
         }, 18);
 
-        addEvent(() -> EntityChaosKnight.super.setSwingingArms(false), 35);
+        addEvent(() -> EntityChaosKnight.super.setAggressive(false), 35);
     };
 
     private void swipeBlocks() {
@@ -109,7 +110,7 @@ public class EntityChaosKnight extends EntityMaelstromMob implements IAttack, Di
             this.level.explode(this, pos.x, pos.y + 1, pos.z, (float) getMobConfig().getDouble("slam_explosion_strength"), false, interaction);
             this.level.broadcastEntityEvent(this, ModUtils.PARTICLE_BYTE);
         }, 42);
-        addEvent(() -> EntityChaosKnight.super.setSwingingArms(false), 60);
+        addEvent(() -> EntityChaosKnight.super.setAggressive(false), 60);
     };
 
     private final Consumer<LivingEntity> dash = (target) -> {
@@ -160,7 +161,7 @@ public class EntityChaosKnight extends EntityMaelstromMob implements IAttack, Di
             playSound(SoundEvents.LIGHTNING_BOLT_THUNDER, 1.0f, 1.0f + ModRandom.getFloat(0.1f));
         }, 20);
 
-        addEvent(() -> EntityChaosKnight.super.setSwingingArms(false), 40);
+        addEvent(() -> EntityChaosKnight.super.setAggressive(false), 40);
     };
 
     private final Consumer<LivingEntity> spinSlash = (target) -> {
@@ -190,7 +191,7 @@ public class EntityChaosKnight extends EntityMaelstromMob implements IAttack, Di
         addEvent(meleeAttack, 29);
         addEvent(leap, 34);
         addEvent(meleeAttack, 41);
-        addEvent(() -> EntityChaosKnight.super.setSwingingArms(false), 60);
+        addEvent(() -> EntityChaosKnight.super.setAggressive(false), 60);
     };
 
     private final Consumer<LivingEntity> summonMeteors = (target) -> {
@@ -210,7 +211,7 @@ public class EntityChaosKnight extends EntityMaelstromMob implements IAttack, Di
                 level.addFreshEntity(meteor);
             }, tick);
         }
-        addEvent(() -> EntityChaosKnight.super.setSwingingArms(false), 30);
+        addEvent(() -> EntityChaosKnight.super.setAggressive(false), 30);
         addEvent(() -> {
             level.broadcastEntityEvent(this, ModUtils.THIRD_PARTICLE_BYTE);
             this.playSound(SoundEvents.EVOKER_CAST_SPELL, 1.0f, 1.0f * ModRandom.getFloat(0.2f));
@@ -256,7 +257,7 @@ public class EntityChaosKnight extends EntityMaelstromMob implements IAttack, Di
     @Override
     public int startAttack(LivingEntity target, float distanceFactor, boolean strafingBackwards) {
         float healthRatio = this.getHealth() / this.getMaxHealth();
-        setSwingingArms(true);
+        setAggressive(true);
         double distance = Math.sqrt(distanceFactor);
         List<Consumer<LivingEntity>> attacks = new ArrayList<>(Arrays.asList(sideSwipe, leapSlam, dash, spinSlash, summonMeteors));
         double[] weights = {
@@ -284,7 +285,7 @@ public class EntityChaosKnight extends EntityMaelstromMob implements IAttack, Di
                     this.blockUsingShield((LivingEntity) entity);
                 }
             }
-            this.playSound(SoundsHandler.ENTITY_CHAOS_KNIGHT_BLOCK, 1.0f, 0.9f + ModRandom.getFloat(0.2f));
+            this.playSound(SoundsHandler.ENTITY_CHAOS_KNIGHT_BLOCK.get(), 1.0f, 0.9f + ModRandom.getFloat(0.2f));
 
             return false;
         }
@@ -308,7 +309,7 @@ public class EntityChaosKnight extends EntityMaelstromMob implements IAttack, Di
     }
 
     @Override
-    public float getEyeHeight() {
+    public float getEyeHeight(Pose pose) {
         return this.getBbHeight() * 0.8f;
     }
 
@@ -356,7 +357,7 @@ public class EntityChaosKnight extends EntityMaelstromMob implements IAttack, Di
     @Override
     public void die(DamageSource cause) {
         super.die(cause);
-        if (!level.isClientSide && this.level.dimension() == ModDimensions.NEXUS.getId() && this.getMobLevel() > 0) {
+        if (!level.isClientSide && this.level.dimension() == ModDimensions.NEXUS_KEY && this.getMobLevel() > 0) {
             // Spawn portal entity
             Vec3 origin = this.getInitialPosition();
             EntityCrimsonPortalSpawn spawner = new EntityCrimsonPortalSpawn(level, origin.x, origin.y, origin.z);
@@ -399,17 +400,17 @@ public class EntityChaosKnight extends EntityMaelstromMob implements IAttack, Di
 
     @Override
     protected SoundEvent getAmbientSound() {
-        return SoundsHandler.ENTITY_CHAOS_KNIGHT_AMBIENT;
+        return SoundsHandler.ENTITY_CHAOS_KNIGHT_AMBIENT.get();
     }
 
     @Override
     protected SoundEvent getDeathSound() {
-        return SoundsHandler.ENTITY_CHAOS_KNIGHT_DEATH;
+        return SoundsHandler.ENTITY_CHAOS_KNIGHT_DEATH.get();
     }
 
     @Override
     protected SoundEvent getHurtSound(DamageSource damageSourceIn) {
-        return SoundsHandler.ENTITY_CHAOS_KNIGHT_HURT;
+        return SoundsHandler.ENTITY_CHAOS_KNIGHT_HURT.get();
     }
 
     @Override

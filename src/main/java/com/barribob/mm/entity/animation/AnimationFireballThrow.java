@@ -22,15 +22,15 @@ public class AnimationFireballThrow extends ArrayAnimation<ModelAnimatedBiped> {
 
     @Override
     public void setModelRotations(ModelAnimatedBiped model, float limbSwing, float limbSwingAmount, float partialTicks) {
-        model.bipedLeftArm.rotateAngleX = (float) Math.toRadians(this.getInterpolatedFrame(leftArmX, partialTicks));
-        model.bipedLeftArm.rotateAngleZ = (float) Math.toRadians(this.getInterpolatedFrame(leftArmZ, partialTicks));
+        model.leftArm.xRot = (float) Math.toRadians(this.getInterpolatedFrame(leftArmX, partialTicks));
+        model.leftArm.zRot = (float) Math.toRadians(this.getInterpolatedFrame(leftArmZ, partialTicks));
 
-        model.bipedRightArm.rotateAngleX = (float) Math.toRadians(this.getInterpolatedFrame(rightArmX, partialTicks));
-        model.bipedRightArm.rotateAngleZ = (float) Math.toRadians(this.getInterpolatedFrame(rightArmZ, partialTicks));
+        model.rightArm.xRot = (float) Math.toRadians(this.getInterpolatedFrame(rightArmX, partialTicks));
+        model.rightArm.zRot = (float) Math.toRadians(this.getInterpolatedFrame(rightArmZ, partialTicks));
 
-        model.bipedBody.rotateAngleX = (float) Math.toRadians(this.getInterpolatedFrame(bodyX, partialTicks));
+        model.body.xRot = (float) Math.toRadians(this.getInterpolatedFrame(bodyX, partialTicks));
 
-        model.bipedLeftLeg.rotateAngleZ = (float) Math.toRadians(this.getInterpolatedFrame(leftLegZ, partialTicks));
-        model.bipedRightLeg.rotateAngleZ = (float) Math.toRadians(this.getInterpolatedFrame(rightLegZ, partialTicks));
+        model.leftLeg.zRot = (float) Math.toRadians(this.getInterpolatedFrame(leftLegZ, partialTicks));
+        model.rightLeg.zRot = (float) Math.toRadians(this.getInterpolatedFrame(rightLegZ, partialTicks));
     }
 }

@@ -144,7 +144,7 @@ public abstract class BlockPortal extends BlockBase {
     }
 
     @Override
-    public void addInformation(ItemStack stack, @Nullable Level player, List<String> tooltip, TooltipFlag advanced) {
+    public void appendHoverText(ItemStack stack, @Nullable Level player, List<String> tooltip, TooltipFlag advanced) {
         if(ModConfig.world.disableDimensions) {
             tooltip.add(ChatFormatting.RED + ModUtils.translateDesc("disabled"));
         }

@@ -59,7 +59,7 @@ public class EntityBeast extends EntityMaelstromMob {
                     projectile.setElement(getElement());
                     projectile.shoot(d1, d2 + f, d3, 1, 8);
                     actor.playSound(SoundEvents.BLAZE_SHOOT, 1.0F, 1.0F / (actor.getRandom().nextFloat() * 0.4F + 0.8F));
-                    actor.level.addFreshEntity(projectile);
+                    actor.world.addFreshEntity(projectile);
                 }
             });
         }

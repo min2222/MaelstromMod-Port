@@ -105,9 +105,9 @@ public class EntityHerobrineOne extends EntityLeveledMob implements RangedAttack
     @Override
     protected void applyEntityAttributes() {
         super.applyEntityAttributes();
-        this.getEntityAttribute(Attributes.MOVEMENT_SPEED).setBaseValue(0.25);
-        this.getEntityAttribute(Attributes.FOLLOW_RANGE).setBaseValue(30.0D);
-        this.getEntityAttribute(Attributes.MAX_HEALTH).setBaseValue(30);
+        this.getAttribute(Attributes.MOVEMENT_SPEED).setBaseValue(0.25);
+        this.getAttribute(Attributes.FOLLOW_RANGE).setBaseValue(30.0D);
+        this.getAttribute(Attributes.MAX_HEALTH).setBaseValue(30);
     }
 
     @Override

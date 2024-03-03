@@ -1,80 +1,79 @@
 package com.barribob.mm.packets;
 
+import java.util.function.Supplier;
+
 import com.barribob.mm.items.IExtendedReach;
 
-import io.netty.buffer.ByteBuf;
-import net.minecraft.world.entity.Entity;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.InteractionHand;
-import net.minecraftforge.fml.common.network.ByteBufUtils;
-import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
-import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
-import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.item.Item;
+import net.minecraftforge.network.NetworkEvent;
 
 /**
  * Taken from Jabelar's extended reach tutorial
  */
-public class MessageExtendedReachAttack implements IMessage {
+public class MessageExtendedReachAttack {
     private int entityId;
 
-    public MessageExtendedReachAttack() {
+    public MessageExtendedReachAttack(FriendlyByteBuf buf) {
+    	this.fromBytes(buf);
     }
 
     public MessageExtendedReachAttack(int entityId) {
         this.entityId = entityId;
     }
 
-    @Override
-    public void fromBytes(ByteBuf buf) {
-        entityId = ByteBufUtils.readVarInt(buf, 4);
+    public void fromBytes(FriendlyByteBuf buf) {
+        entityId = buf.readVarInt();
     }
 
-    @Override
-    public void toBytes(ByteBuf buf) {
-        ByteBufUtils.writeVarInt(buf, entityId, 4);
+    public void toBytes(FriendlyByteBuf buf) {
+        buf.writeVarInt(entityId);
     }
 
-    public static class Handler implements IMessageHandler<MessageExtendedReachAttack, IMessage> {
+    public static class Handler {
         // Double checks from the server that the sword reach is valid (to prevent
         // hacking)
-        @Override
-        public IMessage onMessage(MessageExtendedReachAttack message, MessageContext ctx) {
-            final ServerPlayer player = ctx.getServerHandler().player;
+        public static boolean onMessage(MessageExtendedReachAttack message, Supplier<NetworkEvent.Context> ctx) {
+            final ServerPlayer player = ctx.get().getSender();
 
-            player.getServer().addScheduledTask(new Runnable() {
+            player.getServer().addTickable(new Runnable() {
                 @Override
                 public void run() {
-                    Entity entity = player.world.getEntityByID(message.entityId);
+                    Entity entity = player.level.getEntity(message.entityId);
 
-                    if (player.getHeldItemMainhand() == null) {
+                    if (player.getMainHandItem() == null) {
                         return;
                     }
 
                     if (entity == null) // Miss
                     {
                         // On a miss, reset cooldown anyways
-                        player.resetCooldown();
+                        player.resetAttackStrengthTicker();
                         net.minecraftforge.common.ForgeHooks.onEmptyLeftClick(player);
                     } else // Hit
                     {
-                        Item sword = player.getHeldItemMainhand().getItem();
+                        Item sword = player.getMainHandItem().getItem();
 
                         if (sword instanceof IExtendedReach) {
                             // Factor in the size of the entity's bounding box to handle issues with large
                             // mobs
-                            if (entity.getDistance(player) < ((IExtendedReach) sword).getReach() + (entity.getBoundingBox().getAverageEdgeLength() * 0.5f)) {
-                                player.attackTargetEntityWithCurrentItem(entity);
+                            if (entity.distanceTo(player) < ((IExtendedReach) sword).getReach() + (entity.getBoundingBox().getSize() * 0.5f)) {
+                                player.attack(entity);
                             }
                         }
                     }
 
-                    player.swingArm(InteractionHand.MAIN_HAND);
+                    player.swing(InteractionHand.MAIN_HAND);
                 }
             });
+            
+            ctx.get().setPacketHandled(true);
 
             // No response message
-            return null;
+            return true;
         }
 
     }

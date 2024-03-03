@@ -18,19 +18,19 @@ public class AnimationAzureGolem extends ArrayAnimation<ModelAzureGolem> {
 
         if (armsRotationX == 0) {
             // Normal walking animation
-            model.rightBicep.rotateAngleX = (-0.2F + model.limbSwingFactor * this.triangleWave(limbSwing, 13.0F)) * limbSwingAmount;
-            model.leftBicep.rotateAngleX = (-0.2F - model.limbSwingFactor * this.triangleWave(limbSwing, 13.0F)) * limbSwingAmount;
+            model.rightBicep.xRot = (-0.2F + model.limbSwingFactor * this.triangleWave(limbSwing, 13.0F)) * limbSwingAmount;
+            model.leftBicep.xRot = (-0.2F - model.limbSwingFactor * this.triangleWave(limbSwing, 13.0F)) * limbSwingAmount;
         } else {
-            model.rightBicep.rotateAngleX = armsRotationX;
-            model.leftBicep.rotateAngleX = armsRotationX;
+            model.rightBicep.xRot = armsRotationX;
+            model.leftBicep.xRot = armsRotationX;
         }
 
         if (waistRotationX == 0) {
-            model.waist.rotateAngleX = 0;
+            model.waist.xRot = 0;
         } else {
-            model.waist.rotateAngleX = waistRotationX;
+            model.waist.xRot = waistRotationX;
         }
-        model.waist.rotateAngleZ = 0;
+        model.waist.zRot = 0;
     }
 
     private float triangleWave(float p_78172_1_, float p_78172_2_) {

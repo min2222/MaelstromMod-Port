@@ -3,8 +3,9 @@
  */
 package com.typesafe.config.impl;
 
-import com.typesafe.config.parser.ConfigNode;
 import java.util.Collection;
+
+import com.typesafe.config.parser.ConfigNode;
 
 abstract class AbstractConfigNode implements ConfigNode {
     abstract Collection<Token> tokens();

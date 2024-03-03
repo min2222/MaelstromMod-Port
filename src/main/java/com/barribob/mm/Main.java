@@ -13,6 +13,7 @@ import com.barribob.mm.init.ModBlocks;
 import com.barribob.mm.init.ModDimensions;
 import com.barribob.mm.init.ModEnchantments;
 import com.barribob.mm.init.ModEntities;
+import com.barribob.mm.init.ModItems;
 import com.barribob.mm.init.ModPotions;
 import com.barribob.mm.init.ModProfessions;
 import com.barribob.mm.init.ModRecipes;
@@ -81,6 +82,7 @@ public class Main {
     	ModEnchantments.ENCHANTMENTS.register(bus);
     	ModPotions.MOB_EFFECTS.register(bus);
     	ModEntities.ENTITY_TYPES.register(bus);
+    	ModItems.ITEMS.register(bus);
     	bus.addListener(this::setup);
 	}
 
@@ -94,8 +96,6 @@ public class Main {
 
         GameRegistry.registerWorldGenerator(new WorldGenOre(), 2);
         GameRegistry.registerWorldGenerator(new WorldGenCustomStructures(), 3);
-
-        ModEntities.registerEntities();
 
         ModBBAnimations.registerAnimations();
         ModDimensions.registerDimensions();

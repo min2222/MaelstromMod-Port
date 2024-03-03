@@ -37,7 +37,7 @@ public class FireballThrowAction<T extends EntityLeveledMob & IPitch> implements
         // Hold the fireball in place
         for (int i = 10; i < 27; i++) {
             entity.addEvent(() -> {
-                Vec3 fireballPos = entity.getEyePosition(1).add(ModUtils.getAxisOffset(ModUtils.getLookVec(entity.getPitch(), entity.renderYawOffset), new Vec3(1, 0, 0)));
+                Vec3 fireballPos = entity.getEyePosition(1).add(ModUtils.getAxisOffset(ModUtils.getLookVec(entity.getPitch(), entity.yBodyRot), new Vec3(1, 0, 0)));
                 ModUtils.setEntityPosition(proj, fireballPos);
             }, i);
         }

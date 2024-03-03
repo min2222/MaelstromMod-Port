@@ -5,6 +5,7 @@ import java.util.NavigableMap;
 import java.util.Random;
 import java.util.TreeMap;
 
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.phys.Vec3;
 
 public class ModRandom {
@@ -75,11 +76,11 @@ public class ModRandom {
         return array[i];
     }
 
-    public static <T> RandomCollection<T> choice(List<T> items, Random rand, double[] weights) {
+    public static <T> RandomCollection<T> choice(List<T> items, RandomSource rand, double[] weights) {
         return (RandomCollection<T>) choice(items.toArray(), rand, weights);
     }
 
-    public static <T> RandomCollection<T> choice(T[] array, Random rand, double[] weights) {
+    public static <T> RandomCollection<T> choice(T[] array, RandomSource rand, double[] weights) {
         if (array.length != weights.length) {
             throw new IllegalArgumentException("Lengths of items and weights arrays inequal");
         }
@@ -92,7 +93,7 @@ public class ModRandom {
         return weightedRandom;
     }
 
-    public static <T> RandomCollection<T> choice(T[] array, Random rand, int[] weights) {
+    public static <T> RandomCollection<T> choice(T[] array, RandomSource rand, int[] weights) {
         double[] converted = new double[weights.length];
         for (int i = 0; i < weights.length; i++) {
             converted[i] = weights[i];
@@ -106,14 +107,14 @@ public class ModRandom {
      */
     public static class RandomCollection<E> {
         private final NavigableMap<Double, E> map = new TreeMap<Double, E>();
-        private final Random random;
+        private final RandomSource random;
         private double total = 0;
 
         public RandomCollection() {
-            this(new Random());
+            this(RandomSource.create());
         }
 
-        public RandomCollection(Random random) {
+        public RandomCollection(RandomSource random) {
             this.random = random;
         }
 

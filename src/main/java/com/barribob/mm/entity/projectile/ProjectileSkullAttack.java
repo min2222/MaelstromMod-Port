@@ -42,10 +42,10 @@ public class ProjectileSkullAttack extends ModProjectile {
     protected void spawnParticles() {
         float f1 = 1.25f;
         float f2 = 0.15f;
-        for (int i = 0; i < this.PARTICLE_AMOUNT; i++) {
-            ParticleManager.spawnMaelstromSmoke(world, rand,
-                    new Vec3(this.posX + ModRandom.getFloat(f1), this.posY + ModRandom.getFloat(f1), this.posZ + ModRandom.getFloat(f1)), true);
-            world.spawnParticle(ParticleTypes.FLAME, this.posX + ModRandom.getFloat(f2), this.posY + ModRandom.getFloat(f2), this.posZ + ModRandom.getFloat(f2), 0, 0, 0);
+        for (int i = 0; i < ProjectileSkullAttack.PARTICLE_AMOUNT; i++) {
+            ParticleManager.spawnMaelstromSmoke(level, random,
+                    new Vec3(this.getX() + ModRandom.getFloat(f1), this.getY() + ModRandom.getFloat(f1), this.getZ() + ModRandom.getFloat(f1)), true);
+            level.addParticle(ParticleTypes.FLAME, this.getX() + ModRandom.getFloat(f2), this.getY() + ModRandom.getFloat(f2), this.getZ() + ModRandom.getFloat(f2), 0, 0, 0);
         }
     }
 
@@ -54,15 +54,15 @@ public class ProjectileSkullAttack extends ModProjectile {
         /*
          * Find all entities in a certain area and deal damage to them
          */
-        List list = world.getEntitiesWithinAABBExcludingEntity(this, this.getBoundingBox().grow(AREA_FACTOR));
+        List list = level.getEntities(this, this.getBoundingBox().inflate(AREA_FACTOR));
         if (list != null) {
             for (Object entity : list) {
                 if (entity instanceof LivingEntity && this.shootingEntity != null && entity != this.shootingEntity && EntityMaelstromMob.CAN_TARGET.apply(((LivingEntity) entity))) {
                     int burnTime = 5;
-                    ((LivingEntity) entity).setFire(burnTime);
+                    ((LivingEntity) entity).setSecondsOnFire(burnTime);
 
-                    ((LivingEntity) entity).attackEntityFrom(ModDamageSource.causeElementalThrownDamage(this, shootingEntity, getElement()), this.getDamage());
-                    ((LivingEntity) entity).addVelocity(0, 0.1D, 0);
+                    ((LivingEntity) entity).hurt(ModDamageSource.causeElementalThrownDamage(this, shootingEntity, getElement()), this.getDamage());
+                    ((LivingEntity) entity).push(0, 0.1D, 0);
                 }
             }
         }

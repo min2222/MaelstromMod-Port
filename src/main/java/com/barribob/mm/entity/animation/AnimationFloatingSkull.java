@@ -14,6 +14,6 @@ public class AnimationFloatingSkull extends ArrayAnimation<ModelFloatingSkull> {
 
     @Override
     public void setModelRotations(ModelFloatingSkull model, float limbSwing, float limbSwingAmount, float partialTicks) {
-        model.jaw.rotateAngleX = (float) Math.toRadians(this.getInterpolatedFrame(jawAnimation, partialTicks));
+        model.jaw.xRot = (float) Math.toRadians(this.getInterpolatedFrame(jawAnimation, partialTicks));
     }
 }

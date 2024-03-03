@@ -94,8 +94,8 @@ public class EntityMaelstromWitch extends EntityMaelstromMob {
     }
 
     @Override
-    public void setSwingingArms(boolean swingingArms) {
-        super.setSwingingArms(swingingArms);
+    public void setAggressive(boolean swingingArms) {
+        super.setAggressive(swingingArms);
         if (swingingArms) {
             Byte[] attack = {lingeringPotions, rapidPotions, throwWood};
             attackHandler.setCurrentAttack(ModRandom.choice(attack));

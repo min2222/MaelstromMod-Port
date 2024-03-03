@@ -1,25 +1,16 @@
 package com.barribob.mm.items;
 
-import com.barribob.mm.Main;
+import java.util.function.Supplier;
+
 import com.barribob.mm.init.ModCreativeTabs;
-import com.barribob.mm.init.ModItems;
-import com.barribob.mm.util.IHasModel;
 
-import net.minecraft.item.ItemRecord;
-import net.minecraft.util.SoundEvent;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.RecordItem;
 
-public class ItemModRecord extends ItemRecord implements IHasModel {
-    public ItemModRecord(String name, SoundEvent event) {
-        super(name, event);
-        setUnlocalizedName(name);
-        setRegistryName(name);
-        setCreativeTab(ModCreativeTabs.ITEMS);
-
-        ModItems.ITEMS.add(this);
-    }
-
-    @Override
-    public void registerModels() {
-        Main.proxy.registerItemRenderer(this, 0, "inventory");
+public class ItemModRecord extends RecordItem {
+	//TODO
+    public ItemModRecord(String name, Supplier<SoundEvent> event) {
+        super(0, event, new Item.Properties().tab(ModCreativeTabs.ITEMS), 0);
     }
 }

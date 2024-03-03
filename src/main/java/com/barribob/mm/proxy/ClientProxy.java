@@ -1,15 +1,9 @@
 package com.barribob.mm.proxy;
 
-import net.minecraft.world.level.block.Block;
-
 import com.barribob.mm.blocks.BlockLeavesBase;
 import com.barribob.mm.util.handlers.RenderHandler;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.block.model.ModelResourceLocation;
-import net.minecraft.client.renderer.block.statemap.IStateMapper;
-import net.minecraft.world.item.Item;
-import net.minecraftforge.client.model.ModelLoader;
 
 public class ClientProxy extends CommonProxy {
     @Override
@@ -22,8 +16,8 @@ public class ClientProxy extends CommonProxy {
      */
     @Override
     public void init() {
-        if (!Minecraft.getInstance().getFramebuffer().isStencilEnabled()) {
-            Minecraft.getInstance().getFramebuffer().enableStencil();
+        if (!Minecraft.getInstance().getMainRenderTarget().isStencilEnabled()) {
+            Minecraft.getInstance().getMainRenderTarget().enableStencil();
         }
 
         RenderHandler.registerEntityRenderers();

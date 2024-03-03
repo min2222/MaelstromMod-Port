@@ -37,15 +37,15 @@ public class ProjectileHerobrineQuake extends ProjectileQuake {
      */
     @Override
     protected void spawnParticles() {
-        BlockState block = world.getBlockState(new BlockPos(this.posX, this.posY, this.posZ));
+        BlockState block = level.getBlockState(this.blockPosition());
         if (block.isFullCube()) {
             Vec3 color = new Vec3(0.5, 0.3, 0.5);
             Vec3 vel = new Vec3(0, 0.1, 0);
-            for (int i = 0; i < this.PARTICLE_AMOUNT; i++) {
+            for (int i = 0; i < ProjectileHerobrineQuake.PARTICLE_AMOUNT; i++) {
                 float height = 2 + ModRandom.getFloat(0.5f);
                 for (float y = 0; y < height; y += 0.2f) {
-                    Vec3 pos = ModUtils.entityPos(this).add(new Vec3(this.motionX * ModRandom.getFloat(0.5f), y, this.motionZ * ModRandom.getFloat(0.5f)));
-                    ParticleManager.spawnSwirl(world, pos, ModColors.AZURE, Vec3.ZERO, ModRandom.range(10, 15));
+                    Vec3 pos = ModUtils.entityPos(this).add(new Vec3(this.getDeltaMovement().x * ModRandom.getFloat(0.5f), y, this.getDeltaMovement().z * ModRandom.getFloat(0.5f)));
+                    ParticleManager.spawnSwirl(level, pos, ModColors.AZURE, Vec3.ZERO, ModRandom.range(10, 15));
                 }
             }
         }

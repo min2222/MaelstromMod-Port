@@ -31,7 +31,7 @@ public class ProjectileCrimsonWanderer extends ModProjectile {
     @Override
     public void tick() {
         Vec3 prevVel = ModUtils.getEntityVelocity(this);
-        super.onUpdate();
+        super.tick();
         ModUtils.setEntityVelocity(this, prevVel);
 
         if(!level.isClientSide) {
@@ -40,13 +40,13 @@ public class ProjectileCrimsonWanderer extends ModProjectile {
 
         if(!this.level.isClientSide && this.tickCount > AGE) {
              onImpact();
-            this.setDead();
+            this.discard();
         }
     }
 
     private void onImpact() {
         if(shootingEntity != null && shootingEntity instanceof EntityLeveledMob) {
-            EntityCrimsonCrystal crystal = new EntityCrimsonCrystal(world, (EntityLeveledMob) shootingEntity);
+            EntityCrimsonCrystal crystal = new EntityCrimsonCrystal(level, (EntityLeveledMob) shootingEntity);
             ModUtils.setEntityPosition(crystal, position());
             level.addFreshEntity(crystal);
         }
@@ -65,7 +65,7 @@ public class ProjectileCrimsonWanderer extends ModProjectile {
         for (int i = 0; i < 4; i++) {
             float colorAge = ModUtils.clamp(Math.pow(tickCount / (float)AGE, 2), 0.1, 1);
 
-            ParticleManager.spawnSplit(world,
+            ParticleManager.spawnSplit(level,
                     position().add(ModRandom.randVec().scale(0.25)),
                     new Vec3(1, colorAge, colorAge), Vec3.ZERO);
         }

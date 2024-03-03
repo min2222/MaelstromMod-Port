@@ -1,27 +1,28 @@
 package com.barribob.mm.entity.entities;
 
-import net.minecraft.entity.IMerchant;
-import net.minecraft.world.entity.ExperienceOrb;
-import net.minecraft.entity.passive.EntityVillager;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.pathfinding.PathNavigate;
-import net.minecraft.pathfinding.PathNavigateGround;
-import net.minecraft.scoreboard.ScorePlayerTeam;
-import net.minecraft.scoreboard.Team;
-import net.minecraft.stats.StatList;
-import net.minecraft.world.InteractionHand;
+import java.util.List;
+
+import javax.annotation.Nullable;
+
 import net.minecraft.core.BlockPos;
+import net.minecraft.entity.IMerchant;
+import net.minecraft.entity.passive.EntityVillager;
+import net.minecraft.scoreboard.ScorePlayerTeam;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.stats.StatList;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.village.MerchantRecipe;
 import net.minecraft.village.MerchantRecipeList;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.ExperienceOrb;
+import net.minecraft.world.entity.ai.navigation.GroundPathNavigation;
+import net.minecraft.world.entity.ai.navigation.PathNavigation;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-
-import javax.annotation.Nullable;
-import java.util.List;
+import net.minecraft.world.scores.Team;
 
 /**
  * For Mod entities whose main job is to be a trader of some sort
@@ -38,8 +39,8 @@ public abstract class EntityTrader extends EntityLeveledMob implements IMerchant
     }
 
     @Override
-    protected PathNavigate createNavigator(Level worldIn) {
-        return new PathNavigateGround(this, worldIn);
+    protected PathNavigation createNavigation(Level worldIn) {
+        return new GroundPathNavigation(this, worldIn);
     }
 
     /**

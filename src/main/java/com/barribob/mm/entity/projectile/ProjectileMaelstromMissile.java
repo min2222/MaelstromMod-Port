@@ -1,16 +1,15 @@
 package com.barribob.mm.entity.projectile;
 
-import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.LivingEntity;
-
 import com.barribob.mm.entity.entities.EntityMaelstromMob;
 import com.barribob.mm.util.ModDamageSource;
 import com.barribob.mm.util.ModRandom;
 import com.barribob.mm.util.handlers.ParticleManager;
 
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.EntityHitResult;
 
 public class ProjectileMaelstromMissile extends ModProjectile {
     public ProjectileMaelstromMissile(Level worldIn, LivingEntity throwerIn, float damage) {
@@ -28,12 +27,12 @@ public class ProjectileMaelstromMissile extends ModProjectile {
 
     @Override
     protected void spawnParticles() {
-        ParticleManager.spawnDarkFlames(world, this.rand, this.position());
+        ParticleManager.spawnDarkFlames(level, this.random, this.position());
     }
 
     @Override
-    protected void onHit(HitResult result) {
-        if (result.entityHit != null && !EntityMaelstromMob.isMaelstromMob(result.entityHit) && this.shootingEntity != null) {
+    protected void onHitEntity(EntityHitResult result) {
+        if (result.getEntity() != null && result.getEntity() instanceof LivingEntity living && !EntityMaelstromMob.isMaelstromMob(living) && this.shootingEntity != null) {
             DamageSource source = ModDamageSource.builder()
                     .type(ModDamageSource.MAGIC)
                     .indirectEntity(this)
@@ -41,9 +40,9 @@ public class ProjectileMaelstromMissile extends ModProjectile {
                     .element(getElement())
                     .stoppedByArmorNotShields().build();
 
-            result.entityHit.attackEntityFrom(source, this.getDamage());
+            result.getEntity().hurt(source, this.getDamage());
         }
-        this.playSound(SoundEvents.BLOCK_FIRE_EXTINGUISH, 1.0f + ModRandom.getFloat(0.2f), 1.0f + ModRandom.getFloat(0.2f));
+        this.playSound(SoundEvents.FIRE_EXTINGUISH, 1.0f + ModRandom.getFloat(0.2f), 1.0f + ModRandom.getFloat(0.2f));
         super.onHit(result);
     }
 }

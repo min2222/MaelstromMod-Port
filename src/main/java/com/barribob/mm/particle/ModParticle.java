@@ -1,34 +1,35 @@
 package com.barribob.mm.particle;
 
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.particle.Particle;
-import net.minecraft.client.renderer.BufferBuilder;
-import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.RenderHelper;
-import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.util.Mth;
-import net.minecraft.world.phys.Vec3;
-import net.minecraft.world.level.Level;
-
 import javax.annotation.Nonnull;
 
 import com.barribob.mm.util.ModUtils;
+import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.vertex.BufferBuilder;
 
-public class ModParticle extends Particle {
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.particle.ParticleRenderType;
+import net.minecraft.client.particle.TextureSheetParticle;
+import net.minecraft.client.renderer.RenderHelper;
+import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
+import net.minecraft.util.Mth;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.phys.Vec3;
+
+public class ModParticle extends TextureSheetParticle {
     public int minIndex;
     public int indexRange;
     public float animationSpeed;
     public boolean isLit;
 
-    public ModParticle(Level worldIn, Vec3 pos, Vec3 motion, float scale, int age, boolean isLit) {
+    public ModParticle(ClientLevel worldIn, Vec3 pos, Vec3 motion, float scale, int age, boolean isLit) {
         super(worldIn, pos.x, pos.y, pos.z, motion.x, motion.y, motion.z);
-        this.particleScale = scale;
-        this.particleMaxAge = age;
-        this.motionX = motion.x;
-        this.motionY = motion.y;
-        this.motionZ = motion.z;
+        this.quadSize = scale;
+        this.lifetime = age;
+        this.xd = motion.x;
+        this.yd = motion.y;
+        this.zd = motion.z;
         this.isLit = isLit;
     }
 
@@ -87,29 +88,23 @@ public class ModParticle extends Particle {
     }
 
     @Override
-    public int getFXLayer() {
+    public ParticleRenderType getRenderType() {
         return 3;
     }
 
     @Override
-    public void setParticleTextureIndex(int particleTextureIndex) {
-        this.particleTextureIndexX = particleTextureIndex % 16;
-        this.particleTextureIndexY = particleTextureIndex / 16;
-    }
-
-    @Override
     public void tick() {
-        this.setParticleTextureIndex(minIndex + (int) (this.indexRange * (((this.particleAge * this.animationSpeed) % this.particleMaxAge) / this.particleMaxAge)));
+        this.setParticleTextureIndex(minIndex + (int) (this.indexRange * (((this.age * this.animationSpeed) % this.lifetime) / this.lifetime)));
 
-        this.prevPosX = this.posX;
-        this.prevPosY = this.posY;
-        this.prevPosZ = this.posZ;
+        this.xo = this.x;
+        this.yo = this.y;
+        this.zo = this.z;
 
-        if (this.particleAge++ >= this.particleMaxAge) {
-            this.setExpired();
+        if (this.age++ >= this.lifetime) {
+            this.remove();
         }
 
-        this.move(this.motionX, this.motionY, this.motionZ);
+        this.move(this.xd, this.yd, this.zd);
     }
 
     public void setParticleTextureRange(int minIndex, int range, float speed) {
@@ -120,16 +115,16 @@ public class ModParticle extends Particle {
         this.minIndex = minIndex;
         this.indexRange = range;
         animationSpeed = speed;
-        this.setParticleTextureIndex(minIndex + (int) (this.indexRange * (((this.particleAge * this.animationSpeed) % this.particleMaxAge) / this.particleMaxAge)));
+        this.setParticleTextureIndex(minIndex + (int) (this.indexRange * (((this.age * this.animationSpeed) % this.lifetime) / this.lifetime)));
     }
 
     @Override
-    public int getBrightnessForRender(float p_189214_1_) {
+    public int getLightColor(float p_189214_1_) {
         // Light like the firework particle
         if (isLit) {
-            float f = (this.particleAge + p_189214_1_) / this.particleMaxAge;
+            float f = (this.age + p_189214_1_) / this.lifetime;
             f = Mth.clamp(f, 0.0F, 1.0F);
-            int i = super.getBrightnessForRender(p_189214_1_);
+            int i = super.getLightColor(p_189214_1_);
             int j = i & 255;
             int k = i >> 16 & 255;
             j = j + (int) (f * 15.0F * 16.0F);
@@ -140,6 +135,6 @@ public class ModParticle extends Particle {
 
             return j | k << 16;
         }
-        return super.getBrightnessForRender(p_189214_1_);
+        return super.getLightColor(p_189214_1_);
     }
 }

@@ -1,22 +1,10 @@
 package com.barribob.mm.entity.entities;
 
-import net.minecraft.server.level.ServerBossEvent;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.world.BossEvent;
-import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.pathfinding.PathNavigateFlying;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.SoundEvent;
-import net.minecraft.world.phys.AABB;
-import net.minecraft.core.BlockPos;
-import net.minecraft.world.phys.Vec3;
-import net.minecraft.world.level.Level;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import javax.annotation.Nonnull;
 
@@ -41,11 +29,28 @@ import com.barribob.mm.util.ModUtils;
 import com.barribob.mm.util.handlers.LootTableHandler;
 import com.barribob.mm.util.handlers.ParticleManager;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerBossEvent;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.BossEvent.BossBarColor;
+import net.minecraft.world.BossEvent.BossBarOverlay;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.ai.navigation.FlyingPathNavigation;
+import net.minecraft.world.level.ClipContext;
+import net.minecraft.world.level.ClipContext.Block;
+import net.minecraft.world.level.ClipContext.Fluid;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 
 public class EntityMaelstromStatueOfNirvana extends EntityMaelstromMob implements IAttack {
     private final ServerBossEvent bossInfo = (new ServerBossEvent(this.getDisplayName(), BossBarColor.PURPLE, BossBarOverlay.NOTCHED_20));
@@ -54,8 +59,8 @@ public class EntityMaelstromStatueOfNirvana extends EntityMaelstromMob implement
 
     public EntityMaelstromStatueOfNirvana(Level worldIn) {
         super(worldIn);
-        this.moveHelper = new FlyingMoveHelper(this);
-        this.navigator = new PathNavigateFlying(this, worldIn);
+        this.moveControl = new FlyingMoveHelper(this);
+        this.navigation = new FlyingPathNavigation(this, worldIn);
         this.setSize(1.6f, 3.6f);
         this.healthScaledAttackFactor = 0.2;
         if(!level.isClientSide) {
@@ -64,14 +69,14 @@ public class EntityMaelstromStatueOfNirvana extends EntityMaelstromMob implement
     }
 
     private void initNirvanaAI() {
-        float attackDistance = (float) this.getEntityAttribute(Attributes.FOLLOW_RANGE).getAttributeValue();
+        float attackDistance = (float) this.getAttribute(Attributes.FOLLOW_RANGE).getBaseValue();
         this.goalSelector.addGoal(4,
                 new AIAerialTimedAttack(this, attackDistance, 20, 30,
                         new TimedAttackInitiator<>(this, 80)));
     }
 
     protected AABB getTargetableArea(double targetDistance) {
-        return this.getBoundingBox().grow(targetDistance);
+        return this.getBoundingBox().inflate(targetDistance);
     }
 
     @Override
@@ -82,37 +87,37 @@ public class EntityMaelstromStatueOfNirvana extends EntityMaelstromMob implement
     @Override
     protected void registerGoals() {
         super.registerGoals();
-        ModUtils.removeTaskOfType(this.tasks, EntityAIWanderWithGroup.class);
+        ModUtils.removeTaskOfType(this.goalSelector, EntityAIWanderWithGroup.class);
     }
 
     @Override
     public void tick() {
-        super.onUpdate();
-        this.bossInfo.setPercent(getHealth() / getMaxHealth());
+        super.tick();
+        this.bossInfo.setProgress(getHealth() / getMaxHealth());
         if (!level.isClientSide) {
             level.broadcastEntityEvent(this, ModUtils.PARTICLE_BYTE);
         }
     }
 
     @Override
-    public boolean attackEntityFrom(DamageSource source, float amount) {
-        if (rand.nextInt(8) == 0 && amount > 1) {
+    public boolean hurt(DamageSource source, float amount) {
+        if (random.nextInt(8) == 0 && amount > 1) {
             doTeleportNext = true;
         }
 
-        return super.attackEntityFrom(source, amount);
+        return super.hurt(source, amount);
     }
 
     @Override
     public int startAttack(LivingEntity target, float distanceSq, boolean strafingBackwards) {
-        boolean canSee = world.rayTraceBlocks(target.getEyePosition(1), getEyePosition(1), false, true, false) == null;
+        boolean canSee = level.clip(new ClipContext(target.getEyePosition(1), getEyePosition(1), Block.COLLIDER, Fluid.NONE, target)) == null;
 
         List<Consumer<LivingEntity>> attacks = new ArrayList<>(Arrays.asList(
                 rayAttack, runeAttack, ringAttack, teleportAttack));
         int i = previousAttack == ringAttack ? 0 : 1;
         double[] weights = {1, 1, i, canSee ? 0 : 2};
 
-        previousAttack = ModRandom.choice(attacks, rand, weights).next();
+        previousAttack = ModRandom.choice(attacks, random, weights).next();
         if(doTeleportNext) {
             previousAttack = teleportAttack;
             doTeleportNext = false;
@@ -124,13 +129,13 @@ public class EntityMaelstromStatueOfNirvana extends EntityMaelstromMob implement
     }
 
     public Supplier<ModProjectile> maelstromFlame = () -> {
-        ProjectileHomingFlame projectile = new ProjectileHomingFlame(world, this, this.getAttack() * getConfigFloat("homing_projectile_damage"));
+        ProjectileHomingFlame projectile = new ProjectileHomingFlame(level, this, this.getAttack() * getConfigFloat("homing_projectile_damage"));
         projectile.setNoGravity(true);
         projectile.setTravelRange(40);
         return projectile;
     };
-    Supplier<ModProjectile> maelstromRune = () -> new ProjectileMaelstromRune(this.world, this, this.getAttack() * getConfigFloat("maelstrom_rune_damage"));
-    Supplier<ModProjectile> maelstromMissile = () -> new ProjectileStatueMaelstromMissile(this.world, this, this.getAttack() * getConfigFloat("maelstrom_missile_damage"));
+    Supplier<ModProjectile> maelstromRune = () -> new ProjectileMaelstromRune(this.level, this, this.getAttack() * getConfigFloat("maelstrom_rune_damage"));
+    Supplier<ModProjectile> maelstromMissile = () -> new ProjectileStatueMaelstromMissile(this.level, this, this.getAttack() * getConfigFloat("maelstrom_missile_damage"));
 
     private final Consumer<LivingEntity> teleportAttack = target -> new ActionAerialTeleport(ModColors.PURPLE).performAction(this, target);
 
@@ -152,18 +157,18 @@ public class EntityMaelstromStatueOfNirvana extends EntityMaelstromMob implement
     private final Consumer<LivingEntity> ringAttack = target -> {
         ModBBAnimations.animation(this, "statue.summon", false);
         addEvent(() -> new ActionRingAttack(maelstromFlame).performAction(this, target), 15);
-        playSound(SoundEvents.ILLAGER_PREPARE_MIRROR, 2.5f, 1.0f + ModRandom.getFloat(0.2f));
+        playSound(SoundEvents.ILLUSIONER_PREPARE_MIRROR, 2.5f, 1.0f + ModRandom.getFloat(0.2f));
     };
 
     @Override
     @OnlyIn(Dist.CLIENT)
     public void handleEntityEvent(byte id) {
         if (id == ModUtils.PARTICLE_BYTE) {
-            ParticleManager.spawnEffect(world, ModRandom.randVec().add(this.position()), ModColors.PURPLE);
+            ParticleManager.spawnEffect(level, ModRandom.randVec().add(this.position()), ModColors.PURPLE);
         } else if(id == ModUtils.SECOND_PARTICLE_BYTE) {
             ModUtils.performNTimes(3, i -> ModUtils.circleCallback(i * 0.5f + 1, 30, pos -> {
-                ParticleManager.spawnSwirl(world, position().add(pos), ModColors.PURPLE, Vec3.ZERO, ModRandom.range(10, 15));
-                ParticleManager.spawnSwirl(world,
+                ParticleManager.spawnSwirl(level, position().add(pos), ModColors.PURPLE, Vec3.ZERO, ModRandom.range(10, 15));
+                ParticleManager.spawnSwirl(level,
                         position().add(ModUtils.rotateVector2(pos, ModUtils.yVec(1), 90)),
                         ModColors.PURPLE, Vec3.ZERO, ModRandom.range(10, 15));
             }));
@@ -173,31 +178,31 @@ public class EntityMaelstromStatueOfNirvana extends EntityMaelstromMob implement
     }
 
     @Override
-    public void setCustomNameTag(@Nonnull String name) {
-        super.setCustomNameTag(name);
+    public void setCustomName(@Nonnull Component name) {
+        super.setCustomName(name);
         this.bossInfo.setName(this.getDisplayName());
     }
 
     @Override
-    public void addTrackingPlayer(@Nonnull ServerPlayer player) {
-        super.addTrackingPlayer(player);
+    public void startSeenByPlayer(@Nonnull ServerPlayer player) {
+        super.startSeenByPlayer(player);
         this.bossInfo.addPlayer(player);
     }
 
     @Override
-    public void removeTrackingPlayer(@Nonnull ServerPlayer player) {
-        super.removeTrackingPlayer(player);
+    public void stopSeenByPlayer(@Nonnull ServerPlayer player) {
+        super.stopSeenByPlayer(player);
         this.bossInfo.removePlayer(player);
     }
 
     @Override
     protected SoundEvent getHurtSound(DamageSource damageSourceIn) {
-        return SoundEvents.BLOCK_METAL_PLACE;
+        return SoundEvents.METAL_PLACE;
     }
 
     @Override
     protected SoundEvent getDeathSound() {
-        return SoundEvents.BLOCK_METAL_BREAK;
+        return SoundEvents.METAL_BREAK;
     }
 
     @Override
@@ -210,8 +215,8 @@ public class EntityMaelstromStatueOfNirvana extends EntityMaelstromMob implement
     }
 
     @Override
-    public void travel(float strafe, float vertical, float forward) {
-        ModUtils.aerialTravel(this, strafe, vertical, forward);
+    public void travel(Vec3 vec) {
+        ModUtils.aerialTravel(this, (float)vec.x, (float)vec.y, (float)vec.z);
     }
 
     @Override

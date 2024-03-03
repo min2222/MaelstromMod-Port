@@ -1,12 +1,10 @@
 package com.barribob.mm.event_handlers;
 
-import net.minecraftforge.common.config.Config.Type;
-
 import com.barribob.mm.util.Reference;
 
 import net.minecraftforge.common.config.ConfigManager;
-import net.minecraftforge.fml.client.event.ConfigChangedEvent.OnConfigChangedEvent;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.event.config.ModConfigEvent;
 
 /**
  * Event listener for syncing up the config file
@@ -14,7 +12,7 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
  */
 public class ConfigSync {
     @SubscribeEvent
-    public void onConfigChangedEvent(OnConfigChangedEvent event) {
+    public void onConfigChangedEvent(ModConfigEvent event) {
         if (event.getModID().equals(Reference.MOD_ID)) {
             ConfigManager.sync(Reference.MOD_ID, Type.INSTANCE);
         }

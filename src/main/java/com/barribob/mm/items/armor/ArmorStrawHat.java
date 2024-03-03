@@ -4,6 +4,7 @@ import com.barribob.mm.items.armor.model.ModelStrawHat;
 
 import net.minecraft.client.model.ModelBiped;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.item.ArmorMaterial;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 

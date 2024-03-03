@@ -35,8 +35,8 @@ import net.minecraft.block.BlockWall;
 import net.minecraft.client.renderer.entity.EnderDragonRenderer;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.core.BlockPos;
-import net.minecraft.entity.*;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -51,6 +51,7 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MoverType;
+import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.navigation.FlyingPathNavigation;
 import net.minecraft.world.entity.ai.sensing.Sensing;
@@ -65,7 +66,7 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraftforge.entity.PartEntity;
 
-public abstract class EntityAbstractMaelstromGauntlet extends EntityMaelstromMob implements IEntityMultiPart, DirectionalRender, ITarget, IPitch {
+public abstract class EntityAbstractMaelstromGauntlet extends EntityMaelstromMob implements DirectionalRender, ITarget, IPitch {
     // We keep track of the look ourselves because minecraft's look is clamped
     protected static final EntityDataAccessor<Float> LOOK = SynchedEntityData.defineId(EntityLeveledMob.class, EntityDataSerializers.FLOAT);
     private final ServerBossEvent bossInfo = (new ServerBossEvent(this.getDisplayName(), BossBarColor.RED, BossBarOverlay.NOTCHED_6));
@@ -110,7 +111,7 @@ public abstract class EntityAbstractMaelstromGauntlet extends EntityMaelstromMob
         this.navigation = new FlyingPathNavigation(this, worldIn);
         this.hitboxParts = new PartEntity[]{eye, behindEye, bottomPalm, upLeftPalm, upRightPalm, rightPalm, leftPalm, fingers, fist};
         this.setSize(2, 4);
-        this.noClip = true;
+        this.noPhysics = true;
         this.isImmuneToFire = true;
         this.healthScaledAttackFactor = 0.1;
         if(!level.isClientSide) {
@@ -173,7 +174,7 @@ public abstract class EntityAbstractMaelstromGauntlet extends EntityMaelstromMob
 
     @Override
     public void baseTick() {
-        if(movement != null) movement.onUpdate();
+        if(movement != null) movement.tick();
         super.baseTick();
     }
 
@@ -265,7 +266,7 @@ public abstract class EntityAbstractMaelstromGauntlet extends EntityMaelstromMob
         Vec3 center = this.position().add(ModUtils.yVec(1.3));
 
         Vec3 position = center.subtract(ModUtils.Y_AXIS
-                .scale(this.fingers.getBoundingBox().getAverageEdgeLength() * 0.5))
+                .scale(this.fingers.getBoundingBox().getSize() * 0.5))
                 .add(ModUtils.getAxisOffset(lookVec, offset));
         ModUtils.setEntityPosition(entity, position);
     }
@@ -320,7 +321,7 @@ public abstract class EntityAbstractMaelstromGauntlet extends EntityMaelstromMob
     public final void doRender(RenderManager renderManager, double x, double y, double z, float entityYaw, float partialTicks) {
         if (this.renderLazerPos != null) {
             // This sort of jenky way of binding the wrong texture to the original guardian beam creates quite a nice particle beam visual
-            renderManager.renderEngine.bindTexture(EnderDragonRenderer.ENDERCRYSTAL_BEAM_TEXTURES);
+            renderManager.renderEngine.bindTexture(EnderDragonRenderer.CRYSTAL_BEAM_LOCATION);
             // We must interpolate between positions to make the move smoothly
             Vec3 interpolatedPos = renderLazerPos.subtract(this.prevRenderLazerPos).scale(partialTicks).add(prevRenderLazerPos);
             RenderUtils.drawBeam(renderManager, this.getEyePosition(1), interpolatedPos, new Vec3(x, y, z), ModColors.RED, this, partialTicks);
@@ -329,7 +330,7 @@ public abstract class EntityAbstractMaelstromGauntlet extends EntityMaelstromMob
     }
 
     @Override
-    public final float getEyeHeight() {
+    public final float getEyeHeight(Pose pose) {
         return 1.6f;
     }
 
@@ -671,36 +672,36 @@ public abstract class EntityAbstractMaelstromGauntlet extends EntityMaelstromMob
     }
 
     @Override
-    public void setCustomNameTag(@Nonnull String name) {
-        super.setCustomNameTag(name);
+    public void setCustomName(@Nonnull Component name) {
+        super.setCustomName(name);
         this.bossInfo.setName(this.getDisplayName());
     }
 
     @Override
-    public void addTrackingPlayer(@Nonnull ServerPlayer player) {
-        super.addTrackingPlayer(player);
+    public void startSeenByPlayer(@Nonnull ServerPlayer player) {
+        super.startSeenByPlayer(player);
         this.bossInfo.addPlayer(player);
     }
 
     @Override
-    public void removeTrackingPlayer(@Nonnull ServerPlayer player) {
-        super.removeTrackingPlayer(player);
+    public void stopSeenByPlayer(@Nonnull ServerPlayer player) {
+        super.stopSeenByPlayer(player);
         this.bossInfo.removePlayer(player);
     }
 
     @Override
     protected SoundEvent getAmbientSound() {
-        return SoundsHandler.ENTITY_GAUNTLET_AMBIENT;
+        return SoundsHandler.ENTITY_GAUNTLET_AMBIENT.get();
     }
 
     @Override
     protected SoundEvent getDeathSound() {
-        return SoundsHandler.ENTITY_GAUNTLET_HURT;
+        return SoundsHandler.ENTITY_GAUNTLET_HURT.get();
     }
 
     @Override
     protected SoundEvent getHurtSound(DamageSource damageSourceIn) {
-        return SoundsHandler.ENTITY_GAUNTLET_HURT;
+        return SoundsHandler.ENTITY_GAUNTLET_HURT.get();
     }
 
     @Override

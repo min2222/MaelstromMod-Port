@@ -38,7 +38,7 @@ public class EntityCliffFly extends EntityLeveledFlyingMob {
     protected void registerGoals() {
         this.goalSelector.addGoal(5, new AIRandomFly(this));
         this.goalSelector.addGoal(7, new AILookAround(this));
-        this.goalSelector.addGoal(7, new AIFlyingRangedAttack(this, 40, 20, 30, 1.0f));
+        this.goalSelector.addGoal(7, new AIFlyingRangedAttack<>(this, 40, 20, 30, 1.0f));
         this.targetSelector.addTask(1, new EntityAIFindEntityNearestPlayer(this));
     }
 
@@ -65,17 +65,17 @@ public class EntityCliffFly extends EntityLeveledFlyingMob {
 
     @Override
     protected SoundEvent getAmbientSound() {
-        return SoundsHandler.ENTITY_BEAST_AMBIENT;
+        return SoundsHandler.ENTITY_BEAST_AMBIENT.get();
     }
 
     @Override
     protected SoundEvent getHurtSound(DamageSource damageSourceIn) {
-        return SoundsHandler.ENTITY_BEAST_HURT;
+        return SoundsHandler.ENTITY_BEAST_HURT.get();
     }
 
     @Override
     protected SoundEvent getDeathSound() {
-        return SoundsHandler.ENTITY_BEAST_HURT;
+        return SoundsHandler.ENTITY_BEAST_HURT.get();
     }
 
     @Override
@@ -98,24 +98,24 @@ public class EntityCliffFly extends EntityLeveledFlyingMob {
         List<List<AnimationClip<ModelCliffFly>>> animationWings = new ArrayList<List<AnimationClip<ModelCliffFly>>>();
         List<AnimationClip<ModelCliffFly>> wings = new ArrayList<AnimationClip<ModelCliffFly>>();
         BiConsumer<ModelCliffFly, Float> wingsY = (model, f) -> {
-            model.leftFrontWing.rotateAngleY = -f;
-            model.leftFrontWing1.rotateAngleY = -f;
-            model.rightFrontWing.rotateAngleY = f;
-            model.rightFrontWing2.rotateAngleY = f;
+            model.leftFrontWing.yRot = -f;
+            model.leftFrontWing1.yRot = -f;
+            model.rightFrontWing.yRot = f;
+            model.rightFrontWing2.yRot = f;
 
-            model.rightBackWing.rotateAngleY = -f;
-            model.rightBackWing2.rotateAngleY = -f;
-            model.leftBackWing.rotateAngleY = f;
-            model.leftBackWing2.rotateAngleY = f;
+            model.rightBackWing.yRot = -f;
+            model.rightBackWing2.yRot = -f;
+            model.leftBackWing.yRot = f;
+            model.leftBackWing2.yRot = f;
         };
 
-        wings.add(new AnimationClip(2, 0, 30, wingsY));
-        wings.add(new AnimationClip(4, 30, -30, wingsY));
-        wings.add(new AnimationClip(2, -30, 0, wingsY));
+        wings.add(new AnimationClip<>(2, 0, 30, wingsY));
+        wings.add(new AnimationClip<>(4, 30, -30, wingsY));
+        wings.add(new AnimationClip<>(2, -30, 0, wingsY));
 
         animationWings.add(wings);
 
-        currentAnimation = new StreamAnimation(animationWings).loop(true);
+        currentAnimation = new StreamAnimation<>(animationWings).loop(true);
         this.currentAnimation.startAnimation();
     }
 }

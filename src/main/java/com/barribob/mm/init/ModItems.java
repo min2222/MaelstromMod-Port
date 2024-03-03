@@ -54,39 +54,46 @@ import com.barribob.mm.util.Reference;
 import com.barribob.mm.util.handlers.LevelHandler;
 
 import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ArmorMaterial;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Item.ToolMaterial;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Tier;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.common.util.EnumHelper;
+import net.minecraftforge.registries.DeferredRegister;
+import net.minecraftforge.registries.ForgeRegistries;
 
 /**
  * Holds all of our new items
  */
 public class ModItems {
+	public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, Reference.MOD_ID);
+	
     public static final float BASE_MELEE_DAMAGE = 6;
 
-    private static final ToolMaterial DAGGER = EnumHelper.addToolMaterial("rare_dagger", 2, 600, 8.0f, BASE_MELEE_DAMAGE, 20);
-    private static final ToolMaterial SWORD = EnumHelper.addToolMaterial("rare_sword", 2, 500, 8.0f, BASE_MELEE_DAMAGE, 20);
-    private static final ToolMaterial BATTLEAXE = EnumHelper.addToolMaterial("rare_battleaxe", 2, 400, 8.0f, BASE_MELEE_DAMAGE, 20);
+    private static final Tier DAGGER = EnumHelper.addToolMaterial("rare_dagger", 2, 600, 8.0f, BASE_MELEE_DAMAGE, 20);
+    private static final Tier SWORD = EnumHelper.addToolMaterial("rare_sword", 2, 500, 8.0f, BASE_MELEE_DAMAGE, 20);
+    private static final Tier BATTLEAXE = EnumHelper.addToolMaterial("rare_battleaxe", 2, 400, 8.0f, BASE_MELEE_DAMAGE, 20);
     public static final int GUN_USE_TIME = 12000;
     public static final int STAFF_USE_TIME = 9000;
-    private static final ArmorMaterial ARMOR = EnumHelper.addArmorMaterial("maelstrom", Reference.MOD_ID + ":maelstrom", 32, new int[]{3, 6, 8, 3}, 16, SoundEvents.ITEM_ARMOR_EQUIP_GOLD, 0);
-    private static final ToolMaterial ENERGETIC_PICKAXE = EnumHelper.addToolMaterial("energetic_pickaxe", 5, 8000, 100, 6, 15);
+    private static final ArmorMaterial ARMOR = EnumHelper.addArmorMaterial("maelstrom", Reference.MOD_ID + ":maelstrom", 32, new int[]{3, 6, 8, 3}, 16, SoundEvents.ARMOR_EQUIP_GOLD, 0);
+    private static final Tier ENERGETIC_PICKAXE = EnumHelper.addToolMaterial("energetic_pickaxe", 5, 8000, 100, 6, 15);
 
     public static final Item INVISIBLE = new ItemBase("invisible", null);
 
-    static Consumer<List<String>> kanshouBakuya = (tooltip) -> {
+    static Consumer<List<Component>> kanshouBakuya = (tooltip) -> {
         if(Main.itemsConfig.getBoolean("full_set_bonuses.kanshou_bakuya")) {
-            tooltip.add(ChatFormatting.GRAY + ModUtils.translateDesc("kanshou_bakuya"));
+            tooltip.add(ModUtils.translateDesc("kanshou_bakuya").withStyle(ChatFormatting.GRAY));
         }
     };
 
@@ -131,7 +138,7 @@ public class ModItems {
     public static final Item MUSKET = new ItemMusket("musket", LevelHandler.AZURE_OVERWORLD);
     public static final Item REPEATER = new ItemRepeater("repeater", LevelHandler.AZURE_OVERWORLD);
     public static final Item RIFLE = new ItemRifle("rifle", LevelHandler.AZURE_OVERWORLD).setInformation((tooltip) -> {
-        tooltip.add(ChatFormatting.GRAY + ModUtils.translateDesc("rifle"));
+        tooltip.add(ModUtils.translateDesc("rifle").withStyle(ChatFormatting.GRAY));
     });
     public static final Item ELK_BLASTER = new ItemPiercer("elk_blaster", LevelHandler.AZURE_ENDGAME).setElement(Element.AZURE);
     public static final Item PUMPKIN = new ItemPumpkin("pumpkin", 80, null, LevelHandler.AZURE_ENDGAME);
@@ -158,13 +165,13 @@ public class ModItems {
     public static final Item FIREBALL_STAFF = new ItemFireballStaff("fireball_staff", STAFF_USE_TIME, LevelHandler.AZURE_ENDGAME, ModCreativeTabs.ITEMS);
     public static final Item CROSS_OF_AQUA = (new ItemBase("cross_of_aqua", ModCreativeTabs.ITEMS) {
         @Override
-        public void addInformation(ItemStack stack, Level worldIn, List<String> tooltip, TooltipFlag flagIn) {
+        public void appendHoverText(ItemStack stack, Level worldIn, List<Component> tooltip, TooltipFlag flagIn) {
             tooltip.add(ChatFormatting.BLUE + "When held, allows the player to walk on water");
             tooltip.add(ChatFormatting.GRAY + "Mana cost: " + ChatFormatting.DARK_PURPLE + "0.5" + ChatFormatting.GRAY + " per second");
         }
 
         ;
-    }).setMaxStackSize(1);
+    }).stackTo(1);
     public static final Item BROWNSTONE_CANNON = new ItemMaelstromCannon("brownstone_cannon", STAFF_USE_TIME, LevelHandler.CLIFF_OVERWORLD, ModCreativeTabs.ITEMS).setFactory(new BrownstoneCannon());
     public static final Item METEOR_STAFF = new ItemMeteorStaff("meteor_staff", STAFF_USE_TIME, LevelHandler.CLIFF_OVERWORLD, ModCreativeTabs.ITEMS);
     public static final Item GOLDEN_QUAKE_STAFF = new ItemQuakeStaff("golden_quake_staff", STAFF_USE_TIME, LevelHandler.CLIFF_OVERWORLD, ModCreativeTabs.ITEMS).setElement(Element.GOLDEN);

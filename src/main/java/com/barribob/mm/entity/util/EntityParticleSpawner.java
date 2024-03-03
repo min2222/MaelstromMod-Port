@@ -3,10 +3,13 @@ package com.barribob.mm.entity.util;
 import com.barribob.mm.util.ModUtils;
 
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.protocol.Packet;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.network.NetworkHooks;
 
 /**
  * A class that exists to spawn particles. It is to circumvent the less flexible
@@ -15,15 +18,15 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 public abstract class EntityParticleSpawner extends Entity {
     private boolean spawnedParticles = false;
 
-    public EntityParticleSpawner(Level worldIn) {
-        super(worldIn);
+    public EntityParticleSpawner(EntityType<? extends EntityParticleSpawner> type, Level worldIn) {
+        super(type, worldIn);
     }
 
     @Override
     public void tick() {
-        super.onUpdate();
+        super.tick();
         level.broadcastEntityEvent(this, ModUtils.PARTICLE_BYTE);
-        this.setDead();
+        this.discard();
     }
 
     @Override
@@ -39,7 +42,7 @@ public abstract class EntityParticleSpawner extends Entity {
     protected abstract void spawnParticles();
 
     @Override
-    protected void entityInit() {
+    protected void defineSynchedData() {
     }
 
     @Override
@@ -47,6 +50,12 @@ public abstract class EntityParticleSpawner extends Entity {
     }
 
     @Override
-    protected void writeEntityToNBT(CompoundTag compound) {
+    protected void addAdditionalSaveData(CompoundTag pCompound) {
+
+    }
+    
+    @Override
+    public Packet<?> getAddEntityPacket() {
+    	return NetworkHooks.getEntitySpawningPacket(this);
     }
 }

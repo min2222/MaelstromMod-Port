@@ -132,8 +132,8 @@ public class Herobrine extends EntityLeveledMob {
     }
 
     @Override
-    public void writeEntityToNBT(CompoundTag compound) {
+    public void addAdditionalSaveData(CompoundTag compound) {
         compound.putString(nbtState, state.getNbtString());
-        super.writeEntityToNBT(compound);
+        super.addAdditionalSaveData(compound);
     }
 }

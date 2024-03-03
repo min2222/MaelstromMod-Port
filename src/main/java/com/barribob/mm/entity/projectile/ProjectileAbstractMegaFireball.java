@@ -4,8 +4,10 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.entity.MultiPartEntityPart;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.entity.PartEntity;
 import net.minecraft.world.level.Level;
 
 import javax.annotation.Nonnull;
@@ -37,14 +39,14 @@ public abstract class ProjectileAbstractMegaFireball extends ProjectileGun {
     }
 
     @Override
-    protected final void onHit(HitResult result) {
-        boolean isShootingEntity = result != null && result.entityHit != null && result.entityHit == this.shootingEntity;
-        boolean isPartOfShootingEntity = result != null && result.entityHit != null && (result.entityHit instanceof MultiPartEntityPart && ((MultiPartEntityPart) result.entityHit).parent == this.shootingEntity);
+    protected final void onHitEntity(EntityHitResult result) {
+        boolean isShootingEntity = result != null && result.getEntity() != null && result.getEntity() == this.shootingEntity;
+        boolean isPartOfShootingEntity = result != null && result.getEntity() != null && (result.getEntity() instanceof PartEntity && ((PartEntity) result.getEntity()).getParent() == this.shootingEntity);
         if (isShootingEntity || isPartOfShootingEntity || !canExplode()) {
             return;
         }
 
-        super.onHit(result);
+        super.onHitEntity(result);
     }
 
     protected abstract void onImpact(@Nullable HitResult result);
@@ -53,25 +55,25 @@ public abstract class ProjectileAbstractMegaFireball extends ProjectileGun {
     public void tick() {
 
         Vec3 vel = ModUtils.getEntityVelocity(this);
-        super.onUpdate();
+        super.tick();
         // Maintain the velocity the entity has
         ModUtils.setEntityVelocity(this, vel);
     }
 
     @Override
-    public void setDead() {
+    public void remove(RemovalReason reason) {
         if (canExplode()) {
             isExploded = true;
             onImpact(null);
         }
-        super.setDead();
+        super.remove(reason);
     }
 
     @Override
-    public final boolean attackEntityFrom(@Nonnull DamageSource source, float amount) {
+    public final boolean hurt(@Nonnull DamageSource source, float amount) {
         if(canBeHit && canExplode()) {
-            this.setDead();
-            return super.attackEntityFrom(source, amount);
+            this.discard();
+            return super.hurt(source, amount);
         }
         return false;
     }

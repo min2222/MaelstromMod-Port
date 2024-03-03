@@ -150,9 +150,9 @@ public class ModelFloatingSkull extends ModelAnimated {
         super.setRotationAngles(limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch, scaleFactor, entityIn);
 
         // The up and down bobbing motion of the skull
-        this.headBase.offsetY = (float) Math.cos(Math.toRadians(ageInTicks * 10)) * 0.2f;
+        this.headBase.y = (float) Math.cos(Math.toRadians(ageInTicks * 10)) * 0.2f;
 
-        this.headBase.rotateAngleY = netHeadYaw * 0.017453292F;
-        this.headBase.rotateAngleX = headPitch * 0.017453292F;
+        this.headBase.yRot = netHeadYaw * 0.017453292F;
+        this.headBase.xRot = headPitch * 0.017453292F;
     }
 }

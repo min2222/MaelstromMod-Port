@@ -17,13 +17,16 @@ import com.google.common.collect.Multimap;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.model.ModelBiped;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.ArmorItem;
-import net.minecraft.world.item.ArmorMaterials;
+import net.minecraft.world.item.ArmorMaterial;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
@@ -52,7 +55,7 @@ public class ModArmorBase extends ArmorItem implements ILeveledItem, IElement {
     private Element element = Element.NONE;
     private String armorBonusDesc = "";
 
-    public ModArmorBase(String name, ArmorMaterials materialIn, int renderIndex, EquipmentSlot equipmentSlotIn, float level, String textureName) {
+    public ModArmorBase(String name, ArmorMaterial materialIn, int renderIndex, EquipmentSlot equipmentSlotIn, float level, String textureName) {
         super(materialIn, equipmentSlotIn, new Item.Properties().tab(ModCreativeTabs.ITEMS));
         this.level = level;
         this.textureName = textureName;
@@ -90,22 +93,22 @@ public class ModArmorBase extends ArmorItem implements ILeveledItem, IElement {
     }
 
     @Override
-    public Multimap<String, AttributeModifier> getItemAttributeModifiers(EquipmentSlot equipmentSlot) {
-        Multimap<String, AttributeModifier> multimap = HashMultimap.<String, AttributeModifier>create();
+    public Multimap<Attribute, AttributeModifier> getDefaultAttributeModifiers(EquipmentSlot equipmentSlot) {
+        Multimap<Attribute, AttributeModifier> multimap = HashMultimap.<Attribute, AttributeModifier>create();
 
-        if (equipmentSlot == this.armorType) {
-            multimap.put(Attributes.ARMOR.getName(), new AttributeModifier(ARMOR_MODIFIERS[equipmentSlot.getIndex()], "Armor modifier", this.damageReduceAmount, 0));
+        if (equipmentSlot == this.slot) {
+            multimap.put(Attributes.ARMOR, new AttributeModifier(ARMOR_MODIFIERS[equipmentSlot.getIndex()], "Armor modifier", this.damageReduceAmount, 0));
 
             // Override armor toughness to make is adjustable in game
-            multimap.put(Attributes.ARMOR_TOUGHNESS.getName(), new AttributeModifier(ARMOR_MODIFIERS[equipmentSlot.getIndex()], "Armor toughness", ModConfig.balance.armor_toughness, 0));
-            multimap.put("maelstrom_armor", new AttributeModifier(ARMOR_MODIFIERS[equipmentSlot.getIndex()], "Maelstrom Armor modifier", Math.round(this.getMaelstromArmorBars() * 10) / 10.0f, 0));
+            multimap.put(Attributes.ARMOR_TOUGHNESS, new AttributeModifier(ARMOR_MODIFIERS[equipmentSlot.getIndex()], "Armor toughness", ModConfig.balance.armor_toughness, Operation.ADDITION));
+            multimap.put("maelstrom_armor", new AttributeModifier(ARMOR_MODIFIERS[equipmentSlot.getIndex()], "Maelstrom Armor modifier", Math.round(this.getMaelstromArmorBars() * 10) / 10.0f, Operation.ADDITION));
         }
 
         return multimap;
     }
 
     @Override
-    public void addInformation(ItemStack stack, Level worldIn, List<String> tooltip, TooltipFlag flagIn) {
+    public void appendHoverText(ItemStack stack, Level worldIn, List<Component> tooltip, TooltipFlag flagIn) {
         if(!ModConfig.gui.disableMaelstromArmorItemTooltips) {
             tooltip.add(ModUtils.getDisplayLevel((this.getLevel())));
         }

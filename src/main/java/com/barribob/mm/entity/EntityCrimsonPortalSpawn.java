@@ -1,22 +1,22 @@
 package com.barribob.mm.entity;
 
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.phys.Vec3;
-
 import com.barribob.mm.entity.util.EntityPortalSpawn;
 import com.barribob.mm.init.ModBlocks;
+import com.barribob.mm.init.ModEntities;
 import com.barribob.mm.util.ModColors;
 import com.barribob.mm.util.handlers.ParticleManager;
 
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.phys.Vec3;
 
 public class EntityCrimsonPortalSpawn extends EntityPortalSpawn {
     public EntityCrimsonPortalSpawn(Level worldIn) {
-        super(worldIn);
+        super(ModEntities.CRIMSON_PORTAL_SPAWN.get(), worldIn);
     }
 
     public EntityCrimsonPortalSpawn(Level worldIn, double x, double y, double z) {
-        super(worldIn, x, y, z);
+        super(ModEntities.CRIMSON_PORTAL_SPAWN.get(), worldIn, x, y, z);
     }
 
     @Override

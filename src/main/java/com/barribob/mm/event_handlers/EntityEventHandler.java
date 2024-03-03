@@ -37,6 +37,7 @@ import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent.PlayerLoggedInEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.network.PacketDistributor;
 
 @Mod.EventBusSubscriber()
 public class EntityEventHandler {
@@ -91,7 +92,7 @@ public class EntityEventHandler {
         if (event.getEntity() instanceof ServerPlayer) {
             ServerPlayer player = ((ServerPlayer) event.getEntity());
             if (DARK_NEXUS_PLAYERS.contains(player) && event.getEntity().level.dimension() == ModDimensions.DARK_NEXUS_KEY) {
-                Main.network.sendTo(new MessagePlayDarkNexusWindSound(), player);
+                Main.NETWORK.send(PacketDistributor.PLAYER.with(() -> player), new MessagePlayDarkNexusWindSound());
                 DARK_NEXUS_PLAYERS.remove(player);
             }
         }
@@ -138,7 +139,7 @@ public class EntityEventHandler {
                         currentMana.setRecentlyConsumed(false);
                     } else {
                         currentMana.replenish(1f);
-                        Main.NETWORK.sendTo(new MessageMana(currentMana.getMana()), player);
+                        Main.NETWORK.send(PacketDistributor.PLAYER.with(() -> player), new MessageMana(currentMana.getMana()));
                     }
                 }
             }

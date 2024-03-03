@@ -7,6 +7,7 @@ import com.barribob.mm.util.Reference;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.OpenGlHelper;
+import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.client.renderer.entity.layers.LayerRenderer;
 import net.minecraft.client.renderer.entity.layers.RenderLayer;
@@ -18,7 +19,7 @@ public class RenderStatueOfNirvana extends RenderModEntity<EntityGoldenBoss, Mod
     private final ResourceLocation DAMAGED_STATUE = new ResourceLocation(Reference.MOD_ID, "textures/entity/statue_damaged.png");
     private final ResourceLocation DAMAGED_STATUE_ATTACKING = new ResourceLocation(Reference.MOD_ID, "textures/entity/statue_damaged_attacking.png");
 
-    public RenderStatueOfNirvana(RenderManager rendermanagerIn) {
+    public RenderStatueOfNirvana(EntityRendererProvider.Context rendermanagerIn) {
         super(rendermanagerIn, "statue.png", new ModelStatueOfNirvana());
         this.addLayer(new LayerStatueOfNirvanaArmor(this));
         this.addLayer(new LayerEyes());

@@ -13,9 +13,11 @@ import com.barribob.mm.util.handlers.SoundsHandler;
 
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Explosion.BlockInteraction;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.network.PacketDistributor;
 
 public class LaserAction implements IGauntletAction{
     private final EntityLeveledMob entity;
@@ -38,7 +40,7 @@ public class LaserAction implements IGauntletAction{
     @Override
     public void doAction() {
         ModBBAnimations.animation(entity, "gauntlet.lazer_eye", false);
-        entity.playSound(SoundsHandler.ENTITY_GAUNTLET_LAZER_CHARGE, 2.0f, ModRandom.getFloat(0.2f) + 1.5f);
+        entity.playSound(SoundsHandler.ENTITY_GAUNTLET_LAZER_CHARGE.get(), 2.0f, ModRandom.getFloat(0.2f) + 1.5f);
         int chargeUpTime = 25;
         int laserEndTime = 60;
         for (int i = 0; i < chargeUpTime; i++) {
@@ -63,7 +65,7 @@ public class LaserAction implements IGauntletAction{
                     Vec3 laserDirection = laserShootPos.subtract(entity.getEyePosition(1)).normalize();
                     Vec3 lazerPos = laserShootPos.add(laserDirection.scale(maxLaserDistance));
                     // Ray trace both blocks and entities
-                    HitResult raytraceresult = entity.level.clip(entity.getEyePosition(1), lazerPos, false, true, false);
+                    HitResult raytraceresult = entity.level.clip(new ClipContext(entity.getEyePosition(1), lazerPos, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, entity));
                     if (raytraceresult != null) {
                         lazerPos = onLaserImpact(raytraceresult);
                     }
@@ -80,7 +82,7 @@ public class LaserAction implements IGauntletAction{
 
                     ModUtils.addEntityVelocity(entity, laserDirection.scale(-0.03f));
 
-                    Main.NETWORK.sendToAllTracking(new MessageDirectionForRender(entity, lazerPos), entity);
+                    Main.NETWORK.send(PacketDistributor.TRACKING_ENTITY.with(() -> entity), new MessageDirectionForRender(entity, lazerPos));
                 }, beamLag);
             } else {
                 // Prevent the gauntlet from instantly locking onto other targets with the lazer.

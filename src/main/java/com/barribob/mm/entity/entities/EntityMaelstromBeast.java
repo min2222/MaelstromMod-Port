@@ -13,6 +13,7 @@ import com.barribob.mm.entity.projectile.ProjectileBone;
 import com.barribob.mm.entity.projectile.ProjectileBoneQuake;
 import com.barribob.mm.entity.util.IAttack;
 import com.barribob.mm.init.ModBBAnimations;
+import com.barribob.mm.init.ModEntities;
 import com.barribob.mm.util.ModColors;
 import com.barribob.mm.util.ModDamageSource;
 import com.barribob.mm.util.ModRandom;
@@ -42,7 +43,7 @@ public class EntityMaelstromBeast extends EntityMaelstromMob implements IAttack 
     private Consumer<LivingEntity> attack;
 
     public EntityMaelstromBeast(Level worldIn) {
-        super(worldIn);
+        super(ModEntities.MAELSTROM_BEAST.get(), worldIn);
         this.healthScaledAttackFactor = 0.2;
         this.setSize(1.4f, 2.5f);
     }
@@ -172,7 +173,7 @@ public class EntityMaelstromBeast extends EntityMaelstromMob implements IAttack 
 
         addEvent(() -> {
             if (EntityMaelstromBeast.this.isRaged()) {
-                ModUtils.spawnMob(level, blockPosition(), getLevel(), getMobConfig().getConfig("spawning_algorithm"));
+                ModUtils.spawnMob(level, blockPosition(), getMobLevel(), getMobConfig().getConfig("spawning_algorithm"));
             } else {
                 ModUtils.handleAreaImpact(20, (e) -> {
                     if (e instanceof LivingEntity) {
@@ -290,7 +291,7 @@ public class EntityMaelstromBeast extends EntityMaelstromMob implements IAttack 
     }
 
     @Override
-    protected boolean canDespawn() {
+	public boolean removeWhenFarAway(double distance) {
         return false;
     }
 

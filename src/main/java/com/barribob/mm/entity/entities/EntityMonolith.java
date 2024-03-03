@@ -1,25 +1,5 @@
 package com.barribob.mm.entity.entities;
 
-import net.minecraft.client.model.ModelBox;
-import net.minecraft.client.model.ModelRenderer;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.BossEvent;
-import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.syncher.EntityDataAccessor;
-import net.minecraft.network.syncher.EntityDataSerializers;
-import net.minecraft.network.syncher.SynchedEntityData;
-import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.util.SoundEvent;
-import net.minecraft.core.BlockPos;
-import net.minecraft.world.phys.Vec3;
-import net.minecraft.server.level.ServerBossEvent;
-import net.minecraft.world.level.Level;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -47,6 +27,29 @@ import com.barribob.mm.util.ModRandom;
 import com.barribob.mm.util.ModUtils;
 import com.barribob.mm.util.handlers.ParticleManager;
 import com.barribob.mm.util.handlers.SoundsHandler;
+
+import net.minecraft.client.model.ModelBox;
+import net.minecraft.client.model.ModelRenderer;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ServerBossEvent;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.BossEvent.BossBarColor;
+import net.minecraft.world.BossEvent.BossBarOverlay;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Pose;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.phys.Vec3;
 
 public class EntityMonolith extends EntityMaelstromMob implements IAttack, DirectionalRender, ITarget {
     private ComboAttack attackHandler = new ComboAttack();
@@ -79,7 +82,7 @@ public class EntityMonolith extends EntityMaelstromMob implements IAttack, Direc
         };
 
         BiConsumer<EntityLeveledMob, LivingEntity> lazer = (EntityLeveledMob actor, LivingEntity target) -> {
-            actor.playSound(SoundEvents.BLAZE_SHOOT, 1.5F, 0.4F / (actor.world.rand.nextFloat() * 0.4F + 0.8F));
+            actor.playSound(SoundEvents.BLAZE_SHOOT, 1.5F, 0.4F / (actor.level.random.nextFloat() * 0.4F + 0.8F));
 
             float numParticles = 10;
             Vec3 dir = lazerDir.subtract(actor.position().add(ModUtils.yVec(actor.getEyeHeight()))).scale(1 / numParticles);
@@ -97,8 +100,8 @@ public class EntityMonolith extends EntityMaelstromMob implements IAttack, Direc
                 currentPos = currentPos.add(dir);
                 for (int j = 0; j < 20; j++) {
                     Vec3 pos = currentPos.add(ModRandom.randVec().scale(lazerRadius));
-                    if (world.isBlockFullCube(new BlockPos(pos).down()) && world.isAirBlock(new BlockPos(pos))) {
-                        world.setBlockState(new BlockPos(pos), Blocks.FIRE.getDefaultState());
+                    if (level.isBlockFullCube(new BlockPos(pos).below()) && level.isEmptyBlock(new BlockPos(pos))) {
+                        level.setBlockAndUpdate(new BlockPos(pos), Blocks.FIRE.defaultBlockState());
                     }
                 }
             }
@@ -111,7 +114,7 @@ public class EntityMonolith extends EntityMaelstromMob implements IAttack, Direc
                 public void performAction(EntityLeveledMob actor, LivingEntity target) {
                     int numMobs = getMobConfig().getInt("summoning_algorithm.mobs_per_spawn");
                     for (int i = 0; i < numMobs; i++) {
-                        ModUtils.spawnMob(world, getPosition(), getLevel(), getMobConfig().getConfig("summoning_algorithm"));
+                        ModUtils.spawnMob(level, blockPosition(), getMobLevel(), getMobConfig().getConfig("summoning_algorithm"));
                     }
                 }
             });
@@ -124,22 +127,22 @@ public class EntityMonolith extends EntityMaelstromMob implements IAttack, Direc
                         .element(getElement()).build();
 
                 ModUtils.handleAreaImpact(7, (e) -> getAttack() * getConfigFloat("defensive_burst_damage"), actor, position(), source, 2.0f, 0, true);
-                actor.playSound(SoundEvents.EVOCATION_ILLAGER_CAST_SPELL, 1.0f, 0.4F / (world.rand.nextFloat() * 0.4F + 0.8F));
+                actor.playSound(SoundEvents.EVOKER_CAST_SPELL, 1.0f, 0.4F / (level.random.nextFloat() * 0.4F + 0.8F));
                 actor.level.broadcastEntityEvent(actor, ModUtils.SECOND_PARTICLE_BYTE);
             });
             attackHandler.setAttack(stageTransform, new IAction() {
                 // Change the yellow and blue attacks to new attacks
                 @Override
                 public void performAction(EntityLeveledMob actor, LivingEntity target) {
-                    actor.getDataManager().set(TRANSFORMED, Boolean.valueOf(true));
+                    actor.getEntityData().set(TRANSFORMED, Boolean.valueOf(true));
                     attackHandler.setAttack(yellowAttack, (IAction) (actor1, target1) -> {
                         actor1.motionY = 0;
                         actor1.setImmovable(false);
                         actor1.setNoGravity(false);
-                        Vec3 pos = target1.position().add(target1.getLookVec()).add(ModUtils.yVec(24))
+                        Vec3 pos = target1.position().add(target1.getLookAngle()).add(ModUtils.yVec(24))
                                 .add(new Vec3(ModRandom.getFloat(1), 0, ModRandom.getFloat(1)));
-                        actor1.playSound(SoundEvents.ENDERMEN_TELEPORT, 1.0F, 1.0F);
-                        actor1.setPosition(pos.x, pos.y, pos.z);
+                        actor1.playSound(SoundEvents.ENDERMAN_TELEPORT, 1.0F, 1.0F);
+                        actor1.setPos(pos.x, pos.y, pos.z);
                         EntityMonolith.this.setLeaping(true);
                     });
                     attackHandler.setAttack(redAttack, lazer);
@@ -149,9 +152,9 @@ public class EntityMonolith extends EntityMaelstromMob implements IAttack, Direc
     }
 
     public void spawnFireball(EntityLeveledMob actor, LivingEntity target, Function<LivingEntity, Vec3> getPosition) {
-        ProjectileMonolithFireball meteor = new ProjectileMonolithFireball(world, actor, actor.getAttack() * actor.getConfigFloat("fireball_damage"), null);
+        ProjectileMonolithFireball meteor = new ProjectileMonolithFireball(level, actor, actor.getAttack() * actor.getConfigFloat("fireball_damage"), null);
         Vec3 pos = getPosition.apply(target);
-        meteor.setPosition(pos.x, pos.y, pos.z);
+        meteor.setPos(pos.x, pos.y, pos.z);
         meteor.shoot(actor, 90, 0, 0.0F, 0.5f, 0);
         meteor.motionX -= actor.motionX;
         meteor.motionZ -= actor.motionZ;
@@ -172,8 +175,8 @@ public class EntityMonolith extends EntityMaelstromMob implements IAttack, Direc
     }
 
     @Override
-    public float getEyeHeight() {
-        return this.height * 0.8f;
+    public float getEyeHeight(Pose pose) {
+        return this.getBbHeight() * 0.8f;
     }
 
     @Override
@@ -222,7 +225,7 @@ public class EntityMonolith extends EntityMaelstromMob implements IAttack, Direc
         this.goalSelector.addGoal(4, new EntityAITimedAttack<EntityMonolith>(this, 0, 90, 30, 0, 30.0f));
     }
 
-    public Optional<Vec3> getTarget() {
+    public Optional<Vec3> getLazerTarget() {
         if (isTransformed() && getAttackColor() == redAttack && this.lazerDir != null) {
             return Optional.of(this.lazerDir);
         }
@@ -230,17 +233,17 @@ public class EntityMonolith extends EntityMaelstromMob implements IAttack, Direc
     }
 
     public boolean isTransformed() {
-        return this.dataManager.get(TRANSFORMED);
+        return this.entityData.get(TRANSFORMED);
     }
 
     @Override
     public void tick() {
-        super.onUpdate();
-        this.setRotation(0, 0);
-        this.setRotationYawHead(0);
+        super.tick();
+        this.setRot(0, 0);
+        this.setYHeadRot(0);
 
         if (!level.isClientSide && this.getTarget() == null) {
-            this.dataManager.set(ATTACK, noAttack);
+            this.entityData.set(ATTACK, noAttack);
         }
 
         // When is is "moving" make sure it still feels immovable
@@ -254,9 +257,9 @@ public class EntityMonolith extends EntityMaelstromMob implements IAttack, Direc
         int maelstromMeteorTime = 1200;
         int maxMeteors = 20;
         if (!level.isClientSide && this.getTarget() == null && this.tickCount % maelstromMeteorTime == 0 && this.tickCount < maelstromMeteorTime * maxMeteors) {
-            ProjectileMaelstromMeteor meteor = new ProjectileMaelstromMeteor(world, this, this.getAttack());
+            ProjectileMaelstromMeteor meteor = new ProjectileMaelstromMeteor(level, this, this.getAttack());
             Vec3 pos = new Vec3(ModRandom.getFloat(1.0f), 0, ModRandom.getFloat(1.0f)).normalize().scale(ModRandom.range(20, 50)).add(this.position());
-            meteor.setPosition(pos.x, pos.y, pos.z);
+            meteor.setPos(pos.x, pos.y, pos.z);
             meteor.shoot(this, 90, 0, 0.0F, 0.7f, 0);
             meteor.motionX -= this.motionX;
             meteor.motionZ -= this.motionZ;
@@ -276,28 +279,28 @@ public class EntityMonolith extends EntityMaelstromMob implements IAttack, Direc
             Vec3 particlePos = position().add(ModUtils.yVec(2)).add(ModRandom.randVec().scale(4));
             switch (this.getAttackColor()) {
                 case noAttack:
-                    ParticleManager.spawnMaelstromSmoke(world, rand, particlePos, false);
+                    ParticleManager.spawnMaelstromSmoke(level, random, particlePos, false);
                     break;
                 case blueAttack:
-                    ParticleManager.spawnEffect(world, particlePos, ModColors.BLUE);
+                    ParticleManager.spawnEffect(level, particlePos, ModColors.BLUE);
                     break;
                 case redAttack:
-                    ParticleManager.spawnEffect(world, particlePos, ModColors.RED);
+                    ParticleManager.spawnEffect(level, particlePos, ModColors.RED);
                     break;
                 case yellowAttack:
-                    ParticleManager.spawnEffect(world, particlePos, ModColors.YELLOW);
+                    ParticleManager.spawnEffect(level, particlePos, ModColors.YELLOW);
             }
         } else if (id == ModUtils.SECOND_PARTICLE_BYTE) {
             ModUtils.performNTimes(4, (i) -> {
                 ModUtils.circleCallback(2, 60, (pos) -> {
                     pos = new Vec3(pos.x, 0, pos.y);
-                    ParticleManager.spawnFirework(world, pos.add(position()).add(ModUtils.yVec(i + 1)), ModColors.YELLOW, pos.scale(0.5f));
+                    ParticleManager.spawnFirework(level, pos.add(position()).add(ModUtils.yVec(i + 1)), ModColors.YELLOW, pos.scale(0.5f));
                 });
             });
         } else if (id == ModUtils.THIRD_PARTICLE_BYTE) {
             ModUtils.performNTimes(100, (i) -> {
-                this.world.spawnParticle(ParticleTypes.EXPLOSION_LARGE, this.posX + ModRandom.getFloat(5), this.posY + ModRandom.getFloat(5),
-                        this.posZ + ModRandom.getFloat(5), 0, 0, 0);
+                this.level.addParticle(ParticleTypes.EXPLOSION, this.getX() + ModRandom.getFloat(5), this.getY() + ModRandom.getFloat(5),
+                        this.getZ() + ModRandom.getFloat(5), 0, 0, 0);
             });
         } else if (id == ModUtils.FOURTH_PARTICLE_BYTE) {
             if (lazerDir != null) {
@@ -306,11 +309,11 @@ public class EntityMonolith extends EntityMaelstromMob implements IAttack, Direc
                 Vec3 currentPos = this.position().add(ModUtils.yVec(this.getEyeHeight()));
                 for (int i = 0; i < numParticles; i++) {
                     for (int j = 0; j < 50; j++) {
-                        ParticleManager.spawnWisp(world, currentPos.add(ModRandom.randVec().scale(lazerRadius * 2)), ModColors.RED, ModUtils.yVec(0.1f));
+                        ParticleManager.spawnWisp(level, currentPos.add(ModRandom.randVec().scale(lazerRadius * 2)), ModColors.RED, ModUtils.yVec(0.1f));
                         Vec3 pos = currentPos.add(ModRandom.randVec().scale(lazerRadius * 2));
-                        world.spawnParticle(ParticleTypes.FLAME, pos.x, pos.y, pos.z, 0, 0, 0);
+                        level.addParticle(ParticleTypes.FLAME, pos.x, pos.y, pos.z, 0, 0, 0);
                         pos = currentPos.add(ModRandom.randVec().scale(lazerRadius * 2));
-                        world.spawnParticle(ParticleTypes.EXPLOSION_LARGE, pos.x, pos.y, pos.z, 0, 0, 0);
+                        level.addParticle(ParticleTypes.EXPLOSION, pos.x, pos.y, pos.z, 0, 0, 0);
                     }
                     currentPos = currentPos.add(dir);
                 }
@@ -331,18 +334,18 @@ public class EntityMonolith extends EntityMaelstromMob implements IAttack, Direc
         this.playSound(SoundEvents.GENERIC_EXPLODE, 1.0f, 1.0f + ModRandom.getFloat(0.1f));
         this.level.broadcastEntityEvent(this, ModUtils.THIRD_PARTICLE_BYTE);
         addEvent(() -> {
-            this.playSound(SoundEvents.ENDERMEN_TELEPORT, 1.0F, 1.0F);
+            this.playSound(SoundEvents.ENDERMAN_TELEPORT, 1.0F, 1.0F);
             this.setImmovable(true);
             this.setNoGravity(false);
         }, 20);
     }
 
     @Override
-    public boolean attackEntityFrom(DamageSource source, float amount) {
+    public boolean hurt(DamageSource source, float amount) {
         if (source == DamageSource.FALL) {
             return false;
         }
-        return super.attackEntityFrom(source, amount);
+        return super.hurt(source, amount);
     }
 
     @Override
@@ -356,19 +359,19 @@ public class EntityMonolith extends EntityMaelstromMob implements IAttack, Direc
     }
 
     @Override
-    protected void entityInit() {
-        super.entityInit();
-        this.dataManager.register(ATTACK, noAttack);
-        this.dataManager.register(TRANSFORMED, Boolean.FALSE);
+    protected void defineSynchedData() {
+        super.defineSynchedData();
+        this.entityData.define(ATTACK, noAttack);
+        this.entityData.define(TRANSFORMED, Boolean.FALSE);
     }
 
     public byte getAttackColor() {
-        return this.dataManager.get(ATTACK);
+        return this.entityData.get(ATTACK);
     }
 
     @Override
     protected SoundEvent getHurtSound(DamageSource damageSourceIn) {
-        return SoundEvents.BLOCK_METAL_PLACE;
+        return SoundEvents.METAL_PLACE;
     }
 
     @Override
@@ -381,37 +384,37 @@ public class EntityMonolith extends EntityMaelstromMob implements IAttack, Direc
         // Make sure we save as immovable to avoid some weird states
         if (!this.isImmovable()) {
             this.setImmovable(true);
-            this.setPosition(0, 0, 0);// Setting any position teleports it back to the initial position
+            this.setPos(0, 0, 0);// Setting any position teleports it back to the initial position
         }
         super.writeEntityToNBT(compound);
     }
 
     @Override
-    public void onDeath(DamageSource cause) {
+    public void die(DamageSource cause) {
         level.broadcastEntityEvent(this, ModUtils.THIRD_PARTICLE_BYTE); // Explode on death
 
-        world.setBlockState(getPosition().down(2), ModBlocks.MAELSTROM_HEART.getDefaultState());
+        level.setBlockAndUpdate(blockPosition().below(2), ModBlocks.MAELSTROM_HEART.defaultBlockState());
 
         if(getMobConfig().getBoolean("spawn_nexus_portal_on_death")) {
             // Spawn the second half of the boss
-            EntityWhiteMonolith boss = new EntityWhiteMonolith(world);
-            boss.copyLocationAndAnglesFrom(this);
-            boss.setRotationYawHead(this.rotationYawHead);
+            EntityWhiteMonolith boss = new EntityWhiteMonolith(level);
+            boss.copyPosition(this);
+            boss.setYHeadRot(this.yHeadRot);
             if (!level.isClientSide) {
                 level.addFreshEntity(boss);
             }
 
             // Teleport away so that the player doens't see the death animation
             this.setImmovable(false);
-            this.setPosition(0, 0, 0);
+            this.setPos(0, 0, 0);
         }
 
-        ModUtils.getEntitiesInBox(this, getBoundingBox().grow(15, 2, 15)).stream().filter(EntityMaelstromMob::isMaelstromMob).forEach((e) -> {
-            e.hurtResistantTime = 0;
-            e.attackEntityFrom(DamageSource.MAGIC, 50);
+        ModUtils.getEntitiesInBox(this, getBoundingBox().inflate(15, 2, 15)).stream().filter(EntityMaelstromMob::isMaelstromMob).forEach((e) -> {
+            e.invulnerableTime = 0;
+            e.hurt(DamageSource.MAGIC, 50);
         });
 
-        super.onDeath(cause);
+        super.die(cause);
     }
 
     @Override
@@ -423,41 +426,41 @@ public class EntityMonolith extends EntityMaelstromMob implements IAttack, Direc
     }
 
     @Override
-    public void setCustomNameTag(String name) {
-        super.setCustomNameTag(name);
+    public void setCustomName(Component name) {
+        super.setCustomName(name);
         this.bossInfo.setName(this.getDisplayName());
     }
 
     @Override
-    protected void updateAITasks() {
-        this.bossInfo.setPercent(this.getHealth() / this.getMaxHealth());
-        super.updateAITasks();
+    protected void customServerAiStep() {
+        this.bossInfo.setProgress(this.getHealth() / this.getMaxHealth());
+        super.customServerAiStep();
     }
 
     @Override
-    public void addTrackingPlayer(ServerPlayer player) {
-        super.addTrackingPlayer(player);
+    public void startSeenByPlayer(ServerPlayer player) {
+        super.startSeenByPlayer(player);
         this.bossInfo.addPlayer(player);
     }
 
     @Override
-    public void removeTrackingPlayer(ServerPlayer player) {
-        super.removeTrackingPlayer(player);
+    public void stopSeenByPlayer(ServerPlayer player) {
+        super.stopSeenByPlayer(player);
         this.bossInfo.removePlayer(player);
     }
 
     @Override
     public int startAttack(LivingEntity target, float distanceSq, boolean strafingBackwards) {
-        this.playSound(SoundsHandler.ENTITY_MONOLITH_AMBIENT, 0.7f, 1.0f * ModRandom.getFloat(0.2f));
+        this.playSound(SoundsHandler.ENTITY_MONOLITH_AMBIENT.get(), 0.7f, 1.0f * ModRandom.getFloat(0.2f));
 
         chooseAttack();
 
         level.broadcastEntityEvent(this, attackHandler.getCurrentAttack());
-        this.dataManager.set(ATTACK, attackHandler.getCurrentAttack());
+        this.entityData.set(ATTACK, attackHandler.getCurrentAttack());
 
         addEvent(() -> {
             this.attackHandler.getCurrentAttackAction().performAction(this, target);
-            this.dataManager.set(ATTACK, noAttack);
+            this.entityData.set(ATTACK, noAttack);
         }, 40);
 
         int attackCooldown = this.attackHandler.getCurrentAttack() == yellowAttack && this.isTransformed() ? 120 : 90;
@@ -466,10 +469,10 @@ public class EntityMonolith extends EntityMaelstromMob implements IAttack, Direc
     }
 
     public void chooseAttack() {
-        int numMinions = (int) ModUtils.getEntitiesInBox(this, getBoundingBox().grow(10, 2, 10)).stream().filter(EntityMaelstromMob::isMaelstromMob).count();
+        int numMinions = (int) ModUtils.getEntitiesInBox(this, getBoundingBox().inflate(10, 2, 10)).stream().filter(EntityMaelstromMob::isMaelstromMob).count();
 
         double yellowWeight = 0.0;
-        if (this.getTarget() != null && this.getDistance(this.getTarget()) < 6) {
+        if (this.getTarget() != null && this.distanceTo(this.getTarget()) < 6) {
             yellowWeight = 1.0; // Likely to use yellow attack if the player is near
         } else if (isTransformed()) {
             yellowWeight = 0.3;
@@ -477,7 +480,7 @@ public class EntityMonolith extends EntityMaelstromMob implements IAttack, Direc
 
         Byte[] attack = {blueAttack, redAttack, yellowAttack};
         double[] weights = {numMinions == 0 ? 0.8 : 0.1, 0.5, yellowWeight};
-        attackHandler.setCurrentAttack(ModRandom.choice(attack, rand, weights).next());
+        attackHandler.setCurrentAttack(ModRandom.choice(attack, random, weights).next());
 
         if (!isTransformed() && this.getHealth() < getMobConfig().getInt("second_boss_phase_hp")) {
             attackHandler.setCurrentAttack(stageTransform);
@@ -489,7 +492,7 @@ public class EntityMonolith extends EntityMaelstromMob implements IAttack, Direc
                     .subtract(position().add(ModUtils.yVec(this.getEyeHeight()))).normalize().scale(20).add(position());
 
             // Send the aimed position to the client side
-            Main.network.sendToAllTracking(new MessageDirectionForRender(this, this.lazerDir), this);
+            Main.NETWORK.sendToAllTracking(new MessageDirectionForRender(this, this.lazerDir), this);
         }
     }
 

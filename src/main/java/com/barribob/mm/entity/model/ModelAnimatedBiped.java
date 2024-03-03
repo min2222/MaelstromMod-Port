@@ -4,6 +4,7 @@ import com.barribob.mm.entity.entities.EntityLeveledMob;
 
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.model.ModelRenderer;
+import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.util.EnumHandSide;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -17,7 +18,7 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 public class ModelAnimatedBiped<T extends LivingEntity> extends HumanoidModel<T> {
     protected static int textureWidth = 64;
     protected static int textureHeight = 64;
-    public ModelRenderer centerPivot;
+    public ModelPart centerPivot;
     private float partialTicks = 0;
 
     public ModelAnimatedBiped() {

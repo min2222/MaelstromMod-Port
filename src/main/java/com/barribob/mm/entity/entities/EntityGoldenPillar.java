@@ -46,7 +46,7 @@ public class EntityGoldenPillar extends EntityMaelstromMob implements IAttack {
         if (id == ModUtils.PARTICLE_BYTE) {
             // Spawn particles as the eyes
             ModUtils.performNTimes(3, (i) -> {
-                Vec3 look = this.getVectorForRotation(0, this.renderYawOffset + (i * 120)).scale(0.5f);
+                Vec3 look = this.getVectorForRotation(0, this.yBodyRot + (i * 120)).scale(0.5f);
                 Vec3 pos = this.position().add(new Vec3(0, this.getEyeHeight(), 0));
                 ParticleManager.spawnEffect(level, pos.add(look), ModColors.YELLOW);
             });

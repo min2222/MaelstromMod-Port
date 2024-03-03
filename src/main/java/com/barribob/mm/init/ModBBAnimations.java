@@ -2,11 +2,16 @@ package com.barribob.mm.init;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.function.BiFunction;
 
 import javax.json.JsonException;
 
@@ -18,6 +23,7 @@ import com.barribob.mm.Main;
 import com.barribob.mm.entity.animation.AnimationManagerServer;
 import com.barribob.mm.packets.MessageBBAnimation;
 import com.barribob.mm.util.Reference;
+import com.google.common.base.Predicate;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
@@ -27,10 +33,11 @@ import com.google.gson.JsonParser;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
+import net.minecraft.util.GsonHelper;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraftforge.common.crafting.CraftingHelper;
-import net.minecraftforge.common.crafting.JsonContext;
 import net.minecraftforge.fml.ModContainer;
+import net.minecraftforge.fml.ModList;
+import net.minecraftforge.network.PacketDistributor;
 
 /**
  * Handle animation registration automatically
@@ -52,7 +59,7 @@ public class ModBBAnimations {
      * @param animationId
      */
     public static void animation(LivingEntity entity, String animationId, boolean remove) {
-        Main.NETWORK.sendToAllTracking(new MessageBBAnimation(ModBBAnimations.getAnimationId(animationId), entity.getId(), remove), entity);
+        Main.NETWORK.send(PacketDistributor.TRACKING_ENTITY.with(() -> entity), new MessageBBAnimation(ModBBAnimations.getAnimationId(animationId), entity.getId(), remove));
         JsonObject animation = ModBBAnimations.getAnimation(animationId);
         if (animation.has("loop")) {
             if (animation.get("loop").getAsBoolean()) {
@@ -112,7 +119,7 @@ public class ModBBAnimations {
         } catch (IOException e) {
             System.err.println("Failed to load animation: " + filename + e);
         } finally {
-            IOUtils.closeQuietly(resource);
+            //IOUtils.closeQuietly(resource);
         }
 
         return new JsonObject();
@@ -146,35 +153,24 @@ public class ModBBAnimations {
      */
     public static void registerAnimations() {
         // Sort of hacky way to get the ModContainer for my mod
-        ModContainer myMod = null;
-        for (ModContainer mod : Loader.instance().getActiveModList()) {
-            if (mod.getModId().equals("mm")) {
-                myMod = mod;
-            }
-        }
-
-        final ModContainer mod = myMod; // Because lambda function can't take non final values :(
-        JsonContext ctx = new JsonContext(myMod.getModId());
-
+        ModContainer myMod = ModList.get().getModContainerById("mm").get();
         // This part is pretty similar CraftingHelper.java does to load recipes
-        CraftingHelper.findFiles(myMod, "assets/" + myMod.getModId() + "/animations",
+        findFiles(myMod, "assets/" + myMod.getModId() + "/animations",
                 root -> {
                     return true;
                 },
                 (root, file) -> {
-                    Loader.instance().setActiveModContainer(mod);
-
                     String relative = root.relativize(file).toString();
                     if (!"json".equals(FilenameUtils.getExtension(file.toString())) || relative.startsWith("_"))
                         return true;
 
                     String name = FilenameUtils.removeExtension(relative).replaceAll("\\\\", "/");
-                    ResourceLocation key = new ResourceLocation(ctx.getModId(), name);
+                    ResourceLocation key = new ResourceLocation(myMod.getModId(), name);
 
                     BufferedReader reader = null;
                     try {
                         reader = Files.newBufferedReader(file);
-                        JsonObject json = JsonUtils.fromJson(GSON, reader, JsonObject.class);
+                        JsonObject json = GsonHelper.fromJson(GSON, reader, JsonObject.class);
                         registerAnimations(json, name);
                     } catch (IOException e) {
                         LogManager.getLogger().error("Couldn't read animation {} from {}", key, file, e);
@@ -183,6 +179,43 @@ public class ModBBAnimations {
                         IOUtils.closeQuietly(reader);
                     }
                     return true;
-                }, true, true);
+                }, true);
+    }
+    
+    public static void findFiles(ModContainer mod, String base, Predicate<Path> rootFilter, BiFunction<Path, Path, Boolean> processor, boolean visitAllFiles) {
+        findFiles(mod, base, rootFilter, processor, visitAllFiles, Integer.MAX_VALUE);
+    }
+
+    public static void findFiles(ModContainer mod, String base, Predicate<Path> rootFilter, BiFunction<Path, Path, Boolean> processor, boolean visitAllFiles, int maxDepth) {
+        if (mod.getModId().equals("minecraft")) {
+            return;
+        }
+
+        try {
+            for (var root : Collections.singletonList(mod.getModInfo().getOwningFile().getFile().getSecureJar().getRootPath())) {
+                walk(root.resolve(base), rootFilter, processor, visitAllFiles, maxDepth);
+            }
+        } catch (IOException ex) {
+            throw new UncheckedIOException(ex);
+        }
+    }
+
+    private static void walk(Path root, Predicate<Path> rootFilter, BiFunction<Path, Path, Boolean> processor, boolean visitAllFiles, int maxDepth) throws IOException {
+        if (root == null || !Files.exists(root) || !rootFilter.test(root)) {
+            return;
+        }
+
+        if (processor != null) {
+            try (var stream = Files.walk(root, maxDepth)) {
+                Iterator<Path> itr = stream.iterator();
+
+                while (itr.hasNext()) {
+                    boolean keepGoing = processor.apply(root, itr.next());
+                    if (!visitAllFiles && !keepGoing) {
+                        return;
+                    }
+                }
+            }
+        }
     }
 }

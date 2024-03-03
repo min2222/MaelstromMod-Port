@@ -1,13 +1,14 @@
 package com.barribob.mm.entity.render;
 
+import com.barribob.mm.entity.projectile.ProjectileHomingFlame;
 import com.barribob.mm.util.ModUtils;
 
-import net.minecraft.client.model.ModelShulkerBullet;
-import net.minecraft.world.entity.Entity;
+import net.minecraft.client.model.ShulkerBulletModel;
 import net.minecraft.util.math.Vec2f;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
 
-public class ModelHomingFlame extends ModelShulkerBullet {
+public class ModelHomingFlame extends ShulkerBulletModel<ProjectileHomingFlame> {
     @Override
     public void setRotationAngles(float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch, float scaleFactor, Entity entityIn) {
         super.setRotationAngles(limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch, scaleFactor, entityIn);

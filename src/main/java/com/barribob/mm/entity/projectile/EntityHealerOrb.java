@@ -48,13 +48,13 @@ public class EntityHealerOrb extends Entity {
     public EntityHealerOrb(Level worldIn) {
         super(worldIn);
         this.setSize(0.3125F, 0.3125F);
-        this.noClip = true;
+        this.noPhysics = true;
     }
 
     @OnlyIn(Dist.CLIENT)
     public EntityHealerOrb(Level worldIn, double x, double y, double z, double motionXIn, double motionYIn, double motionZIn) {
         this(worldIn);
-        this.setLocationAndAngles(x, y, z, this.rotationYaw, this.rotationPitch);
+        this.moveTo(x, y, z, this.getYRot(), this.getXRot());
         this.motionX = motionXIn;
         this.motionY = motionYIn;
         this.motionZ = motionZIn;

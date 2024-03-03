@@ -51,7 +51,7 @@ public class EntityHorror extends EntityMaelstromMob {
             double zDir = (random.nextFloat() - random.nextFloat()) * PROJECTILE_VARIATION_FACTOR;
             projectile.shoot(xDir, yDir, zDir, PROJECTILE_VELOCITY, PROJECTILE_INACCURACY);
             this.playSound(SoundEvents.ANVIL_BREAK, 1.0F, 1.0F / (this.getRandom().nextFloat() * 0.4F + 0.8F));
-            this.level.addFreshEntity(projectile);
+            this.world.addFreshEntity(projectile);
         }
     }
 

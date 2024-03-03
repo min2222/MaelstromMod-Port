@@ -31,14 +31,14 @@ public class ClientElytraEventHandler {
     public static void onPressKey(InputUpdateEvent event) {
         if (event.getEntityPlayer() instanceof LocalPlayer) {
             LocalPlayer player = (LocalPlayer) event.getEntityPlayer();
-            if (!prevJumpTick && player.movementInput.jump && !player.isOnGround() && player.getDeltaMovement().y < 0.0D && !player.isFallFlying() && !player.getAbilities().flying) {
+            if (!prevJumpTick && player.input.jumping && !player.isOnGround() && player.getDeltaMovement().y < 0.0D && !player.isFallFlying() && !player.getAbilities().flying) {
                 ItemStack itemstack = player.getItemBySlot(EquipmentSlot.CHEST);
 
                 if (itemstack.getItem() instanceof ItemModElytra) {
                     Main.NETWORK.sendToServer(new MessageStartElytraFlying());
                 }
             }
-            prevJumpTick = player.movementInput.jump;
+            prevJumpTick = player.input.jumping;
         }
     }
 

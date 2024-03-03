@@ -3,9 +3,6 @@
  */
 package com.typesafe.config;
 
-import com.typesafe.config.impl.ConfigImpl;
-import com.typesafe.config.impl.Parseable;
-
 import java.io.File;
 import java.io.Reader;
 import java.lang.reflect.InvocationTargetException;
@@ -15,6 +12,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.Callable;
+
+import com.typesafe.config.impl.ConfigImpl;
+import com.typesafe.config.impl.Parseable;
 
 /**
  * Contains static methods for creating {@link Config} instances.

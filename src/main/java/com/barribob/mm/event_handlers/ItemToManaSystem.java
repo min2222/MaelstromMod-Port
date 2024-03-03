@@ -118,9 +118,9 @@ public class ItemToManaSystem {
             Optional<String> nbtTooltips = tooltips.stream().filter(tooltip ->
                     registryName != null && tooltip.contains(registryName.toString())).findFirst();
 
-            String cooldownTooltip = ModUtils.getCooldownTooltip(ItemToManaSystem.getEnchantedCooldown(event.getItemStack()));
+            String cooldownTooltip = ModUtils.getCooldownTooltip(ItemToManaSystem.getEnchantedCooldown(event.getItemStack())).getString();
             int manaCost = config.getInt("mana_cost");
-            String manaTooltip = ChatFormatting.GRAY + ModUtils.translateDesc("mana_cost") + ": " + ChatFormatting.DARK_PURPLE + manaCost;
+            String manaTooltip = ModUtils.translateDesc("mana_cost").withStyle(ChatFormatting.GRAY).getString() + ": " + ChatFormatting.DARK_PURPLE + manaCost;
 
             if (nbtTooltips.isPresent()) {
                 int index = tooltips.indexOf(nbtTooltips.get());
@@ -177,7 +177,7 @@ public class ItemToManaSystem {
     public static float getEnchantedCooldown(ItemStack stack) {
         Config config = getManaConfig(stack);
         if (config == null) return 0;
-        int reload = stack.getEnchantmentLevel(ModEnchantments.reload);
+        int reload = stack.getEnchantmentLevel(ModEnchantments.RELOAD.get());
         return config.getInt("cooldown_in_ticks") * (1 - reload * 0.1f);
     }
 

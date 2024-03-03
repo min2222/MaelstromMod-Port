@@ -3,11 +3,11 @@
  */
 package com.typesafe.config.impl;
 
-import com.typesafe.config.ConfigException;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+
+import com.typesafe.config.ConfigException;
 
 final class ConfigNodeField extends AbstractConfigNode {
     final private ArrayList<AbstractConfigNode> children;

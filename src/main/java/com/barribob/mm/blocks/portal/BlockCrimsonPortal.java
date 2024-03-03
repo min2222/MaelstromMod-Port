@@ -32,8 +32,8 @@ public class BlockCrimsonPortal extends BlockPortal {
     }
 
     @Override
-    public void addInformation(ItemStack stack, Level player, List<String> tooltip, TooltipFlag advanced) {
+    public void appendHoverText(ItemStack stack, Level player, List<String> tooltip, TooltipFlag advanced) {
         tooltip.add(ModUtils.translateDesc("nexus_only_portal"));
-        super.addInformation(stack, player, tooltip, advanced);
+        super.appendHoverText(stack, player, tooltip, advanced);
     }
 }

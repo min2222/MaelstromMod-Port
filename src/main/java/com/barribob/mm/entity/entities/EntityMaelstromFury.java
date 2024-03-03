@@ -119,17 +119,17 @@ public class EntityMaelstromFury extends EntityMaelstromMob implements IAccelera
 
     @Override
     protected SoundEvent getAmbientSound() {
-        return SoundsHandler.ENTITY_SHADE_AMBIENT;
+        return SoundsHandler.ENTITY_SHADE_AMBIENT.get();
     }
 
     @Override
     protected SoundEvent getHurtSound(DamageSource damageSourceIn) {
-        return SoundsHandler.ENTITY_SHADE_HURT;
+        return SoundsHandler.ENTITY_SHADE_HURT.get();
     }
 
     @Override
     protected SoundEvent getDeathSound() {
-        return SoundsHandler.ENTITY_SHADE_HURT;
+        return SoundsHandler.ENTITY_SHADE_HURT.get();
     }
 
     @Override

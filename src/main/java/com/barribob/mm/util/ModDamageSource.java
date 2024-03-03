@@ -90,7 +90,7 @@ public class ModDamageSource {
             EntityElementalDamageSourceIndirect source = new EntityElementalDamageSourceIndirect(damageType, directEntity, indirectEntity, element);
             if(stoppedByArmorNotShields) {
                 source.setStoppedByArmor(true);
-                source.bypassArmor();
+                source.bypassArmor = true;
             }
             source.setDisablesShields(disablesShields);
             return source;

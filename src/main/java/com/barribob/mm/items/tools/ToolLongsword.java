@@ -1,15 +1,20 @@
 package com.barribob.mm.items.tools;
 
+import java.util.UUID;
+
 import com.barribob.mm.items.IExtendedReach;
 import com.barribob.mm.items.ISweepAttackOverride;
 import com.barribob.mm.util.ModUtils;
 import com.google.common.collect.Multimap;
+
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.ai.attributes.Attribute;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation;
 import net.minecraft.world.entity.player.Player;
-
-import java.util.UUID;
+import net.minecraft.world.item.Tier;
+import net.minecraftforge.common.ForgeMod;
 
 /**
  * Holds reach properties for an extended reach tool
@@ -18,7 +23,7 @@ public class ToolLongsword extends ToolSword implements IExtendedReach, ISweepAt
     private static final UUID REACH_MODIFIER = UUID.fromString("a6323e02-d8e9-44c6-b941-f5d7155bb406");
     private float reach = 4;
 
-    public ToolLongsword(String name, ToolMaterial material, float level) {
+    public ToolLongsword(String name, Tier material, float level) {
         super(name, material, level);
     }
 
@@ -42,11 +47,11 @@ public class ToolLongsword extends ToolSword implements IExtendedReach, ISweepAt
      * damage.
      */
     @Override
-    public Multimap<String, AttributeModifier> getItemAttributeModifiers(EquipmentSlot equipmentSlot) {
-        Multimap<String, AttributeModifier> multimap = super.getItemAttributeModifiers(equipmentSlot);
+    public Multimap<Attribute, AttributeModifier> getDefaultAttributeModifiers(EquipmentSlot equipmentSlot) {
+        Multimap<Attribute, AttributeModifier> multimap = super.getDefaultAttributeModifiers(equipmentSlot);
 
         if (equipmentSlot == EquipmentSlot.MAINHAND) {
-            multimap.put(Player.REACH_DISTANCE.getName(), new AttributeModifier(REACH_MODIFIER, "Extended Reach Modifier", this.reach - 3.0D, 0).setSaved(false));
+            multimap.put(ForgeMod.REACH_DISTANCE.get(), new AttributeModifier(REACH_MODIFIER, "Extended Reach Modifier", this.reach - 3.0D, Operation.ADDITION));
         }
         return multimap;
     }

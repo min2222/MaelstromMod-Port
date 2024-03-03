@@ -1,11 +1,5 @@
 package com.barribob.mm.entity.animation;
 
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.common.gameevent.TickEvent;
-import net.minecraftforge.fml.common.gameevent.TickEvent.Phase;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -15,6 +9,13 @@ import java.util.Map.Entry;
 import com.barribob.mm.Main;
 import com.barribob.mm.init.ModBBAnimations;
 import com.barribob.mm.packets.MessageLoopAnimationUpdate;
+
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.TickEvent.Phase;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.network.PacketDistributor;
 
 /**
  * Purpose of a server animation manager is to make sure client doesn't "lose" looping animations over time. I don't with normal animations because I don't expect them to be longer than a few seconds.
@@ -56,20 +57,20 @@ public class AnimationManagerServer {
      * @param event
      */
     @SubscribeEvent
-    public static void onServerTick(TickEvent.WorldTickEvent event) {
+    public static void onServerTick(TickEvent.LevelTickEvent event) {
         if (event.phase == Phase.END) {
             List<LivingEntity> entitiesToRemove = new ArrayList<LivingEntity>();
             for (Entry<LivingEntity, Map<String, Integer>> entry : loopingAnimations.entrySet()) {
                 LivingEntity entity = entry.getKey();
 
-                if (!entity.isAddedToWorld() && entity.isDead) {
+                if (!entity.isAddedToWorld() && entity.isDeadOrDying()) {
                     entitiesToRemove.add(entity);
                     continue;
                 }
 
                 for (Entry<String, Integer> kv : entry.getValue().entrySet()) {
                     if (kv.getValue() % REFRESH_RATE == 0) {
-                        Main.network.sendToAllTracking(new MessageLoopAnimationUpdate(ModBBAnimations.getAnimationId(kv.getKey()), entity.getEntityId()), entity);
+                        Main.NETWORK.send(PacketDistributor.TRACKING_ENTITY.with(() -> entity), new MessageLoopAnimationUpdate(ModBBAnimations.getAnimationId(kv.getKey()), entity.getId()));
                     }
                     kv.setValue(kv.getValue() + 1);
                 }

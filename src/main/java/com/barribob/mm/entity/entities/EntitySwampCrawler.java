@@ -16,6 +16,7 @@ import net.minecraft.world.EnumDifficulty;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.FloatGoal;
 import net.minecraft.world.entity.ai.goal.LeapAtTargetGoal;
@@ -95,7 +96,7 @@ public class EntitySwampCrawler extends EntityLeveledMob implements RangedAttack
     }
 
     @Override
-    public float getEyeHeight() {
+    public float getEyeHeight(Pose pose) {
         return 0.65F;
     }
 
@@ -131,7 +132,7 @@ public class EntitySwampCrawler extends EntityLeveledMob implements RangedAttack
 
     @Override
     public boolean getCanSpawnHere() {
-        return this.world.getDifficulty() != EnumDifficulty.PEACEFUL && super.getCanSpawnHere();
+        return this.level.getDifficulty() != Difficulty.PEACEFUL && super.getCanSpawnHere();
     }
 
     @Override

@@ -1,31 +1,37 @@
 package com.barribob.mm.packets;
 
-import io.netty.buffer.ByteBuf;
+import java.util.function.Supplier;
+
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.player.Player;
-import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
-import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
-import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
+import net.minecraftforge.network.NetworkEvent;
 
-public class MessageLeap implements IMessage {
-    @Override
-    public void fromBytes(ByteBuf buf) {
+public class MessageLeap {
+	
+	public MessageLeap() {
+	}
+	
+	public MessageLeap(FriendlyByteBuf buf) {
+		this.fromBytes(buf);
+	}
+	
+    public void fromBytes(FriendlyByteBuf buf) {
     }
 
-    @Override
-    public void toBytes(ByteBuf buf) {
+    public void toBytes(FriendlyByteBuf buf) {
     }
 
-    public static class MessageHandler implements IMessageHandler<MessageLeap, IMessage> {
-        @Override
-        public IMessage onMessage(MessageLeap message, MessageContext ctx) {
+    public static class MessageHandler {
+        public static boolean onMessage(MessageLeap message, Supplier<NetworkEvent.Context> ctx) {
             if (PacketUtils.getPlayer() != null) {
                 Player player = PacketUtils.getPlayer();
                 float maxVelocityIncrease = 0.6f;
-                player.addVelocity(Math.min(Math.max(player.motionX, -maxVelocityIncrease), maxVelocityIncrease), 0.8f,
-                        Math.min(Math.max(player.motionZ, -maxVelocityIncrease), maxVelocityIncrease));
-                player.motionY = Math.min(1.0f, player.motionY);
+                player.push(Math.min(Math.max(player.getDeltaMovement().x, -maxVelocityIncrease), maxVelocityIncrease), 0.8f,
+                        Math.min(Math.max(player.getDeltaMovement().z, -maxVelocityIncrease), maxVelocityIncrease));
+                player.setDeltaMovement(player.getDeltaMovement().x, Math.min(1.0f, player.getDeltaMovement().y), player.getDeltaMovement().z);
             }
-            return null;
+            ctx.get().setPacketHandled(true);
+            return true;
         }
     }
 }

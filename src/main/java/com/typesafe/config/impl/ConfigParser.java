@@ -14,7 +14,11 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 
-import com.typesafe.config.*;
+import com.typesafe.config.ConfigException;
+import com.typesafe.config.ConfigIncludeContext;
+import com.typesafe.config.ConfigOrigin;
+import com.typesafe.config.ConfigParseOptions;
+import com.typesafe.config.ConfigSyntax;
 
 final class ConfigParser {
     static AbstractConfigValue parse(ConfigNodeRoot document,

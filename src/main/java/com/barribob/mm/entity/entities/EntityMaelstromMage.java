@@ -128,7 +128,7 @@ public class EntityMaelstromMage extends EntityMaelstromMob {
             float f = (float) (Math.sqrt(d1 * d1 + d3 * d3) * 0.2F);
             projectile.shoot(d1, d2 + f, d3, EntityMaelstromMage.PROJECTILE_SPEED, EntityMaelstromMage.PROJECTILE_INACCURACY);
             this.playSound(SoundEvents.BLAZE_SHOOT, 1.0F, 1.0F / (this.getRandom().nextFloat() * 0.4F + 0.8F));
-            this.level.addFreshEntity(projectile);
+            this.world.addFreshEntity(projectile);
         }
     }
 

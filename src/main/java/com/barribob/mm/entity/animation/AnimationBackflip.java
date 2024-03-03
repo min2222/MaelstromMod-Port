@@ -15,10 +15,10 @@ public class AnimationBackflip extends ArrayAnimation<ModelAnimatedBiped> {
 
     @Override
     public void setModelRotations(ModelAnimatedBiped model, float limbSwing, float limbSwingAmount, float partialTicks) {
-        model.bipedLeftArm.rotateAngleX = (float) Math.toRadians(this.getInterpolatedFrame(leftArmX, partialTicks));
-        model.bipedRightArm.rotateAngleX = (float) Math.toRadians(this.getInterpolatedFrame(rightArmX, partialTicks));
+        model.leftArm.xRot = (float) Math.toRadians(this.getInterpolatedFrame(leftArmX, partialTicks));
+        model.rightArm.xRot = (float) Math.toRadians(this.getInterpolatedFrame(rightArmX, partialTicks));
 
-        model.centerPivot.rotateAngleX = (float) Math.toRadians(this.getInterpolatedFrame(centerX, partialTicks));
-        model.bipedBody.rotateAngleX = (float) Math.toRadians(this.getInterpolatedFrame(bodyX, partialTicks));
+        model.centerPivot.xRot = (float) Math.toRadians(this.getInterpolatedFrame(centerX, partialTicks));
+        model.body.xRot = (float) Math.toRadians(this.getInterpolatedFrame(bodyX, partialTicks));
     }
 }

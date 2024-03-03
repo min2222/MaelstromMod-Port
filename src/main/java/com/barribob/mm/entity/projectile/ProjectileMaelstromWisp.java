@@ -1,16 +1,15 @@
 package com.barribob.mm.entity.projectile;
 
-import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.LivingEntity;
-
 import com.barribob.mm.util.ModDamageSource;
 import com.barribob.mm.util.ModUtils;
 import com.barribob.mm.util.handlers.ParticleManager;
 
 import net.minecraft.util.Mth;
-import net.minecraft.world.phys.HitResult;
-import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.EntityHitResult;
+import net.minecraft.world.phys.Vec3;
 
 public class ProjectileMaelstromWisp extends ModProjectile {
     private static final int PARTICLE_AMOUNT = 6;
@@ -31,23 +30,23 @@ public class ProjectileMaelstromWisp extends ModProjectile {
 
     @Override
     protected void spawnParticles() {
-        for (int i = 0; i < this.PARTICLE_AMOUNT; i++) {
+        for (int i = 0; i < ProjectileMaelstromWisp.PARTICLE_AMOUNT; i++) {
             ModUtils.circleCallback(AREA_FACTOR, 30, (pos) -> {
-                Vec3 vel = new Vec3(this.motionX, this.motionY, this.motionZ).normalize();
+                Vec3 vel = this.getDeltaMovement().normalize();
 
                 // Conversion code taken from projectile shoot method
-                float f1 = Mth.sqrt(vel.x * vel.x + vel.z * vel.z);
-                Vec3 outer = pos.rotatePitch((float) (Mth.atan2(vel.y, f1))).rotateYaw((float) (Mth.atan2(vel.x, vel.z))).add(position());
-                Vec3 inner = pos.scale(0.85f).rotatePitch((float) (Mth.atan2(vel.y, f1))).rotateYaw((float) (Mth.atan2(vel.x, vel.z))).add(position());
-                ParticleManager.spawnMaelstromSmoke(world, rand, outer, true);
-                ParticleManager.spawnMaelstromPotionParticle(world, rand, inner, false);
+                float f1 = (float) Math.sqrt(vel.x * vel.x + vel.z * vel.z);
+                Vec3 outer = pos.xRot((float) (Mth.atan2(vel.y, f1))).yRot((float) (Mth.atan2(vel.x, vel.z))).add(position());
+                Vec3 inner = pos.scale(0.85f).xRot((float) (Mth.atan2(vel.y, f1))).yRot((float) (Mth.atan2(vel.x, vel.z))).add(position());
+                ParticleManager.spawnMaelstromSmoke(level, random, outer, true);
+                ParticleManager.spawnMaelstromPotionParticle(level, random, inner, false);
             });
         }
     }
 
     @Override
     public void tick() {
-        super.onUpdate();
+        super.tick();
         DamageSource source = ModDamageSource.builder()
                 .type(ModDamageSource.MAGIC)
                 .directEntity(this)
@@ -59,12 +58,12 @@ public class ProjectileMaelstromWisp extends ModProjectile {
     }
 
     @Override
-    protected void onHit(HitResult result) {
+    protected void onHitEntity(EntityHitResult result) {
         // Only destroy if the collision is a block
-        if (result.entityHit != null) {
+        if (result.getEntity() != null) {
             return;
         }
 
-        super.onHit(result);
+        super.onHitEntity(result);
     }
 }

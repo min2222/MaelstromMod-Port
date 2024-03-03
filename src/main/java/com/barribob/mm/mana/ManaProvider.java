@@ -2,11 +2,12 @@ package com.barribob.mm.mana;
 
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.NBTBase;
+import net.minecraft.nbt.Tag;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityInject;
 import net.minecraftforge.common.capabilities.ICapabilitySerializable;
 
-public class ManaProvider implements ICapabilitySerializable<NBTBase> {
+public class ManaProvider implements ICapabilitySerializable<Tag> {
     @CapabilityInject(IMana.class)
     public static final Capability<IMana> MANA = null;
 

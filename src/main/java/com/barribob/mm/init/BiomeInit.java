@@ -1,23 +1,23 @@
 package com.barribob.mm.init;
 
 import com.barribob.mm.util.Reference;
-import com.barribob.mm.world.biome.*;
+import com.barribob.mm.world.biome.BiomeAzure;
+import com.barribob.mm.world.biome.BiomeCliffPlateau;
+import com.barribob.mm.world.biome.BiomeCliffSwamp;
+import com.barribob.mm.world.biome.BiomeCrimsonKingdom;
+import com.barribob.mm.world.biome.BiomeNexus;
 
-import net.minecraft.world.biome.Biome;
-import net.minecraftforge.common.BiomeDictionary;
-import net.minecraftforge.common.BiomeDictionary.Type;
+import net.minecraft.world.level.biome.Biome;
 import net.minecraftforge.common.BiomeManager.BiomeType;
 import net.minecraftforge.event.RegistryEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.common.registry.GameRegistry.ObjectHolder;
 import net.minecraftforge.registries.IForgeRegistry;
 
 /**
  * Credit for Jabelar for giving basic structure of biome init
  * https://github.com/jabelar/ExampleMod-1.12/blob/master/src/main/java/com/blogspot/jabelarminecraft/examplemod/init/ModBiomes.java#L65
  */
-@ObjectHolder(Reference.MOD_ID)
 public class BiomeInit {
     public static final Biome AZURE = null;
     public static final Biome AZURE_LIGHT = null;
@@ -41,11 +41,5 @@ public class BiomeInit {
             initBiome(registry, new BiomeCliffSwamp(), "cliff_swamp", BiomeType.WARM, Type.SWAMP);
             initBiome(registry, new BiomeCrimsonKingdom(), "crimson_kingdom", BiomeType.WARM, Type.PLAINS);
         }
-    }
-
-    private static void initBiome(IForgeRegistry<Biome> registry, Biome biome, String name, BiomeType biomeType, Type... types) {
-        biome.setRegistryName(name);
-        registry.register(biome);
-        BiomeDictionary.addTypes(biome, types);
     }
 }

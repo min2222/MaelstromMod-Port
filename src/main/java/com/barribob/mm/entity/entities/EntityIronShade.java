@@ -205,8 +205,8 @@ public class EntityIronShade extends EntityMaelstromMob {
     }
 
     @Override
-    public void setSwingingArms(boolean swingingArms) {
-        super.setSwingingArms(swingingArms);
+    public void setAggressive(boolean swingingArms) {
+        super.setAggressive(swingingArms);
         if (swingingArms) {
             Byte[] attack = {spin, frontFlip};
             attackHandler.setCurrentAttack(ModRandom.choice(attack));
@@ -250,17 +250,17 @@ public class EntityIronShade extends EntityMaelstromMob {
 
     @Override
     protected SoundEvent getAmbientSound() {
-        return SoundsHandler.ENTITY_SHADE_AMBIENT;
+        return SoundsHandler.ENTITY_SHADE_AMBIENT.get();
     }
 
     @Override
     protected SoundEvent getHurtSound(DamageSource damageSourceIn) {
-        return SoundsHandler.ENTITY_SHADE_HURT;
+        return SoundsHandler.ENTITY_SHADE_HURT.get();
     }
 
     @Override
     protected SoundEvent getDeathSound() {
-        return SoundsHandler.ENTITY_SHADE_HURT;
+        return SoundsHandler.ENTITY_SHADE_HURT.get();
     }
 
     @Override

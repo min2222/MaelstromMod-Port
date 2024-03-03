@@ -14,17 +14,17 @@ public class AnimationGroundFistBump extends ArrayAnimation<ModelAzureGolem> {
 
     @Override
     public void setModelRotations(ModelAzureGolem model, float limbSwing, float limbSwingAmount, float partialTicks) {
-        model.rightBicep.rotateAngleX = (-0.2F + model.limbSwingFactor * this.triangleWave(limbSwing, 13.0F)) * limbSwingAmount;
+        model.rightBicep.xRot = (-0.2F + model.limbSwingFactor * this.triangleWave(limbSwing, 13.0F)) * limbSwingAmount;
         float armsRotationX = (float) Math.toRadians(this.getInterpolatedFrame(armFramesDegrees, partialTicks));
         if (armsRotationX == 0) {
             // Normal walking animation
-            model.leftBicep.rotateAngleX = (-0.2F - model.limbSwingFactor * this.triangleWave(limbSwing, 13.0F)) * limbSwingAmount;
+            model.leftBicep.xRot = (-0.2F - model.limbSwingFactor * this.triangleWave(limbSwing, 13.0F)) * limbSwingAmount;
         } else {
-            model.leftBicep.rotateAngleX = armsRotationX;
+            model.leftBicep.xRot = armsRotationX;
         }
 
-        model.waist.rotateAngleX = (float) Math.toRadians(this.getInterpolatedFrame(backFramesDegreesX, partialTicks));
-        model.waist.rotateAngleZ = (float) Math.toRadians(this.getInterpolatedFrame(backFramesDegreesZ, partialTicks));
+        model.waist.xRot = (float) Math.toRadians(this.getInterpolatedFrame(backFramesDegreesX, partialTicks));
+        model.waist.zRot = (float) Math.toRadians(this.getInterpolatedFrame(backFramesDegreesZ, partialTicks));
     }
 
     private float triangleWave(float p_78172_1_, float p_78172_2_) {

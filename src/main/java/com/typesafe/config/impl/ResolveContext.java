@@ -1,9 +1,9 @@
 package com.typesafe.config.impl;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.List;
-import java.util.ArrayList;
 import java.util.Set;
 
 import com.typesafe.config.ConfigException;

@@ -3,6 +3,7 @@ package com.barribob.mm.entity.entities;
 import com.barribob.mm.entity.ai.EntityAIRangedAttack;
 import com.barribob.mm.entity.animation.AnimationFloatingSkull;
 import com.barribob.mm.entity.projectile.ProjectileSkullAttack;
+import com.barribob.mm.init.ModEntities;
 import com.barribob.mm.util.ModRandom;
 import com.barribob.mm.util.handlers.ParticleManager;
 
@@ -19,7 +20,7 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 
 public class EntityFloatingSkull extends EntityMaelstromMob {
     public EntityFloatingSkull(Level worldIn) {
-        super(worldIn);
+        super(ModEntities.FLOATING_SKULL.get(), worldIn);
     }
 
     @Override
@@ -53,12 +54,12 @@ public class EntityFloatingSkull extends EntityMaelstromMob {
     }
 
     @Override
-    protected float getSoundPitch() {
+	public float getVoicePitch() {
         return 0.8f + ModRandom.getFloat(0.1f);
     }
 
     @Override
-    public void setSwingingArms(boolean swingingArms) {
+    public void setAggressive(boolean swingingArms) {
         if (swingingArms) {
             this.level.broadcastEntityEvent(this, (byte) 4);
         }
@@ -95,7 +96,7 @@ public class EntityFloatingSkull extends EntityMaelstromMob {
             projectile.shoot(this, this.getXRot(), this.getYRot(), 0.0F, speed, inaccuracy);
             projectile.setTravelRange(9f);
 
-            level.addFreshEntity(projectile);
+            world.addFreshEntity(projectile);
         }
     }
 }

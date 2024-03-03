@@ -43,6 +43,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.JsonToNBT;
 import net.minecraft.nbt.NBTException;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
@@ -124,19 +125,19 @@ public final class ModUtils {
         };
     }
 
-    public static String translateDesc(String key, Object... params) {
-        return Component.translatable(ModUtils.LANG_DESC + key, params).getString();
+    public static MutableComponent translateDesc(String key, Object... params) {
+        return Component.translatable(ModUtils.LANG_DESC + key, params);
     }
 
-    public static String translateDialog(String key) {
-        return Component.translatable(ModUtils.LANG_CHAT + key).getString();
+    public static MutableComponent translateDialog(String key) {
+        return Component.translatable(ModUtils.LANG_CHAT + key);
     }
 
-    public static String getDisplayLevel(float level) {
+    public static MutableComponent getDisplayLevel(float level) {
         return ModUtils.translateDesc("level", "" + ChatFormatting.DARK_PURPLE + Math.round(level));
     }
 
-    public static String getElementalTooltip(Element element) {
+    public static MutableComponent getElementalTooltip(Element element) {
         return ModUtils.translateDesc("elemental_damage_desc",
                 "x" + ModUtils.DF_0.format(ModConfig.balance.elemental_factor),
                 element.textColor + element.symbol + ChatFormatting.GRAY);
@@ -356,7 +357,7 @@ public final class ModUtils {
 
     public static void throwProjectile(LivingEntity actor, Vec3 target, ModProjectile projectile, float inaccuracy, float velocity) {
         throwProjectileNoSpawn(target, projectile, inaccuracy, velocity);
-        actor.level.addFreshEntity(projectile);
+        actor.world.addFreshEntity(projectile);
     }
 
     public static void throwProjectileNoSpawn(Vec3 target, ModProjectile projectile, float inaccuracy, float velocity) {
@@ -440,17 +441,17 @@ public final class ModUtils {
         return min;
     }
 
-    public static String getDamageTooltip(float damage) {
+    public static MutableComponent getDamageTooltip(float damage) {
         return ModUtils.translateDesc("damage_tooltip", "" + ChatFormatting.BLUE + DF_0.format(damage) + ChatFormatting.GRAY);
     }
 
-    public static String getCooldownTooltip(float cooldown) {
+    public static MutableComponent getCooldownTooltip(float cooldown) {
         return ModUtils.translateDesc("gun_reload_time", ChatFormatting.BLUE + "" + DF_0.format(cooldown * 0.05) + ChatFormatting.GRAY);
     }
 
     public static float getEnchantedDamage(ItemStack stack, float level, float damage) {
-        float maxPower = ModEnchantments.gun_power.getMaxLevel();
-        float power = stack.getEnchantmentLevel(ModEnchantments.gun_power);
+        float maxPower = ModEnchantments.GUN_POWER.get().getMaxLevel();
+        float power = stack.getEnchantmentLevel(ModEnchantments.GUN_POWER.get());
         float maxDamageBonus = (float) Math.pow(ModConfig.balance.progression_scale, 2); // Maximum damage is two levels above
         float enchantmentBonus = 1 + ((power / maxPower) * (maxDamageBonus - 1));
         return damage * enchantmentBonus * LevelHandler.getMultiplierFromLevel(level);
@@ -982,7 +983,7 @@ public final class ModUtils {
             return null;
         }
 
-        entity.setLocationAndAngles(x, y, z, world.rand.nextFloat() * 360.0F, 0.0F);
+        entity.moveTo(x, y, z, world.random.nextFloat() * 360.0F, 0.0F);
 
         return entity;
     }
@@ -1155,46 +1156,40 @@ public final class ModUtils {
 
     public static void aerialTravel(LivingEntity entity, float strafe, float vertical, float forward) {
         if (entity.isInWater()) {
-            entity.moveRelative(strafe, vertical, forward, 0.02F);
-            entity.move(MoverType.SELF, entity.motionX, entity.motionY, entity.motionZ);
-            entity.motionX *= 0.800000011920929D;
-            entity.motionY *= 0.800000011920929D;
-            entity.motionZ *= 0.800000011920929D;
+            entity.moveRelative(0.02F, new Vec3(strafe, vertical, forward));
+            entity.move(MoverType.SELF, entity.getDeltaMovement());
+            entity.setDeltaMovement(entity.getDeltaMovement().scale(0.800000011920929D));
         } else if (entity.isInLava()) {
-            entity.moveRelative(strafe, vertical, forward, 0.02F);
-            entity.move(MoverType.SELF, entity.motionX, entity.motionY, entity.motionZ);
-            entity.motionX *= 0.5D;
-            entity.motionY *= 0.5D;
-            entity.motionZ *= 0.5D;
+            entity.moveRelative(0.02F, new Vec3(strafe, vertical, forward));
+            entity.move(MoverType.SELF, entity.getDeltaMovement());
+            entity.setDeltaMovement(entity.getDeltaMovement().scale(0.5D));
         } else {
             float f = 0.91F;
 
-            if (entity.onGround) {
-                BlockPos underPos = new BlockPos(Mth.floor(entity.posX), Mth.floor(entity.getBoundingBox().minY) - 1, Mth.floor(entity.posZ));
-                BlockState underState = entity.world.getBlockState(underPos);
-                f = underState.getBlock().getSlipperiness(underState, entity.world, underPos, entity) * 0.91F;
+            if (entity.isOnGround()) {
+                BlockPos underPos = new BlockPos(Mth.floor(entity.getX()), Mth.floor(entity.getBoundingBox().minY) - 1, Mth.floor(entity.getZ()));
+                BlockState underState = entity.level.getBlockState(underPos);
+                f = underState.getBlock().getFriction(underState, entity.level, underPos, entity) * 0.91F;
             }
 
             float f1 = 0.16277136F / (f * f * f);
-            entity.moveRelative(strafe, vertical, forward, entity.onGround ? 0.1F * f1 : 0.02F);
+            entity.moveRelative(entity.isOnGround() ? 0.1F * f1 : 0.02F, new Vec3(strafe, vertical, forward));
             f = 0.91F;
 
-            if (entity.onGround) {
-                BlockPos underPos = new BlockPos(Mth.floor(entity.posX), Mth.floor(entity.getBoundingBox().minY) - 1, Mth.floor(entity.posZ));
-                BlockState underState = entity.world.getBlockState(underPos);
-                f = underState.getBlock().getSlipperiness(underState, entity.world, underPos, entity) * 0.91F;
+            if (entity.isOnGround()) {
+                BlockPos underPos = new BlockPos(Mth.floor(entity.getX()), Mth.floor(entity.getBoundingBox().minY) - 1, Mth.floor(entity.getZ()));
+                BlockState underState = entity.level.getBlockState(underPos);
+                f = underState.getBlock().getFriction(underState, entity.level, underPos, entity) * 0.91F;
             }
 
-            entity.move(MoverType.SELF, entity.motionX, entity.motionY, entity.motionZ);
-            entity.motionX *= f;
-            entity.motionY *= f;
-            entity.motionZ *= f;
+            entity.move(MoverType.SELF, entity.getDeltaMovement());
+            entity.setDeltaMovement(entity.getDeltaMovement().scale(f));
         }
 
         entity.prevLimbSwingAmount = entity.limbSwingAmount;
-        double d1 = entity.posX - entity.prevPosX;
-        double d0 = entity.posZ - entity.prevPosZ;
-        float f2 = Mth.sqrt(d1 * d1 + d0 * d0) * 4.0F;
+        double d1 = entity.getX() - entity.prevPosX;
+        double d0 = entity.getZ() - entity.prevPosZ;
+        float f2 = (float) (Math.sqrt(d1 * d1 + d0 * d0) * 4.0F);
 
         if (f2 > 1.0F) {
             f2 = 1.0F;

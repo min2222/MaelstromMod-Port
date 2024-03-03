@@ -1,14 +1,5 @@
 package com.barribob.mm.entity.entities;
 
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.util.SoundEvent;
-import net.minecraft.world.phys.Vec3;
-import net.minecraft.world.level.Level;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;
@@ -25,6 +16,15 @@ import com.barribob.mm.util.ModRandom;
 import com.barribob.mm.util.ModUtils;
 import com.barribob.mm.util.handlers.ParticleManager;
 import com.barribob.mm.util.handlers.SoundsHandler;
+
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 
 public class EntityMaelstromLancer extends EntityMaelstromMob implements IAttack {
     public EntityMaelstromLancer(Level worldIn) {
@@ -108,24 +108,24 @@ public class EntityMaelstromLancer extends EntityMaelstromMob implements IAttack
 
     @Override
     protected SoundEvent getAmbientSound() {
-        return SoundsHandler.ENTITY_SHADE_AMBIENT;
+        return SoundsHandler.ENTITY_SHADE_AMBIENT.get();
     }
 
     @Override
     protected SoundEvent getHurtSound(DamageSource damageSourceIn) {
-        return SoundsHandler.ENTITY_SHADE_HURT;
+        return SoundsHandler.ENTITY_SHADE_HURT.get();
     }
 
     @Override
     protected SoundEvent getDeathSound() {
-        return SoundsHandler.ENTITY_SHADE_HURT;
+        return SoundsHandler.ENTITY_SHADE_HURT.get();
     }
 
     @Override
-    public void onEntityUpdate() {
-        super.onEntityUpdate();
+    public void baseTick() {
+        super.baseTick();
 
-        if (rand.nextInt(20) == 0) {
+        if (random.nextInt(20) == 0) {
             level.broadcastEntityEvent(this, ModUtils.PARTICLE_BYTE);
         }
     }
@@ -137,10 +137,10 @@ public class EntityMaelstromLancer extends EntityMaelstromMob implements IAttack
             getCurrentAnimation().startAnimation();
         } else if (id == ModUtils.PARTICLE_BYTE) {
             if (this.getElement().equals(Element.NONE)) {
-                ParticleManager.spawnMaelstromPotionParticle(world, rand, this.position().add(ModRandom.randVec()).add(ModUtils.yVec(1)), false);
+                ParticleManager.spawnMaelstromPotionParticle(level, random, this.position().add(ModRandom.randVec()).add(ModUtils.yVec(1)), false);
             }
 
-            ParticleManager.spawnEffect(world, this.position().add(ModRandom.randVec()).add(ModUtils.yVec(1)), getElement().particleColor);
+            ParticleManager.spawnEffect(level, this.position().add(ModRandom.randVec()).add(ModUtils.yVec(1)), getElement().particleColor);
         } else {
             super.handleEntityEvent(id);
         }
@@ -149,7 +149,7 @@ public class EntityMaelstromLancer extends EntityMaelstromMob implements IAttack
     @Override
     public void aiStep() {
         if (!level.isClientSide && this.isLeaping()) {
-            Vec3 dir = this.getLookVec().scale(2.2);
+            Vec3 dir = this.getLookAngle().scale(2.2);
             Vec3 pos = this.position().add(ModUtils.yVec(0.8f)).add(dir);
             ModUtils.handleAreaImpact(0.2f, (e) -> this.getAttack(), this, pos, ModDamageSource.causeElementalMeleeDamage(this, getElement()), 0.20f, 0, false);
         }

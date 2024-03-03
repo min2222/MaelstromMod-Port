@@ -1,5 +1,7 @@
 package com.barribob.mm.items.gun;
 
+import java.util.List;
+
 import com.barribob.mm.config.ModConfig;
 import com.barribob.mm.event_handlers.ItemToManaSystem;
 import com.barribob.mm.items.ILeveledItem;
@@ -8,31 +10,37 @@ import com.barribob.mm.util.Element;
 import com.barribob.mm.util.IElement;
 import com.barribob.mm.util.ModUtils;
 import com.typesafe.config.Config;
-import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.item.CreativeModeTab;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResultHolder;
-import net.minecraft.util.EnumActionResult;
-import net.minecraft.world.level.Level;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.api.distmarker.Dist;
 
-import java.util.List;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.level.Level;
 
 public abstract class ItemStaff extends ItemBase implements ILeveledItem, IElement {
     private final float level;
+    private final float useTime;
     private Element element = Element.NONE;
 
     public ItemStaff(String name, float useTime, float level, CreativeModeTab tab) {
         super(name, tab);
-        this.maxStackSize = 1;
         this.level = level;
+        this.useTime = useTime;
+    }
+    
+    @Override
+    public int getMaxStackSize(ItemStack stack) {
+    	return 1;
+    }
+    
+    @Override
+    public int getMaxDamage(ItemStack stack) {
         Config config = ItemToManaSystem.getManaConfig(new ItemStack(this));
-        if(config != null) {
-            this.setMaxDamage((int) (useTime / Math.max(1, config.getInt("cooldown_in_ticks"))));
-        }
+    	return config == null ? super.getMaxDamage(stack) : (int) (this.useTime / Math.max(1, config.getInt("cooldown_in_ticks")));
     }
 
     /**
@@ -43,17 +51,19 @@ public abstract class ItemStaff extends ItemBase implements ILeveledItem, IEleme
     }
 
     @Override
-    public InteractionResultHolder<ItemStack> onItemRightClick(Level worldIn, Player playerIn, InteractionHand handIn) {
-        ItemStack itemStack = playerIn.getHeldItem(handIn);
-        if(!worldIn.isRemote) {
-            itemStack.damageItem(1, playerIn);
+    public InteractionResultHolder<ItemStack> use(Level worldIn, Player playerIn, InteractionHand handIn) {
+        ItemStack itemStack = playerIn.getItemInHand(handIn);
+        if(!worldIn.isClientSide) {
+            itemStack.hurtAndBreak(1, playerIn, t -> {
+            	
+            });
             shoot(worldIn, playerIn, handIn, itemStack);
         }
-        return new InteractionResultHolder<>(EnumActionResult.SUCCESS, itemStack);
+        return new InteractionResultHolder<>(InteractionResult.SUCCESS, itemStack);
     }
 
     @Override
-    public void addInformation(ItemStack stack, Level worldIn, List<String> tooltip, TooltipFlag flagIn) {
+    public void appendHoverText(ItemStack stack, Level worldIn, List<Component> tooltip, TooltipFlag flagIn) {
         if(!ModConfig.gui.disableMaelstromArmorItemTooltips) {
             tooltip.add(ModUtils.getDisplayLevel(this.level));
         }
@@ -67,17 +77,8 @@ public abstract class ItemStaff extends ItemBase implements ILeveledItem, IEleme
      * material.
      */
     @Override
-    public int getItemEnchantability() {
+    public int getEnchantmentValue(ItemStack stack) {
         return 1;
-    }
-
-    /**
-     * Returns True is the item is renderer in full 3D when hold.
-     */
-    @Override
-    @OnlyIn(Dist.CLIENT)
-    public boolean isFull3D() {
-        return true;
     }
 
     @Override

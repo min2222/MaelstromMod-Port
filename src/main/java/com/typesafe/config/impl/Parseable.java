@@ -19,10 +19,21 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.Properties;
 
-import com.typesafe.config.*;
-import com.typesafe.config.parser.*;
+import com.typesafe.config.ConfigException;
+import com.typesafe.config.ConfigIncludeContext;
+import com.typesafe.config.ConfigObject;
+import com.typesafe.config.ConfigOrigin;
+import com.typesafe.config.ConfigParseOptions;
+import com.typesafe.config.ConfigParseable;
+import com.typesafe.config.ConfigSyntax;
+import com.typesafe.config.ConfigValue;
+import com.typesafe.config.parser.ConfigDocument;
 
 /**
  * Internal implementation detail, not ABI stable, do not touch.

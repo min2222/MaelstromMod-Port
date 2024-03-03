@@ -1,16 +1,5 @@
 package com.barribob.mm.invasion;
 
-import net.minecraft.core.BlockPos;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.util.Rotation;
-import net.minecraft.world.phys.AABB;
-import net.minecraft.world.phys.Vec3;
-import net.minecraft.util.text.TextComponentString;
-import net.minecraft.util.text.TextComponentTranslation;
-import net.minecraft.ChatFormatting;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.storage.MapStorage;
-
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.BinaryOperator;
@@ -22,6 +11,16 @@ import com.barribob.mm.util.GenUtils;
 import com.barribob.mm.util.ModUtils;
 import com.barribob.mm.util.teleporter.NexusToOverworldTeleporter;
 import com.barribob.mm.world.gen.WorldGenCustomStructures;
+
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Rotation;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.storage.MapStorage;
 
 public class InvasionUtils {
     public static int TOWER_RADIUS = 50;
@@ -53,7 +52,7 @@ public class InvasionUtils {
         });
 
         Predicate<BlockPos> noPreviousInvasionNearby = pos -> spawnedInvasionPositions.stream()
-                .noneMatch(p -> p.distanceSq(pos) < Math.pow(Main.invasionsConfig.getInt("invasion_radius"), 2));
+                .noneMatch(p -> p.distSqr(pos) < Math.pow(Main.invasionsConfig.getInt("invasion_radius"), 2));
 
         BinaryOperator<BlockPos> minVariation = (prevPos, newPos) -> {
             int prevVariation = GenUtils.getTerrainVariation(world, prevPos.getX(), prevPos.getZ(), prevPos.getX(), structureSize.getZ());
@@ -81,8 +80,8 @@ public class InvasionUtils {
     }
 
     public static void sendInvasionMessage(Level world, String translation) {
-        world.players().forEach((p) -> p.sendMessage(
-                new TextComponentString("" + ChatFormatting.DARK_PURPLE + new TextComponentTranslation(translation).getFormattedText())));
+        world.players().forEach((p) -> p.sendSystemMessage(
+                Component.literal("" + ChatFormatting.DARK_PURPLE + Component.translatable(translation).getString())));
     }
 
     public static MultiInvasionWorldSavedData getInvasionData(Level world) {

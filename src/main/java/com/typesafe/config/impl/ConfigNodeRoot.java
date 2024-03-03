@@ -1,11 +1,11 @@
 package com.typesafe.config.impl;
 
+import java.util.ArrayList;
+import java.util.Collection;
+
 import com.typesafe.config.ConfigException;
 import com.typesafe.config.ConfigOrigin;
 import com.typesafe.config.ConfigSyntax;
-
-import java.util.ArrayList;
-import java.util.Collection;
 
 final class ConfigNodeRoot extends ConfigNodeComplexValue {
     final private ConfigOrigin origin;

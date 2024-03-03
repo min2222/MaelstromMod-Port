@@ -1,7 +1,5 @@
 package com.barribob.mm.entity.projectile;
 
-import net.minecraft.world.entity.LivingEntity;
-
 import com.barribob.mm.entity.entities.EntityShade;
 import com.barribob.mm.entity.tileentity.MobSpawnerLogic.MobSpawnData;
 import com.barribob.mm.init.ModBlocks;
@@ -14,8 +12,9 @@ import com.barribob.mm.util.handlers.ParticleManager;
 import com.barribob.mm.world.gen.WorldGenMaelstrom;
 
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.EntityHitResult;
 
 public class ProjectileMaelstromMeteor extends ModProjectile {
     public ProjectileMaelstromMeteor(Level worldIn, LivingEntity throwerIn, float damage) {
@@ -35,25 +34,25 @@ public class ProjectileMaelstromMeteor extends ModProjectile {
 
     @Override
     public void tick() {
-        this.playSound(SoundEvents.BLOCK_FIRE_EXTINGUISH, 0.5f, ModRandom.getFloat(0.2f) + 1.0f);
+        this.playSound(SoundEvents.FIRE_EXTINGUISH, 0.5f, ModRandom.getFloat(0.2f) + 1.0f);
         if (this.tickCount > 400) {
-            this.setDead();
+            this.discard();
         }
-        super.onUpdate();
+        super.tick();
     }
 
     @Override
     protected void spawnParticles() {
         float size = 0.25f;
         ModUtils.performNTimes(10, (i) -> {
-            ParticleManager.spawnMaelstromLargeSmoke(world, rand, position().add(ModRandom.randVec().scale(size)));
+            ParticleManager.spawnMaelstromLargeSmoke(level, random, position().add(ModRandom.randVec().scale(size)));
         });
     }
 
     @Override
-    protected void onHit(HitResult result) {
+    protected void onHitEntity(EntityHitResult result) {
         // Go through entities
-        if (result.entityHit != null) {
+        if (result.getEntity() != null) {
             return;
         }
 
@@ -63,8 +62,8 @@ public class ProjectileMaelstromMeteor extends ModProjectile {
                     2,
                     LevelHandler.INVASION,
                     16))
-                    .generate(world, rand, this.getPosition());
+                    .generate(level, random, this.blockPosition());
         }
-        super.onHit(result);
+        super.onHitEntity(result);
     }
 }

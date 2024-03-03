@@ -1,10 +1,5 @@
 package com.barribob.mm.entity.projectile;
 
-import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.world.item.ItemStack;
-
 import com.barribob.mm.util.ModColors;
 import com.barribob.mm.util.ModDamageSource;
 import com.barribob.mm.util.ModRandom;
@@ -12,9 +7,13 @@ import com.barribob.mm.util.ModUtils;
 import com.barribob.mm.util.handlers.ParticleManager;
 
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
-import net.minecraft.world.level.Level;
 
 public class ProjectileChaosFireball extends ProjectileGun {
     private static final int IMPACT_PARTICLE_AMOUNT = 20;
@@ -39,16 +38,16 @@ public class ProjectileChaosFireball extends ProjectileGun {
     @Override
     public void tick() {
         if ((this.tickCount / 5.0f) % 5 == 0) {
-            this.playSound(SoundEvents.BLOCK_FIRE_EXTINGUISH, 0.2f, ModRandom.getFloat(0.2f) + 1.0f);
+            this.playSound(SoundEvents.FIRE_EXTINGUISH, 0.2f, ModRandom.getFloat(0.2f) + 1.0f);
         }
 
         if (this.tickCount == 2) {
             level.broadcastEntityEvent(this, ModUtils.PARTICLE_BYTE);
         }
 
-        Vec3 vel = new Vec3(this.motionX, this.motionY, this.motionZ);
+        Vec3 vel = this.getDeltaMovement();
 
-        super.onUpdate();
+        super.tick();
 
         // Maintain the velocity the entity has
         ModUtils.setEntityVelocity(this, vel);
@@ -56,22 +55,22 @@ public class ProjectileChaosFireball extends ProjectileGun {
 
     @Override
     protected void spawnParticles() {
-        ParticleManager.spawnSmoke2(world, this.position().add(ModUtils.yVec(0.3f)), ModColors.FADED_RED, ModUtils.yVec(0.1));
+        ParticleManager.spawnSmoke2(level, this.position().add(ModUtils.yVec(0.3f)), ModColors.FADED_RED, ModUtils.yVec(0.1));
     }
 
     @Override
     protected void spawnImpactParticles() {
-        this.world.spawnParticle(ParticleTypes.EXPLOSION_LARGE, this.posX, this.posY, this.posZ, 0, 0, 0);
+        this.level.addParticle(ParticleTypes.EXPLOSION, this.getX(), this.getY(), this.getZ(), 0, 0, 0);
         for (int i = 0; i < IMPACT_PARTICLE_AMOUNT; i++) {
-            ParticleManager.spawnEffect(world, position().add(ModRandom.randVec().scale(EXPOSION_AREA_FACTOR * 2)), ModColors.RED);
-            ParticleManager.spawnFluff(world, position().add(ModRandom.randVec().scale(EXPOSION_AREA_FACTOR * 2)), FIREBALL_COLOR, ModRandom.randVec().scale(0.1));
+            ParticleManager.spawnEffect(level, position().add(ModRandom.randVec().scale(EXPOSION_AREA_FACTOR * 2)), ModColors.RED);
+            ParticleManager.spawnFluff(level, position().add(ModRandom.randVec().scale(EXPOSION_AREA_FACTOR * 2)), FIREBALL_COLOR, ModRandom.randVec().scale(0.1));
         }
     }
 
     @Override
     protected void onHit(HitResult result) {
         float knockbackFactor = 1.1f + this.getKnockback() * 0.4f;
-        int fireFactor = this.isBurning() ? 8 : 3;
+        int fireFactor = this.isOnFire() ? 8 : 3;
 
         DamageSource source = ModDamageSource.builder()
                 .type(ModDamageSource.EXPLOSION)
@@ -81,21 +80,21 @@ public class ProjectileChaosFireball extends ProjectileGun {
                 .stoppedByArmorNotShields().build();
 
         ModUtils.handleAreaImpact(EXPOSION_AREA_FACTOR, this::getGunDamage, this.shootingEntity, this.position(), source, knockbackFactor, fireFactor);
-        this.playSound(SoundEvents.GENERIC_EXPLODE, 1.0F, 1.0F / (rand.nextFloat() * 0.4F + 0.8F));
+        this.playSound(SoundEvents.GENERIC_EXPLODE, 1.0F, 1.0F / (random.nextFloat() * 0.4F + 0.8F));
         super.onHit(result);
     }
 
     @Override
     public void handleEntityEvent(byte id) {
         if (id == ModUtils.PARTICLE_BYTE) {
-            ParticleManager.spawnSwirl2(world, position(), ModColors.RED, Vec3.ZERO);
+            ParticleManager.spawnSwirl2(level, position(), ModColors.RED, Vec3.ZERO);
         }
         super.handleEntityEvent(id);
     }
 
     @Override
-    public boolean attackEntityFrom(DamageSource source, float amount) {
+    public boolean hurt(DamageSource source, float amount) {
         this.onHit(null);
-        return super.attackEntityFrom(source, amount);
+        return super.hurt(source, amount);
     }
 }

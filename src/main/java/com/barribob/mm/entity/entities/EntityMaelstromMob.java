@@ -28,9 +28,12 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.FloatGoal;
 import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
@@ -40,8 +43,10 @@ import net.minecraft.world.entity.monster.RangedAttackMob;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.network.PacketDistributor;
 import net.minecraftforge.registries.ForgeRegistries;
 
 /**
@@ -67,8 +72,8 @@ public abstract class EntityMaelstromMob extends EntityLeveledMob implements Ran
         return !CAN_TARGET.apply(entity);
     }
 
-    public EntityMaelstromMob(Level worldIn) {
-        super(worldIn);
+    public EntityMaelstromMob(EntityType<? extends EntityMaelstromMob> type, Level worldIn) {
+        super(type, worldIn);
     }
 
     @Override
@@ -102,12 +107,11 @@ public abstract class EntityMaelstromMob extends EntityLeveledMob implements Ran
     protected AABB getTargetableArea(double targetDistance) {
         return this.getBoundingBox().inflate(targetDistance, 4.0D, targetDistance);
     }
-
-    @Override
-    protected void applyEntityAttributes() {
-        super.applyEntityAttributes();
-        this.getAttribute(Attributes.MOVEMENT_SPEED).setBaseValue(0.23000000417232513D);
-        this.getAttribute(Attributes.FOLLOW_RANGE).setBaseValue(20.0D);
+    
+    public static AttributeSupplier.Builder createAttributes() {
+    	return EntityLeveledMob.createAttributes()
+    			.add(Attributes.MOVEMENT_SPEED, 0.23000000417232513D)
+    			.add(Attributes.FOLLOW_RANGE,20.0D);
     }
 
     @Override
@@ -156,9 +160,10 @@ public abstract class EntityMaelstromMob extends EntityLeveledMob implements Ran
     /**
      * Checks if the entity's current position is a valid location to spawn this entity.
      */
+    
     @Override
-    public boolean getCanSpawnHere() {
-        return this.world.getDifficulty() != EnumDifficulty.PEACEFUL && super.getCanSpawnHere();
+    public boolean checkSpawnRules(LevelAccessor pLevel, MobSpawnType pSpawnReason) {
+    	return this.level.getDifficulty() != Difficulty.PEACEFUL && super.checkSpawnRules(pLevel, pSpawnReason);
     }
 
     /**
@@ -185,14 +190,14 @@ public abstract class EntityMaelstromMob extends EntityLeveledMob implements Ran
      * Changes the default "white smoke" spawning from a mob spawner to a purple smoke
      */
     @Override
-    public void spawnExplosionParticle() {
+    public void spawnAnim() {
         if (this.level.isClientSide) {
             for (int i = 0; i < 20; ++i) {
                 double d0 = this.random.nextGaussian() * 0.02D;
                 double d1 = this.random.nextGaussian() * 0.02D;
                 double d2 = this.random.nextGaussian() * 0.02D;
-                ParticleManager.spawnMaelstromLargeSmoke(level, rand, new Vec3(this.posX + this.rand.nextFloat() * this.width * 2.0F - this.width - d0 * 10.0D,
-                        this.posY + this.rand.nextFloat() * this.height - d1 * 10.0D, this.posZ + this.rand.nextFloat() * this.width * 2.0F - this.width - d2 * 10.0D));
+                ParticleManager.spawnMaelstromLargeSmoke(level, random, new Vec3(this.getX() + this.random.nextFloat() * this.getBbWidth() * 2.0F - this.getBbWidth() - d0 * 10.0D,
+                        this.getY() + this.random.nextFloat() * this.getBbHeight() - d1 * 10.0D, this.getZ() + this.random.nextFloat() * this.getBbWidth() * 2.0F - this.getBbWidth() - d2 * 10.0D));
             }
         } else {
             this.level.broadcastEntityEvent(this, (byte) 20);
@@ -228,7 +233,7 @@ public abstract class EntityMaelstromMob extends EntityLeveledMob implements Ran
             IMana mana = cause.getEntity().getCapability(ManaProvider.MANA).orElse(null);
             if (!mana.isLocked()) {
                 mana.replenish(getManaExp());
-                Main.NETWORK.sendTo(new MessageMana(mana.getMana()), (ServerPlayer) cause.getEntity());
+                Main.NETWORK.send(PacketDistributor.PLAYER.with(() -> (ServerPlayer) cause.getEntity()), new MessageMana(mana.getMana()));
             }
         }
         super.die(cause);
@@ -270,8 +275,8 @@ public abstract class EntityMaelstromMob extends EntityLeveledMob implements Ran
     }
 
     @Override
-    protected boolean canDespawn() {
-        if (this.level.dimension() == ModDimensions.CRIMSON_KINGDOM.getId() || this.level.dimension() == ModDimensions.NEXUS.getId()) {
+	public boolean removeWhenFarAway(double distance) {
+        if (this.level.dimension() == ModDimensions.CRIMSON_KINGDOM_KEY || this.level.dimension() == ModDimensions.NEXUS_KEY) {
             // Allow despawn after about twenty minutes of being idle
             return this.tickCount > 20 * 60 * 20;
         }

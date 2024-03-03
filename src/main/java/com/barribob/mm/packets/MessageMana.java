@@ -1,42 +1,39 @@
 package com.barribob.mm.packets;
 
+import java.util.function.Supplier;
+
 import com.barribob.mm.gui.InGameGui;
 import com.barribob.mm.mana.IMana;
 import com.barribob.mm.mana.ManaProvider;
 
-import io.netty.buffer.ByteBuf;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.player.Player;
-import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
-import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
-import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
+import net.minecraftforge.network.NetworkEvent;
 
 public class MessageMana {
-    public MessageMana() {
+    public MessageMana(FriendlyByteBuf buf) {
+    	this.fromBytes(buf);
     }
 
     public MessageMana(float mana) {
-        super();
         this.mana = mana;
     }
 
     private float mana;
 
-    @Override
-    public void fromBytes(ByteBuf buf) {
+    public void fromBytes(FriendlyByteBuf buf) {
         mana = buf.readFloat();
     }
 
-    @Override
-    public void toBytes(ByteBuf buf) {
+    public void toBytes(FriendlyByteBuf buf) {
         buf.writeFloat(mana);
     }
 
-    public static class MessageHandler implements IMessageHandler<MessageMana, IMessage> {
-        @Override
-        public IMessage onMessage(MessageMana message, MessageContext ctx) {
+    public static class MessageHandler {
+        public static boolean onMessage(MessageMana message, Supplier<NetworkEvent.Context> ctx) {
             if (PacketUtils.getPlayer() != null) {
                 Player player = PacketUtils.getPlayer();
-                IMana mana = player.getCapability(ManaProvider.MANA, null);
+                IMana mana = player.getCapability(ManaProvider.MANA).orElse(null);
 
                 // Handle flash animation
                 if (message.mana - mana.getMana() >= 0.5) {
@@ -51,7 +48,8 @@ public class MessageMana {
                     mana.setLocked(false);
                 }
             }
-            return null;
+            ctx.get().setPacketHandled(true);
+            return true;
         }
     }
 }

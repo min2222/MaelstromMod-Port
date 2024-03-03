@@ -14,9 +14,9 @@ public class ManaStorage implements IStorage<IMana> {
     @Override
     public NBTBase writeNBT(Capability<IMana> capability, IMana instance, Direction side) {
         CompoundTag nbt = new CompoundTag();
-        nbt.setFloat(mana, instance.getMana());
-        nbt.setBoolean(locked, instance.isLocked());
-        nbt.setBoolean(recentlyConsumed, instance.isRecentlyConsumed());
+        nbt.putFloat(mana, instance.getMana());
+        nbt.putBoolean(locked, instance.isLocked());
+        nbt.putBoolean(recentlyConsumed, instance.isRecentlyConsumed());
         return nbt;
     }
 
@@ -24,7 +24,7 @@ public class ManaStorage implements IStorage<IMana> {
     public void readNBT(Capability<IMana> capability, IMana instance, Direction side, NBTBase nbt) {
         if (nbt instanceof CompoundTag) {
             CompoundTag compound = (CompoundTag) nbt;
-            if (compound.hasKey(mana) && compound.hasKey(locked)) {
+            if (compound.contains(mana) && compound.contains(locked)) {
                 instance.setLocked(compound.getBoolean(locked));
                 instance.set(compound.getFloat(mana));
                 instance.setRecentlyConsumed(compound.getBoolean(recentlyConsumed));

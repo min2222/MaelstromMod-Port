@@ -1,8 +1,5 @@
 package com.barribob.mm.entity.projectile;
 
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.item.ItemStack;
-
 import com.barribob.mm.util.ModColors;
 import com.barribob.mm.util.ModDamageSource;
 import com.barribob.mm.util.ModRandom;
@@ -10,9 +7,11 @@ import com.barribob.mm.util.ModUtils;
 import com.barribob.mm.util.handlers.ParticleManager;
 
 import net.minecraft.util.Mth;
-import net.minecraft.world.phys.HitResult;
-import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.EntityHitResult;
+import net.minecraft.world.phys.Vec3;
 
 /**
  * The projectile for the maelstrom cannon item
@@ -54,21 +53,20 @@ public class ProjectilePumpkin extends ProjectileGun {
 
         maxRings = ModRandom.range(4, 7);
         float tailWidth = 0.25f;
-        ParticleManager.spawnSwirl(world,
-                new Vec3(this.posX, this.posY, this.posZ).add(new Vec3(ModRandom.getFloat(tailWidth), ModRandom.getFloat(tailWidth), ModRandom.getFloat(tailWidth))),
+        ParticleManager.spawnSwirl(level, this.position().add(new Vec3(ModRandom.getFloat(tailWidth), ModRandom.getFloat(tailWidth), ModRandom.getFloat(tailWidth))),
                 ModColors.YELLOW,
                 vel.scale(0.1f),
                 ModRandom.range(25, 30));
 
         if (this.rings < this.maxRings) {
             float circleSize = 1 + ModRandom.getFloat(0.9f);
-            float f1 = Mth.sqrt(vel.x * vel.x + vel.z * vel.z);
+            float f1 = (float) Math.sqrt(vel.x * vel.x + vel.z * vel.z);
             ModUtils.circleCallback(circleSize, 30, (pos) -> {
 
                 // Conversion code taken from projectile shoot method
-                Vec3 outer = pos.rotatePitch((float) (Mth.atan2(vel.y, f1))).rotateYaw((float) (Mth.atan2(vel.x, vel.z)))
+                Vec3 outer = pos.xRot((float) (Mth.atan2(vel.y, f1))).yRot((float) (Mth.atan2(vel.x, vel.z)))
                         .add(position());
-                ParticleManager.spawnEffect(world, outer, ModColors.YELLOW);
+                ParticleManager.spawnEffect(level, outer, ModColors.YELLOW);
             });
             this.rings++;
         }
@@ -77,9 +75,9 @@ public class ProjectilePumpkin extends ProjectileGun {
     }
 
     @Override
-    protected void onHit(HitResult result) {
-        ModUtils.handleBulletImpact(result.entityHit, this, (float) (this.getGunDamage(result.entityHit) * this.getDistanceTraveled()),
+    protected void onHitEntity(EntityHitResult result) {
+        ModUtils.handleBulletImpact(result.getEntity(), this, (float) (this.getGunDamage(result.getEntity()) * this.getDistanceTraveled()),
                 ModDamageSource.causeElementalThrownDamage(this, this.shootingEntity, getElement()), this.getKnockback());
-        super.onHit(result);
+        super.onHitEntity(result);
     }
 }

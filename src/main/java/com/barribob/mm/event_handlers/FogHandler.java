@@ -1,25 +1,25 @@
 package com.barribob.mm.event_handlers;
 
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.EntityRenderer;
-import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.util.Mth;
-import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.client.event.EntityViewRenderEvent;
-import net.minecraftforge.client.event.RenderWorldLastEvent;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.relauncher.ReflectionHelper;
-
 import java.lang.reflect.Method;
 
 import com.barribob.mm.config.ModConfig;
 import com.barribob.mm.renderer.CliffCloudRenderer;
 import com.barribob.mm.util.ModColors;
 import com.barribob.mm.util.ModUtils;
+import com.mojang.blaze3d.platform.GlStateManager;
+
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.entity.EntityRenderer;
+import net.minecraft.util.Mth;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.client.event.RenderLevelStageEvent;
+import net.minecraftforge.client.event.ViewportEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.relauncher.ReflectionHelper;
 
 @Mod.EventBusSubscriber(value = Dist.CLIENT)
 public class FogHandler {
@@ -38,7 +38,7 @@ public class FogHandler {
      */
     @OnlyIn(Dist.CLIENT)
     @SubscribeEvent()
-    public static void onFogDensityRender(EntityViewRenderEvent.RenderFogEvent event) {
+    public static void onFogDensityRender(ViewportEvent.RenderFog event) {
         if (event.getEntity().dimension == ModConfig.world.fracture_dimension_id) {
             int fogStartY = 70;
             float maxFog = 0.085f;
@@ -89,7 +89,7 @@ public class FogHandler {
 
     @OnlyIn(Dist.CLIENT)
     @SubscribeEvent()
-    public static void onFogColor(EntityViewRenderEvent.FogColors event) {
+    public static void onFogColor(ViewportEvent.ComputeFogColor event) {
         if (event.getEntity().dimension == ModConfig.world.cliff_dimension_id) {
             Vec3 originalColor = new Vec3(event.getRed(), event.getGreen(), event.getBlue());
             Vec3 cloudColor = new Vec3(0.5, 0.43, 0.5);
@@ -109,7 +109,7 @@ public class FogHandler {
 
     @OnlyIn(Dist.CLIENT)
     @SubscribeEvent()
-    public static void onRenderWorldLastEvent(RenderWorldLastEvent event) {
+    public static void onRenderWorldLastEvent(RenderLevelStageEvent event) {
         if (ModConfig.shaders.render_fog) {
             Minecraft mc = Minecraft.getMinecraft();
             if (mc.getRenderViewEntity().dimension == ModConfig.world.cliff_dimension_id) {

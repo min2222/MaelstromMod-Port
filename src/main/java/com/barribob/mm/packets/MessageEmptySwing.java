@@ -1,55 +1,59 @@
 package com.barribob.mm.packets;
 
+import java.util.function.Supplier;
+
 import com.barribob.mm.items.tools.ToolSword;
 
-import io.netty.buffer.ByteBuf;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.Item;
-import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
-import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
-import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
+import net.minecraftforge.network.NetworkEvent;
 
 /**
  * This packet sends info to the server that the player missed
  *
  * @author Barribob
  */
-public class MessageEmptySwing implements IMessage {
-    public MessageEmptySwing() {
+public class MessageEmptySwing {
+	
+	public MessageEmptySwing() {
+	}
+	
+    public MessageEmptySwing(FriendlyByteBuf buf) {
+    	this.fromBytes(buf);
     }
 
-    @Override
-    public void fromBytes(ByteBuf buf) {
+    public void fromBytes(FriendlyByteBuf buf) {
     }
 
-    @Override
-    public void toBytes(ByteBuf buf) {
+    public void toBytes(FriendlyByteBuf buf) {
     }
 
-    public static class Handler implements IMessageHandler<MessageEmptySwing, IMessage> {
-        @Override
-        public IMessage onMessage(MessageEmptySwing message, MessageContext ctx) {
-            final ServerPlayer player = ctx.getServerHandler().player;
+    public static class Handler {
+        public static boolean onMessage(MessageEmptySwing message, Supplier<NetworkEvent.Context> ctx) {
+            final ServerPlayer player = ctx.get().getSender();
 
-            player.getServer().addScheduledTask(new Runnable() {
+            player.getServer().addTickable(new Runnable() {
                 @Override
                 public void run() {
-                    if (player.getHeldItemMainhand() == null) {
+                    if (player.getMainHandItem() == null) {
                         return;
                     }
-                    Item sword = player.getHeldItemMainhand().getItem();
+                    Item sword = player.getMainHandItem().getItem();
 
                     if (sword instanceof ToolSword) {
-                        float atkCooldown = player.getCooledAttackStrength(0.5F);
+                        float atkCooldown = player.getAttackStrengthScale(0.5F);
                         if (atkCooldown > 0.9F) {
                             ((ToolSword) sword).doSweepAttack(player, null);
                         }
                     }
                 }
             });
+            
+            ctx.get().setPacketHandled(true);
 
             // No response message
-            return null;
+            return true;
         }
 
     }

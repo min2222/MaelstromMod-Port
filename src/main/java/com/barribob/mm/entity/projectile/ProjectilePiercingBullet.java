@@ -5,8 +5,8 @@ import com.barribob.mm.util.ModUtils;
 
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.EntityHitResult;
 
 public class ProjectilePiercingBullet extends ProjectileBullet {
     public ProjectilePiercingBullet(Level worldIn, LivingEntity throwerIn, float damage, ItemStack stack) {
@@ -22,12 +22,12 @@ public class ProjectilePiercingBullet extends ProjectileBullet {
     }
 
     @Override
-    protected void onHit(HitResult result) {
-        ModUtils.handleBulletImpact(result.entityHit, this, this.getGunDamage(result.entityHit),
+    protected void onHitEntity(EntityHitResult result) {
+        ModUtils.handleBulletImpact(result.getEntity(), this, this.getGunDamage(result.getEntity()),
                 ModDamageSource.causeElementalThrownDamage(this, this.shootingEntity, this.getElement()), this.getKnockback());
 
-        if (result.entityHit == null) {
-            super.onHit(result);
+        if (result.getEntity() == null) {
+            super.onHitEntity(result);
         }
     }
 }

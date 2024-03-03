@@ -3,11 +3,11 @@
  */
 package com.typesafe.config.impl;
 
-import com.typesafe.config.ConfigException;
-
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+
+import com.typesafe.config.ConfigException;
 
 final class ConfigNodeSimpleValue extends AbstractConfigNodeValue {
     final Token token;

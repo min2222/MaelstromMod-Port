@@ -17,6 +17,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MoverType;
+import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.level.Level;
@@ -67,11 +68,11 @@ public abstract class EntityModThrowable extends Projectile {
 
     public EntityModThrowable(Level worldIn, double x, double y, double z) {
         this(worldIn);
-        this.setPosition(x, y, z);
+        this.setPos(x, y, z);
     }
 
     public EntityModThrowable(Level worldIn, LivingEntity shooter) {
-        this(worldIn, shooter.posX, shooter.posY + shooter.getEyeHeight() - 0.10000000149011612D, shooter.posZ);
+        this(worldIn, shooter.getX(), shooter.getY() + shooter.getEyeHeight() - 0.10000000149011612D, shooter.getZ());
         this.shootingEntity = shooter;
     }
 
@@ -99,7 +100,7 @@ public abstract class EntityModThrowable extends Projectile {
         this.motionX += shooter.motionX;
         this.motionZ += shooter.motionZ;
 
-        if (!shooter.onGround) {
+        if (!shooter.isOnGround()) {
             this.motionY += shooter.motionY;
         }
     }
@@ -110,20 +111,20 @@ public abstract class EntityModThrowable extends Projectile {
      */
     @Override
     public void shoot(double x, double y, double z, float velocity, float inaccuracy) {
-        float f = Mth.sqrt(x * x + y * y + z * z);
+        float f = (float) Math.sqrt(x * x + y * y + z * z);
         x = x / f;
         y = y / f;
         z = z / f;
-        x = x + this.rand.nextGaussian() * 0.007499999832361937D * inaccuracy;
-        y = y + this.rand.nextGaussian() * 0.007499999832361937D * inaccuracy;
-        z = z + this.rand.nextGaussian() * 0.007499999832361937D * inaccuracy;
+        x = x + this.random.nextGaussian() * 0.007499999832361937D * inaccuracy;
+        y = y + this.random.nextGaussian() * 0.007499999832361937D * inaccuracy;
+        z = z + this.random.nextGaussian() * 0.007499999832361937D * inaccuracy;
         x = x * velocity;
         y = y * velocity;
         z = z * velocity;
         this.motionX = x;
         this.motionY = y;
         this.motionZ = z;
-        float f1 = Mth.sqrt(x * x + z * z);
+        float f1 = (float) Math.sqrt(x * x + z * z);
         this.rotationYaw = (float) (Mth.atan2(x, z) * (180D / Math.PI));
         this.rotationPitch = (float) (Mth.atan2(y, f1) * (180D / Math.PI));
         this.prevRotationYaw = this.rotationYaw;
@@ -156,7 +157,7 @@ public abstract class EntityModThrowable extends Projectile {
      */
     @Override
     public void tick() {
-        super.onUpdate();
+        super.tick();
 
         if (this.prevRotationPitch == 0.0F && this.prevRotationYaw == 0.0F) {
             float f = Mth.sqrt(this.motionX * this.motionX + this.motionZ * this.motionZ);
@@ -167,13 +168,13 @@ public abstract class EntityModThrowable extends Projectile {
         }
 
         BlockPos blockpos = new BlockPos(this.xTile, this.yTile, this.zTile);
-        BlockState iblockstate = this.world.getBlockState(blockpos);
+        BlockState iblockstate = this.level.getBlockState(blockpos);
         Block block = iblockstate.getBlock();
 
         if (iblockstate.getMaterial() != Material.AIR) {
-            AABB axisalignedbb = iblockstate.getCollisionBoundingBox(this.world, blockpos);
+            AABB axisalignedbb = iblockstate.getCollisionBoundingBox(this.level, blockpos);
 
-            if (axisalignedbb != Block.NULL_AABB && axisalignedbb.offset(blockpos).contains(new Vec3(this.posX, this.posY, this.posZ))) {
+            if (axisalignedbb != Block.NULL_AABB && axisalignedbb.move(blockpos).contains(new Vec3(this.posX, this.posY, this.posZ))) {
                 this.inGround = true;
             }
         }
@@ -183,11 +184,11 @@ public abstract class EntityModThrowable extends Projectile {
         }
 
         if (this.inGround) {
-            if (this.world.getBlockState(new BlockPos(this.xTile, this.yTile, this.zTile)).getBlock() == this.inTile) {
+            if (this.level.getBlockState(new BlockPos(this.xTile, this.yTile, this.zTile)).getBlock() == this.inTile) {
                 ++this.ticksInGround;
 
                 if (this.ticksInGround == 1200) {
-                    this.setDead();
+                    this.discard();
                 }
 
                 return;
@@ -307,7 +308,7 @@ public abstract class EntityModThrowable extends Projectile {
     @Nullable
     protected Entity findEntityOnPath(Vec3 start, Vec3 end) {
         Entity entity = null;
-        List<Entity> list = this.world.getEntitiesInAABBexcluding(this, this.getBoundingBox().expand(this.motionX, this.motionY, this.motionZ).grow(1.0D),
+        List<Entity> list = this.level.getEntitiesInAABBexcluding(this, this.getBoundingBox().expand(this.motionX, this.motionY, this.motionZ).grow(1.0D),
                 ARROW_TARGETS);
         double d0 = 0.0D;
 
@@ -392,11 +393,11 @@ public abstract class EntityModThrowable extends Projectile {
     }
 
     @Override
-    public float getEyeHeight() {
+    public float getEyeHeight(Pose pose) {
         return 0.0F;
     }
 
     @Override
-    protected void entityInit() {
+    protected void defineSynchedData() {
     }
 }

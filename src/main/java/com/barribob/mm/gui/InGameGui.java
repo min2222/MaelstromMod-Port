@@ -7,18 +7,19 @@ import com.barribob.mm.mana.Mana;
 import com.barribob.mm.mana.ManaProvider;
 import com.barribob.mm.util.Reference;
 import com.barribob.mm.util.handlers.ArmorHandler;
+import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.BufferBuilder;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
-import net.minecraft.client.renderer.BufferBuilder;
-import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.EnumHandSide;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.util.EnumHandSide;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.GuiIngameForge;
@@ -46,8 +47,8 @@ public class InGameGui {
     public static void renderGunReload(RenderGuiOverlayEvent.Post event, Player player) {
         if (event.getType().equals(RenderGameOverlayEvent.ElementType.ALL)) {
 
-            GlStateManager.enableRescaleNormal();
-            GlStateManager.tryBlendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SourceFactor.ONE,
+            RenderSystem.enableRescaleNormal();
+            RenderSystem.blendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SourceFactor.ONE,
                     GlStateManager.DestFactor.ZERO);
             RenderHelper.enableGUIStandardItemLighting();
 

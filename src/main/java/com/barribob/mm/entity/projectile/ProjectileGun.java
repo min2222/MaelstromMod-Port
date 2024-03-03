@@ -6,8 +6,7 @@ import com.barribob.mm.init.ModEnchantments;
 import com.barribob.mm.util.Element;
 import com.barribob.mm.util.IElement;
 
-import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
@@ -34,15 +33,15 @@ public class ProjectileGun extends ModProjectile {
         super(worldIn, throwerIn, baseDamage);
 
         if (stack != null) {
-            this.knockbackStrength = EnchantmentHelper.getEnchantmentLevel(ModEnchantments.impact, stack);
-            this.maelstromDestroyer = EnchantmentHelper.getEnchantmentLevel(ModEnchantments.maelstrom_destroyer, stack);
-            this.criticalHit = EnchantmentHelper.getEnchantmentLevel(ModEnchantments.critical_hit, stack);
-            if (rand.nextInt(8) == 0 && this.criticalHit > 0 && !level.isClientSide) {
+            this.knockbackStrength = stack.getEnchantmentLevel(ModEnchantments.IMPACT.get());
+            this.maelstromDestroyer = stack.getEnchantmentLevel(ModEnchantments.MAELSTROM_DESTROYER.get());
+            this.criticalHit = stack.getEnchantmentLevel(ModEnchantments.CRITICAL_HIT.get());
+            if (random.nextInt(8) == 0 && this.criticalHit > 0 && !level.isClientSide) {
                 this.isCritical = true;
                 this.setDamage(this.getDamage() * this.criticalHit * 2.5f);
             }
-            if (EnchantmentHelper.getEnchantmentLevel(ModEnchantments.gun_flame, stack) > 0) {
-                this.setFire(100);
+            if (stack.getEnchantmentLevel(ModEnchantments.GUN_FLAME.get()) > 0) {
+                this.setSecondsOnFire(100);
             }
             if (stack.getItem() instanceof IElement) {
                 this.setElement(((IElement) stack.getItem()).getElement());
@@ -55,9 +54,9 @@ public class ProjectileGun extends ModProjectile {
     }
 
     protected float getGunDamage(Entity entity) {
-        if (!EntityMaelstromMob.CAN_TARGET.apply(entity)) {
+        if (entity instanceof LivingEntity living && !EntityMaelstromMob.CAN_TARGET.apply(living)) {
             float maxDamageBonus = (float) (Math.pow(ModConfig.balance.progression_scale, 2.5) - 1); // Max damage is slightly more than the damage enchantment
-            float damageBonus = super.getDamage() * maxDamageBonus * (this.maelstromDestroyer / (float) ModEnchantments.maelstrom_destroyer.getMaxLevel());
+            float damageBonus = super.getDamage() * maxDamageBonus * (this.maelstromDestroyer / (float) ModEnchantments.MAELSTROM_DESTROYER.get().getMaxLevel());
             return super.getDamage() + damageBonus;
         }
 
@@ -66,17 +65,17 @@ public class ProjectileGun extends ModProjectile {
 
     @Override
     public void tick() {
-        super.onUpdate();
+        super.tick();
         if (this.isCritical) {
-            level.broadcastEntityEvent(this, this.CRITICAL_BYTE);
+            level.broadcastEntityEvent(this, ProjectileGun.CRITICAL_BYTE);
         }
     }
 
     @Override
     @OnlyIn(Dist.CLIENT)
     public void handleEntityEvent(byte id) {
-        if (id == this.CRITICAL_BYTE) {
-            world.spawnParticle(ParticleTypes.REDSTONE, this.posX, this.posY, this.posZ, 0, 0, 0);
+        if (id == ProjectileGun.CRITICAL_BYTE) {
+            level.addParticle(DustParticleOptions.REDSTONE, this.getX(), this.getY(), this.getZ(), 0, 0, 0);
         } else {
             super.handleEntityEvent(id);
         }

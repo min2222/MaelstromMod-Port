@@ -10,24 +10,30 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.util.EnumActionResult;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.common.ForgeMod;
 
 /**
  * An items that places blocks at the cost of some durability. It can also mine its block of choice and that replaced durability. To help building, it also increases a player's reach.
@@ -48,36 +54,43 @@ public class ItemBlockvoid extends ItemBase {
 
     // Taken from ItemBlock
     @Override
-    public InteractionResult onItemUse(Player player, Level worldIn, BlockPos pos, InteractionHand hand, Direction facing, float hitX, float hitY, float hitZ) {
+    public InteractionResult useOn(UseOnContext ctx) {
+    	Level worldIn = ctx.getLevel();
+    	BlockPos pos = ctx.getClickedPos();
+    	Direction facing = ctx.getClickedFace();
+        Player player = ctx.getPlayer();
+        InteractionHand hand = ctx.getHand();
+        Vec3 vec = ctx.getClickLocation();
         BlockState iblockstate = worldIn.getBlockState(pos);
         Block block = iblockstate.getBlock();
 
-        if (!block.isReplaceable(worldIn, pos)) {
-            pos = pos.offset(facing);
+        if (!iblockstate.getMaterial().isReplaceable()) {
+            pos = pos.relative(facing);
         }
 
-        ItemStack itemstack = player.getHeldItem(hand);
+        ItemStack itemstack = player.getItemInHand(hand);
 
         if (!itemstack.isEmpty() && player.canPlayerEdit(pos, facing, itemstack) && worldIn.mayPlace(this.block, pos, false, facing, (Entity) null)) {
-            int i = this.getMetadata(itemstack.getMetadata());
-            BlockState iblockstate1 = this.block.getStateForPlacement(worldIn, pos, facing, hitX, hitY, hitZ, i, player, hand);
+            BlockState iblockstate1 = this.block.getStateForPlacement(new BlockPlaceContext(ctx));
 
-            if (placeBlockAt(itemstack, player, worldIn, pos, facing, hitX, hitY, hitZ, iblockstate1)) {
+            if (placeBlockAt(itemstack, player, worldIn, pos, facing, vec.x, vec.y, vec.z, iblockstate1)) {
                 iblockstate1 = worldIn.getBlockState(pos);
                 SoundType soundtype = iblockstate1.getBlock().getSoundType(iblockstate1, worldIn, pos, player);
                 worldIn.playSound(player, pos, soundtype.getPlaceSound(), SoundSource.BLOCKS, (soundtype.getVolume() + 1.0F) / 2.0F, soundtype.getPitch() * 0.8F);
-                itemstack.damageItem(1, player);
+                itemstack.hurtAndBreak(1, player, t -> {
+                	t.broadcastBreakEvent(hand);
+                });
             }
 
-            return EnumActionResult.PASS;
+            return InteractionResult.PASS;
         } else {
-            return EnumActionResult.FAIL;
+            return InteractionResult.FAIL;
         }
     }
 
     // Taken from ItemBlock
-    public boolean placeBlockAt(ItemStack stack, Player player, Level world, BlockPos pos, Direction side, float hitX, float hitY, float hitZ, BlockState newState) {
-        if (!world.setBlockState(pos, newState, 11))
+    public boolean placeBlockAt(ItemStack stack, Player player, Level world, BlockPos pos, Direction side, double x, double y, double z, BlockState newState) {
+        if (!world.setBlock(pos, newState, 11))
             return false;
 
         BlockState state = world.getBlockState(pos);
@@ -93,11 +106,11 @@ public class ItemBlockvoid extends ItemBase {
 
     // Increase the placement reach of the item
     @Override
-    public Multimap<String, AttributeModifier> getItemAttributeModifiers(EquipmentSlot equipmentSlot) {
-        Multimap<String, AttributeModifier> multimap = super.getItemAttributeModifiers(equipmentSlot);
+    public Multimap<Attribute, AttributeModifier> getDefaultAttributeModifiers(EquipmentSlot equipmentSlot) {
+        Multimap<Attribute, AttributeModifier> multimap = super.getDefaultAttributeModifiers(equipmentSlot);
 
         if (equipmentSlot == EquipmentSlot.MAINHAND) {
-            multimap.put(Player.REACH_DISTANCE.getName(), new AttributeModifier(REACH_MODIFIER, "Extended Reach Modifier", REACH - 3.0D, 0).setSaved(false));
+            multimap.put(ForgeMod.REACH_DISTANCE.get(), new AttributeModifier(REACH_MODIFIER, "Extended Reach Modifier", REACH - 3.0D, Operation.ADDITION));
         }
         return multimap;
     }
@@ -110,20 +123,22 @@ public class ItemBlockvoid extends ItemBase {
 
     // Breaking its own blocks heals its durability
     @Override
-    public boolean onBlockDestroyed(ItemStack stack, Level worldIn, BlockState state, BlockPos pos, LivingEntity entityLiving) {
-        if (!worldIn.isRemote && state.getBlock() == this.block) {
-            stack.damageItem(-1, entityLiving);
+    public boolean mineBlock(ItemStack stack, Level worldIn, BlockState state, BlockPos pos, LivingEntity entityLiving) {
+        if (!worldIn.isClientSide && state.getBlock() == this.block) {
+            stack.hurtAndBreak(-1, entityLiving, t -> {
+            	
+            });
             return true;
-        } else if (entityLiving instanceof Player && state.getBlock() == this.block && stack.getItemDamage() > 0) {
-            worldIn.playSound((Player) entityLiving, pos, SoundEvents.ENDEREYE_DEATH, SoundSource.BLOCKS, 0.15f, 0.3f);
+        } else if (entityLiving instanceof Player && state.getBlock() == this.block && stack.getDamageValue() > 0) {
+            worldIn.playSound((Player) entityLiving, pos, SoundEvents.ENDER_EYE_DEATH, SoundSource.BLOCKS, 0.15f, 0.3f);
         }
 
         return false;
     }
 
     @Override
-    public void addInformation(ItemStack stack, Level worldIn, List<String> tooltip, TooltipFlag flagIn) {
-        tooltip.add(ChatFormatting.GRAY + ModUtils.translateDesc("blockvoid", new ItemStack(this.block).getDisplayName()));
-        super.addInformation(stack, worldIn, tooltip, flagIn);
+    public void appendHoverText(ItemStack stack, Level worldIn, List<Component> tooltip, TooltipFlag flagIn) {
+        tooltip.add(ModUtils.translateDesc("blockvoid", new ItemStack(this.block).getDisplayName()).withStyle(ChatFormatting.GRAY));
+        super.appendHoverText(stack, worldIn, tooltip, flagIn);
     }
 }

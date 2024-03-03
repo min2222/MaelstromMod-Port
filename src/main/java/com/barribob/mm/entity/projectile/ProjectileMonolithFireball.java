@@ -8,14 +8,14 @@ import com.barribob.mm.util.handlers.ParticleManager;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
-import net.minecraft.world.level.Level;
 
 public class ProjectileMonolithFireball extends ProjectileGun {
     private static final int EXPOSION_AREA_FACTOR = 2;
@@ -38,21 +38,21 @@ public class ProjectileMonolithFireball extends ProjectileGun {
 
     @Override
     public void tick() {
-        this.playSound(SoundEvents.BLOCK_FIRE_EXTINGUISH, 0.5f, ModRandom.getFloat(0.2f) + 1.0f);
-        super.onUpdate();
+        this.playSound(SoundEvents.FIRE_EXTINGUISH, 0.5f, ModRandom.getFloat(0.2f) + 1.0f);
+        super.tick();
     }
 
     @Override
     protected void spawnParticles() {
         float size = 0.25f;
-        ParticleManager.spawnEffect(this.world, position().add(ModRandom.randVec().scale(size)), ModColors.RED);
-        world.spawnParticle(ParticleTypes.LAVA, this.posX, this.posY, this.posZ, 0, 0, 0);
+        ParticleManager.spawnEffect(this.level, position().add(ModRandom.randVec().scale(size)), ModColors.RED);
+        level.addParticle(ParticleTypes.LAVA, this.getX(), this.getY(), this.getZ(), 0, 0, 0);
 
-        float groundHeight = ModUtils.findGroundBelow(world, getPosition()).getY() + 1.2f;
-        Vec3 indicationPos = new Vec3(posX, groundHeight, posZ);
+        float groundHeight = ModUtils.findGroundBelow(level, blockPosition()).getY() + 1.2f;
+        Vec3 indicationPos = new Vec3(getX(), groundHeight, getZ());
         ModUtils.circleCallback(EXPOSION_AREA_FACTOR, 6, (pos) -> {
             Vec3 circleOffset = rotateCircleOverTime(pos);
-            ParticleManager.spawnEffect(world, indicationPos.add(circleOffset), ModColors.RED);
+            ParticleManager.spawnEffect(level, indicationPos.add(circleOffset), ModColors.RED);
         });
     }
 
@@ -65,18 +65,18 @@ public class ProjectileMonolithFireball extends ProjectileGun {
     @Override
     protected void spawnImpactParticles() {
         for (int i = 0; i < 30; i++) {
-            this.world.spawnParticle(ParticleTypes.EXPLOSION_LARGE, this.posX + ModRandom.getFloat(EXPOSION_AREA_FACTOR),
-                    this.posY + ModRandom.getFloat(EXPOSION_AREA_FACTOR), this.posZ + ModRandom.getFloat(EXPOSION_AREA_FACTOR), 0, 0, 0);
-            this.world.spawnParticle(ParticleTypes.FLAME, this.posX + ModRandom.getFloat(EXPOSION_AREA_FACTOR), this.posY + ModRandom.getFloat(EXPOSION_AREA_FACTOR),
-                    this.posZ + ModRandom.getFloat(EXPOSION_AREA_FACTOR), 0, 0, 0);
-            ParticleManager.spawnEffect(world, position().add(ModRandom.randVec().scale(EXPOSION_AREA_FACTOR * 2)), ModColors.RED);
+            this.level.addParticle(ParticleTypes.EXPLOSION, this.getX() + ModRandom.getFloat(EXPOSION_AREA_FACTOR),
+                    this.getY() + ModRandom.getFloat(EXPOSION_AREA_FACTOR), this.getZ() + ModRandom.getFloat(EXPOSION_AREA_FACTOR), 0, 0, 0);
+            this.level.addParticle(ParticleTypes.FLAME, this.getX() + ModRandom.getFloat(EXPOSION_AREA_FACTOR), this.getY() + ModRandom.getFloat(EXPOSION_AREA_FACTOR),
+                    this.getZ() + ModRandom.getFloat(EXPOSION_AREA_FACTOR), 0, 0, 0);
+            ParticleManager.spawnEffect(level, position().add(ModRandom.randVec().scale(EXPOSION_AREA_FACTOR * 2)), ModColors.RED);
         }
     }
 
     @Override
     protected void onHit(HitResult result) {
         float knockbackFactor = 1.1f + this.getKnockback() * 0.4f;
-        int fireFactor = this.isBurning() ? 8 : 3;
+        int fireFactor = this.isOnFire() ? 8 : 3;
 
         DamageSource source = ModDamageSource.builder()
                 .type(ModDamageSource.EXPLOSION)
@@ -90,12 +90,12 @@ public class ProjectileMonolithFireball extends ProjectileGun {
         if (!level.isClientSide) {
             for (int j = 0; j < 5; j++) {
                 Vec3 pos = position().add(ModRandom.randVec().scale(EXPOSION_AREA_FACTOR - 1));
-                if (world.isBlockFullCube(new BlockPos(pos).down()) && world.isAirBlock(new BlockPos(pos))) {
-                    world.setBlockState(new BlockPos(pos), Blocks.FIRE.getDefaultState());
+                if (level.isBlockFullCube(new BlockPos(pos).below()) && level.isEmptyBlock(new BlockPos(pos))) {
+                	level.setBlockAndUpdate(new BlockPos(pos), Blocks.FIRE.defaultBlockState());
                 }
             }
         }
-        this.playSound(SoundEvents.GENERIC_EXPLODE, 1.0F, 1.0F / (rand.nextFloat() * 0.4F + 0.8F));
+        this.playSound(SoundEvents.GENERIC_EXPLODE, 1.0F, 1.0F / (random.nextFloat() * 0.4F + 0.8F));
         super.onHit(result);
     }
 }

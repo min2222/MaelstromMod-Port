@@ -1,14 +1,14 @@
 package com.barribob.mm.packets;
 
+import java.util.function.Supplier;
+
 import com.barribob.mm.particle.EnumModParticles;
 
-import io.netty.buffer.ByteBuf;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
-import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
-import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
+import net.minecraftforge.network.NetworkEvent;
 
 /**
  * Taken from the minecraft particle packet.
@@ -27,7 +27,8 @@ public class MessageModParticles {
      */
     float[] particleArguments;
 
-    public MessageModParticles() {
+    public MessageModParticles(FriendlyByteBuf buf) {
+    	this.fromBytes(buf);
     }
 
     public MessageModParticles(EnumModParticles particleIn, Vec3 pos, Vec3 vel, Vec3 color) {
@@ -111,8 +112,7 @@ public class MessageModParticles {
         return this.particleArguments;
     }
 
-    @Override
-    public void fromBytes(ByteBuf buf) {
+    public void fromBytes(FriendlyByteBuf buf) {
         this.particleType = EnumModParticles.getParticleFromId(buf.readInt());
 
         if (this.particleType == null) {
@@ -133,8 +133,7 @@ public class MessageModParticles {
         }
     }
 
-    @Override
-    public void toBytes(ByteBuf buf) {
+    public void toBytes(FriendlyByteBuf buf) {
         buf.writeInt(this.particleType.getParticleID());
         buf.writeFloat(this.xCoord);
         buf.writeFloat(this.yCoord);
@@ -149,15 +148,15 @@ public class MessageModParticles {
         }
     }
 
-    public static class MessageHandler implements IMessageHandler<MessageModParticles, IMessage> {
-        @Override
-        public IMessage onMessage(MessageModParticles message, MessageContext ctx) {
+    public static class MessageHandler {
+        public static boolean onMessage(MessageModParticles message, Supplier<NetworkEvent.Context> ctx) {
             if (message.particleType.equals(EnumModParticles.SWEEP_ATTACK)) {
                 PacketUtils.spawnSweepParticles(message);
             } else if (message.particleType.equals(EnumModParticles.EFFECT)) {
                 PacketUtils.spawnEffect(message);
             }
-            return null;
+            ctx.get().setPacketHandled(true);
+            return true;
         }
     }
 }

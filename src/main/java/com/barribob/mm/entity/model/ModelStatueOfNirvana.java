@@ -1,9 +1,11 @@
 package com.barribob.mm.entity.model;// Made with Blockbench 3.6.6
 
+import com.barribob.mm.entity.entities.EntityGoldenBoss;
+
 import net.minecraft.client.model.ModelRenderer;
 import net.minecraft.world.entity.Entity;
 
-public class ModelStatueOfNirvana extends ModelBBAnimated {
+public class ModelStatueOfNirvana extends ModelBBAnimated<EntityGoldenBoss> {
     private final ModelRenderer root;
     private final ModelRenderer body;
     private final ModelRenderer head;

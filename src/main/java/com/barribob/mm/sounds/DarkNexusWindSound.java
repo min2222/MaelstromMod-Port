@@ -28,7 +28,7 @@ public class DarkNexusWindSound extends AbstractTickableSoundInstance {
     public void tick() {
         ++this.time;
 
-        if (!this.player.isDeadOrDying() && (this.time <= 20 || this.player.level.dimension() == ModDimensions.DARK_NEXUS.getId())) {
+        if (!this.player.isDeadOrDying() && (this.time <= 20 || this.player.level.dimension() == ModDimensions.DARK_NEXUS_KEY)) {
             this.x = (float) this.player.getX();
             this.y = (float) this.player.getY();
             this.z = (float) this.player.getZ();

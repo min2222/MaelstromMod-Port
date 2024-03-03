@@ -7,9 +7,9 @@ import com.barribob.mm.util.handlers.ParticleManager;
 
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.phys.HitResult;
-import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.EntityHitResult;
+import net.minecraft.world.phys.Vec3;
 
 public class ProjectileGoldenMissile extends ModProjectile {
     public ProjectileGoldenMissile(Level worldIn, LivingEntity throwerIn, float damage) {
@@ -26,11 +26,11 @@ public class ProjectileGoldenMissile extends ModProjectile {
 
     @Override
     protected void spawnParticles() {
-        ParticleManager.spawnSwirl2(world, this.position(), ModColors.YELLOW, Vec3.ZERO);
+        ParticleManager.spawnSwirl2(level, this.position(), ModColors.YELLOW, Vec3.ZERO);
     }
 
     @Override
-    protected void onHit(HitResult result) {
+    protected void onHitEntity(EntityHitResult result) {
         DamageSource source = ModDamageSource.builder()
                 .type(ModDamageSource.PROJECTILE)
                 .directEntity(this)
@@ -38,7 +38,7 @@ public class ProjectileGoldenMissile extends ModProjectile {
                 .element(getElement())
                 .stoppedByArmorNotShields().build();
 
-        ModUtils.handleBulletImpact(result.entityHit, this, this.getDamage(), source);
-        super.onHit(result);
+        ModUtils.handleBulletImpact(result.getEntity(), this, this.getDamage(), source);
+        super.onHitEntity(result);
     }
 }

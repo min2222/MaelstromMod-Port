@@ -31,7 +31,7 @@ import com.barribob.mm.world.dimension.crimson_kingdom.WorldGenCrimsonKingdomChu
 import com.barribob.mm.world.dimension.nexus.DimensionNexus;
 import com.barribob.mm.world.gen.WorldGenCustomStructures;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.realmsclient.dto.RealmsServer.WorldType;
+import com.mojang.realmsclient.util.LevelType;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
@@ -39,8 +39,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.util.text.TextComponentString;
-import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.entity.Entity;
@@ -50,6 +48,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
@@ -64,6 +63,7 @@ import net.minecraftforge.event.level.ChunkWatchEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.LogicalSide;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.network.PacketDistributor;
 
 /**
  * Holds various important functionalities only accessible through the forge event system
@@ -145,14 +145,14 @@ public class ModEventHandler {
     public static void playerLoggedInEvent(PlayerLoggedInEvent event) {
         // Sync some of the config parameters
         if (ModConfig.server.sync_on_login) {
-            Main.NETWORK.sendTo(new MessageSyncConfig(ModConfig.balance.progression_scale, ModConfig.balance.weapon_damage, ModConfig.balance.armor_toughness, ModConfig.balance.elemental_factor), (ServerPlayer) event.player);
+            Main.NETWORK.send(PacketDistributor.PLAYER.with(() -> (ServerPlayer) event.getEntity()), new MessageSyncConfig(ModConfig.balance.progression_scale, ModConfig.balance.weapon_damage, ModConfig.balance.armor_toughness, ModConfig.balance.elemental_factor));
         }
     }
 
     @SubscribeEvent
     public static void onServerTick(TickEvent.LevelTickEvent event) {
         boolean correctTickPhase = event.side == LogicalSide.SERVER && event.phase == TickEvent.Phase.END;
-        boolean isSuperflat = event.level.getWorldType().equals(WorldType.FLAT);
+        boolean isSuperflat = event.level.getWorldType().equals(LevelType.FLAT);
         boolean isInOverworld = event.level.dimension() == Level.OVERWORLD;
         if (!correctTickPhase || isSuperflat || !isInOverworld || !isInvasionEnabledViaGamestage) {
             return;
@@ -190,17 +190,17 @@ public class ModEventHandler {
 
                 // Find the flattest area
                 ModUtils.circleCallback(50, 16, (pos) -> {
-                    BlockPos structureSize = WorldGenCustomStructures.invasionTower.getSize(event.world);
+                    BlockPos structureSize = WorldGenCustomStructures.invasionTower.getSize(event.level);
                     BlockPos structurePos = new BlockPos(player.position().x, 0, player.position().z); // Start with player xz position
                     BlockPos mainTowerSize = new BlockPos(structureSize.getX() * 0.5f, 0, structureSize.getZ() * 0.5f);
 
-                    structurePos = structurePos.add(new BlockPos(pos.x, 0, pos.y)); // Add the circle position
+                    structurePos = structurePos.offset(new BlockPos(pos.x, 0, pos.y)); // Add the circle position
                     structurePos = structurePos.subtract(new BlockPos(mainTowerSize)); // Center the structure
 
                     // The tower template edges are not very good indicators for what the height
                     // should be.
                     // This adjusts so that the height is based more on the center of the tower
-                    int y = ModUtils.getAverageGroundHeight(event.world, structurePos.getX() + (int) (mainTowerSize.getX() * 0.5f),
+                    int y = ModUtils.getAverageGroundHeight(event.level, structurePos.getX() + (int) (mainTowerSize.getX() * 0.5f),
                             structurePos.getZ() + (int) (mainTowerSize.getZ() * 0.5f), mainTowerSize.getX(), mainTowerSize.getZ(), 8);
 
                     // There is too much terrain variation for the tower to be here
@@ -209,23 +209,23 @@ public class ModEventHandler {
                     }
 
                     // Add the y height
-                    final BlockPos finalPos = structurePos.add(new BlockPos(0, y, 0));
+                    final BlockPos finalPos = structurePos.offset(new BlockPos(0, y, 0));
 
                     // Avoid spawning in water (mostly for oceans because they can be very deep)
-                    if (event.world.containsAnyLiquid(new AABB(finalPos, structureSize.offset(finalPos)))) {
+                    if (event.level.containsAnyLiquid(new AABB(finalPos, structureSize.offset(finalPos)))) {
                         return;
                     }
 
                     // Try to avoid bases with beds (spawnpoints) in them
-                    boolean baseNearby = event.world.playerEntities.stream().anyMatch((p) -> {
-                        if (event.world.getSpawnPoint().equals(p.getBedLocation()) || p.getBedLocation() == null) {
+                    boolean baseNearby = event.level.players().stream().anyMatch((p) -> {
+                        if (event.level.getSpawnPoint().equals(p.getBedLocation()) || p.getBedLocation() == null) {
                             return false;
                         }
                         return finalPos.distanceSq(p.getBedLocation()) < Math.pow(75, 2);
                     });
 
                     if (!baseNearby) {
-                        int terrainVariation = GenUtils.getTerrainVariation(event.world, finalPos.getX(), finalPos.getZ(), finalPos.getX(),
+                        int terrainVariation = GenUtils.getTerrainVariation(event.level, finalPos.getX(), finalPos.getZ(), finalPos.getX(),
                                 structureSize.getZ());
                         positions.add(finalPos);
                         variations.add(terrainVariation);
@@ -233,13 +233,13 @@ public class ModEventHandler {
                 });
 
                 if (positions.size() > 0) {
-                    event.world.playerEntities.forEach((p) -> {
-                        p.sendMessage(new TextComponentString(
-                                "" + ChatFormatting.DARK_PURPLE + new TextComponentTranslation(Reference.MOD_ID + ".invasion_2").getFormattedText()));
+                    event.level.players().forEach((p) -> {
+                        p.sendSystemMessage(Component.literal(
+                                "" + ChatFormatting.DARK_PURPLE + Component.translatable(Reference.MOD_ID + ".invasion_2").getString()));
                     });
                     invasionCounter.setInvaded(true);
                     BlockPos structurePos = positions.get(variations.indexOf(Collections.min(variations)));
-                    WorldGenCustomStructures.invasionTower.generateStructure(event.world, structurePos, Rotation.NONE);
+                    WorldGenCustomStructures.invasionTower.generateStructure(event.level, structurePos, Rotation.NONE);
                 } else {
                     // If we don't find any good place to put the tower, put a cooldown because
                     // chances are there may be a lot of bad areas, so don't spend too much
@@ -277,11 +277,11 @@ public class ModEventHandler {
     public static void onMouseEvent(MouseEvent event) {
         // If left clicking
         if (event.getButton() == 0 && event.isButtonstate()) {
-            Minecraft mc = Minecraft.getMinecraft();
+            Minecraft mc = Minecraft.getInstance();
             Player player = mc.player;
 
             if (player != null) {
-                ItemStack itemStack = player.getHeldItemMainhand();
+                ItemStack itemStack = player.getMainHandItem();
 
                 // If the item has extended reach, apply that, and send the attack
                 // to the server to verify
@@ -290,11 +290,11 @@ public class ModEventHandler {
                     HitResult result = InputOverrides.getMouseOver(1.0f, mc, reach);
 
                     if (result != null) {
-                        if (result.typeOfHit == HitResult.Type.ENTITY) {
-                            Main.network.sendToServer(new MessageExtendedReachAttack(result.entityHit.getEntityId()));
-                            mc.player.resetCooldown();
+                        if (result.getType() == HitResult.Type.ENTITY) {
+                            Main.NETWORK.sendToServer(new MessageExtendedReachAttack(((EntityHitResult) result).getEntity().getId()));
+                            mc.player.resetAttackStrengthTicker();
                         } else if (result.getType() == HitResult.Type.MISS) {
-                            mc.player.resetCooldown();
+                            mc.player.resetAttackStrengthTicker();
                             net.minecraftforge.common.ForgeHooks.onEmptyLeftClick(mc.player);
                             event.setCanceled(true); // Prevents shorter reach swords from hitting with the event going through
                         }

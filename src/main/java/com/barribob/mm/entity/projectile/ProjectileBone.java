@@ -36,7 +36,7 @@ public class ProjectileBone extends ModProjectile {
                     .scale(EXPOSION_AREA_FACTOR * 2)
                     .add(position())
                     .add(ModUtils.yVec(0.8f));
-            ParticleManager.spawnEffect(world, vec1, ModColors.WHITE);
+            ParticleManager.spawnEffect(level, vec1, ModColors.WHITE);
         }
     }
 
@@ -44,7 +44,7 @@ public class ProjectileBone extends ModProjectile {
     protected void onHit(HitResult result) {
         ModUtils.handleAreaImpact(EXPOSION_AREA_FACTOR, (e) -> this.getDamage(), this.shootingEntity, this.position(),
                 ModDamageSource.causeElementalExplosionDamage(this.shootingEntity, getElement()));
-        this.playSound(SoundEvents.SKELETON_HURT, 1.0F, 1.0F / (rand.nextFloat() * 0.4F + 0.8F));
+        this.playSound(SoundEvents.SKELETON_HURT, 1.0F, 1.0F / (random.nextFloat() * 0.4F + 0.8F));
         super.onHit(result);
     }
 }

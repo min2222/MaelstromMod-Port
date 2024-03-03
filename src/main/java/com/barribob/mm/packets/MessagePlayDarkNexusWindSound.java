@@ -1,26 +1,28 @@
 package com.barribob.mm.packets;
 
-import io.netty.buffer.ByteBuf;
-import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
-import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
-import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
+import java.util.function.Supplier;
 
-public class MessagePlayDarkNexusWindSound implements IMessage {
-    @Override
-    public void fromBytes(ByteBuf buf) {
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraftforge.network.NetworkEvent;
+
+public class MessagePlayDarkNexusWindSound {
+	public MessagePlayDarkNexusWindSound(FriendlyByteBuf buf) {
+		this.fromBytes(buf);
+	}
+	
+    public void fromBytes(FriendlyByteBuf buf) {
     }
 
-    @Override
-    public void toBytes(ByteBuf buf) {
+    public void toBytes(FriendlyByteBuf buf) {
     }
 
-    public static class Handler implements IMessageHandler<MessagePlayDarkNexusWindSound, IMessage> {
-        @Override
-        public IMessage onMessage(MessagePlayDarkNexusWindSound message, MessageContext ctx) {
+    public static class Handler {
+        public static boolean onMessage(MessagePlayDarkNexusWindSound message, Supplier<NetworkEvent.Context> ctx) {
             if (PacketUtils.getPlayer() != null) {
                 PacketUtils.playDarkNexusWindSound();
             }
-            return null;
+            ctx.get().setPacketHandled(true);
+            return true;
         }
     }
 }

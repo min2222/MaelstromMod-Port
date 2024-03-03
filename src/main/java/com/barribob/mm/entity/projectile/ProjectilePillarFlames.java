@@ -1,13 +1,12 @@
 package com.barribob.mm.entity.projectile;
 
-import net.minecraft.world.entity.LivingEntity;
-
 import com.barribob.mm.util.ModDamageSource;
 import com.barribob.mm.util.ModUtils;
 
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.EntityHitResult;
 
 public class ProjectilePillarFlames extends ModProjectile {
     public ProjectilePillarFlames(Level worldIn, LivingEntity throwerIn, float baseDamage) {
@@ -27,13 +26,13 @@ public class ProjectilePillarFlames extends ModProjectile {
 
     @Override
     protected void spawnParticles() {
-        world.spawnParticle(ParticleTypes.FLAME, this.posX, this.posY, this.posZ, 0, 0, 0);
+        level.addParticle(ParticleTypes.FLAME, this.getX(), this.getY(), this.getZ(), 0, 0, 0);
     }
 
     @Override
-    protected void onHit(HitResult result) {
-        this.setFire(1);
-        ModUtils.handleBulletImpact(result.entityHit, this, this.getDamage(), ModDamageSource.causeElementalThrownDamage(this, shootingEntity, getElement()));
-        super.onHit(result);
+    protected void onHitEntity(EntityHitResult result) {
+        this.setSecondsOnFire(1);
+        ModUtils.handleBulletImpact(result.getEntity(), this, this.getDamage(), ModDamageSource.causeElementalThrownDamage(this, shootingEntity, getElement()));
+        super.onHitEntity(result);
     }
 }

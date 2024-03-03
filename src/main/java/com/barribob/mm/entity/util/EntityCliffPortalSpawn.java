@@ -32,8 +32,8 @@ public class EntityCliffPortalSpawn extends EntityPortalSpawn {
             double x = this.posX + 0.5 + Math.cos(i * degreesPerSector) * Math.sin(this.tickCount) * size + offset;
             double y = this.posY + 3.5 + Math.sin(i * degreesPerSector) * Math.cos(this.tickCount) * size + offset;
             double z = this.posZ + 0.5 + Math.cos(i * degreesPerSector) * Math.sin(this.tickCount) * size + offset;
-            ParticleManager.spawnEffect(world, new Vec3(x, y, this.posZ + 0.5), ModColors.YELLOW);
-            ParticleManager.spawnEffect(world, new Vec3(this.posX + 0.5, y, z), ModColors.YELLOW);
+            ParticleManager.spawnEffect(level, new Vec3(x, y, this.posZ + 0.5), ModColors.YELLOW);
+            ParticleManager.spawnEffect(level, new Vec3(this.posX + 0.5, y, z), ModColors.YELLOW);
         }
     }
 
