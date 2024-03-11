@@ -113,10 +113,10 @@ public class ModEntities {
     public static final Vec3i CLIFF_MAELSTROM = new Vec3i(6433126, 0xe6e600, 0);
     public static final Vec3i CRIMSON_MAELSTROM = new Vec3i(6433126, 0xeb4034, 0);
     public static final RegistryObject<EntityType<EntityShade>> SHADE = registerEntityWithID("shade", createBuilder(EntityShade::new, MobCategory.MONSTER).sized(0.9f, 1.8f), 50, MAELSTROM);
-    public static final RegistryObject<EntityType<EntityHorror>> HORROR = registerEntityWithID("horror", EntityHorror.class, 50, MAELSTROM);
-    public static final RegistryObject<EntityType<EntityDreamElk>> DREAM_ELK = registerEntity("dream_elk", EntityDreamElk.class, DREAM_ELK_ID, 50, azure);
-    public static final RegistryObject<EntityType<EntityBeast>> MAELSTROM_CRAWLER = registerEntityWithID("maelstrom_crawler", EntityBeast.class, BEAST_ID, 100, maelstrom);
-    public static final RegistryObject<EntityType<EntityMaelstromIllager>> MAELSTROM_ILLAGER = registerEntity("maelstrom_illager", EntityMaelstromIllager.class, MAELSTROM_ILLAGER_ID, 50, maelstrom);
+    public static final RegistryObject<EntityType<EntityHorror>> HORROR = registerEntityWithID("horror", createBuilder(EntityHorror::new, MobCategory.MONSTER).sized(1.3F, 1.3F), 50, MAELSTROM);
+    public static final RegistryObject<EntityType<EntityDreamElk>> DREAM_ELK = registerEntity("dream_elk", createBuilder(EntityDreamElk::new, MobCategory.CREATURE).sized(1.3964844F, 1.6F), 50, AZURE);
+    public static final RegistryObject<EntityType<EntityBeast>> MAELSTROM_CRAWLER = registerEntityWithID("maelstrom_crawler", createBuilder(EntityBeast::new, MobCategory.MONSTER).sized(2.8f, 2.2f), 100, MAELSTROM);
+    public static final RegistryObject<EntityType<EntityMaelstromIllager>> MAELSTROM_ILLAGER = registerEntity("maelstrom_illager", EntityMaelstromIllager.class, MAELSTROM_ILLAGER_ID, 50, MAELSTROM);
     public static final RegistryObject<EntityType<EntityAzureVillager>> AZURE_VILLAGER = registerEntity("azure_villager", EntityAzureVillager.class, AZURE_VILLAGER_ID, 100, azure);
     public static final RegistryObject<EntityType<EntityMaelstromMage>> MAESLTROM_MAGE = registerEntityWithID("maelstrom_mage", EntityMaelstromMage.class, MAELSTROM_MAGE_ID, 50, maelstrom);
     public static final RegistryObject<EntityType<EntityAzureGolem>> AZURE_GOLEM = registerEntity("azure_golem", EntityAzureGolem.class, AZURE_GOLEM_ID, 70, azure);

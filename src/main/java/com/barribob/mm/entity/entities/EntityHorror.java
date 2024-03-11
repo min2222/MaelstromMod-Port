@@ -9,6 +9,7 @@ import com.barribob.mm.util.handlers.SoundsHandler;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
@@ -18,9 +19,8 @@ public class EntityHorror extends EntityMaelstromMob {
     public static final float PROJECTILE_VELOCITY = 0.5f;
     public static final float PROJECTILE_VARIATION_FACTOR = 0.5f;
 
-    public EntityHorror(Level worldIn) {
-        super(worldIn);
-        this.setSize(1.3F, 1.3F);
+    public EntityHorror(EntityType<? extends EntityMaelstromMob> type, Level worldIn) {
+        super(type, worldIn);
     }
 
     @Override
@@ -51,23 +51,23 @@ public class EntityHorror extends EntityMaelstromMob {
             double zDir = (random.nextFloat() - random.nextFloat()) * PROJECTILE_VARIATION_FACTOR;
             projectile.shoot(xDir, yDir, zDir, PROJECTILE_VELOCITY, PROJECTILE_INACCURACY);
             this.playSound(SoundEvents.ANVIL_BREAK, 1.0F, 1.0F / (this.getRandom().nextFloat() * 0.4F + 0.8F));
-            this.world.addFreshEntity(projectile);
+            this.level.addFreshEntity(projectile);
         }
     }
 
     @Override
     protected SoundEvent getAmbientSound() {
-        return SoundsHandler.ENTITY_HORROR_AMBIENT;
+        return SoundsHandler.ENTITY_HORROR_AMBIENT.get();
     }
 
     @Override
     protected SoundEvent getHurtSound(DamageSource damageSourceIn) {
-        return SoundsHandler.ENTITY_HORROR_HURT;
+        return SoundsHandler.ENTITY_HORROR_HURT.get();
     }
 
     @Override
     protected SoundEvent getDeathSound() {
-        return SoundsHandler.ENTITY_HORROR_HURT;
+        return SoundsHandler.ENTITY_HORROR_HURT.get();
     }
 
     @Override

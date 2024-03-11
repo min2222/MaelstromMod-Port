@@ -22,7 +22,7 @@ public class ActionTeleport implements IAction {
             double y = target.getY() - yOffset;
 
             for (; y <= yOffset + target.getY(); y++) {
-                if (actor.attemptTeleport(x, y, z)) {
+                if (actor.randomTeleport(x, y, z, true)) {
                     return;
                 }
             }

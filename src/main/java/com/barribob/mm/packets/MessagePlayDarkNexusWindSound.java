@@ -6,6 +6,8 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.network.NetworkEvent;
 
 public class MessagePlayDarkNexusWindSound {
+	public MessagePlayDarkNexusWindSound() {
+	}
 	public MessagePlayDarkNexusWindSound(FriendlyByteBuf buf) {
 		this.fromBytes(buf);
 	}

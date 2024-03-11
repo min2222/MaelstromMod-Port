@@ -11,6 +11,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.EatBlockGoal;
@@ -36,9 +37,8 @@ public class EntityDreamElk extends EntityLeveledMob {
     private int eatGrassTimer;
     private EatBlockGoal grassAI;
 
-    public EntityDreamElk(Level worldIn) {
-        super(worldIn);
-        this.setSize(1.3964844F, 1.6F);
+    public EntityDreamElk(EntityType<? extends EntityLeveledMob> type, Level worldIn) {
+        super(type, worldIn);
         this.setLevel(LevelHandler.AZURE_OVERWORLD);
     }
 

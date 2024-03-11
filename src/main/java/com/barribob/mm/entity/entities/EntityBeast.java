@@ -28,6 +28,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.BossEvent.BossBarColor;
 import net.minecraft.world.BossEvent.BossBarOverlay;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.api.distmarker.Dist;
@@ -42,9 +43,8 @@ public class EntityBeast extends EntityMaelstromMob {
     // Responsible for the boss bar
     private final ServerBossEvent bossInfo = (new ServerBossEvent(this.getDisplayName(), BossBarColor.PURPLE, BossBarOverlay.NOTCHED_20));
 
-    public EntityBeast(Level worldIn) {
-        super(worldIn);
-        this.setSize(2.8f, 2.2f);
+    public EntityBeast(EntityType<? extends EntityMaelstromMob> type, Level worldIn) {
+        super(type, worldIn);
         this.healthScaledAttackFactor = 0.2;
         if (!worldIn.isClientSide) {
             attackHandler.setAttack(leap, (IAction) (actor, target) -> ModUtils.leapTowards(actor, target.position(), 1.0f, 0.5f));
@@ -59,7 +59,7 @@ public class EntityBeast extends EntityMaelstromMob {
                     projectile.setElement(getElement());
                     projectile.shoot(d1, d2 + f, d3, 1, 8);
                     actor.playSound(SoundEvents.BLAZE_SHOOT, 1.0F, 1.0F / (actor.getRandom().nextFloat() * 0.4F + 0.8F));
-                    actor.world.addFreshEntity(projectile);
+                    actor.level.addFreshEntity(projectile);
                 }
             });
         }
@@ -76,9 +76,9 @@ public class EntityBeast extends EntityMaelstromMob {
             model.jaw.rotateAngleX = f / 2;
         };
 
-        head.add(new AnimationClip(20, 0, 40, headZ));
-        head.add(new AnimationClip(8, 40, 40, headZ));
-        head.add(new AnimationClip(12, 40, 0, headZ));
+        head.add(new AnimationClip<>(20, 0, 40, headZ));
+        head.add(new AnimationClip<>(8, 40, 40, headZ));
+        head.add(new AnimationClip<>(12, 40, 0, headZ));
 
         animationLeap.add(head);
 
@@ -90,16 +90,16 @@ public class EntityBeast extends EntityMaelstromMob {
             model.jaw.rotateAngleX = f;
         };
 
-        jaw.add(new AnimationClip(20, 0, 20, jawX));
-        jaw.add(new AnimationClip(8, 20, 20, jawX));
-        jaw.add(new AnimationClip(12, 20, 0, jawX));
+        jaw.add(new AnimationClip<>(20, 0, 20, jawX));
+        jaw.add(new AnimationClip<>(8, 20, 20, jawX));
+        jaw.add(new AnimationClip<>(12, 20, 0, jawX));
 
         animationSpit.add(jaw);
 
-        attackHandler.setAttack(leap, IAction.NONE, () -> new StreamAnimation(animationLeap));
-        attackHandler.setAttack(spit, IAction.NONE, () -> new StreamAnimation(animationSpit));
+        attackHandler.setAttack(leap, IAction.NONE, () -> new StreamAnimation<>(animationLeap));
+        attackHandler.setAttack(spit, IAction.NONE, () -> new StreamAnimation<>(animationSpit));
 
-        this.currentAnimation = new StreamAnimation(animationSpit);
+        this.currentAnimation = new StreamAnimation<>(animationSpit);
     }
 
     @Override
@@ -206,8 +206,8 @@ public class EntityBeast extends EntityMaelstromMob {
     }
 
     @Override
-    public void setSwingingArms(boolean swingingArms) {
-        super.setSwingingArms(swingingArms);
+    public void setAggressive(boolean swingingArms) {
+        super.setAggressive(swingingArms);
         if (this.isSwingingArms()) {
             attackHandler.setCurrentAttack(ModRandom.choice(new Byte[]{leap, spit}));
             level.broadcastEntityEvent(this, attackHandler.getCurrentAttack());

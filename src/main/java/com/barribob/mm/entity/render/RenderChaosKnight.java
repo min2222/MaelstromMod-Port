@@ -25,7 +25,7 @@ public class RenderChaosKnight extends RenderModEntity<EntityChaosKnight> {
     public void doRender(EntityChaosKnight entity, double x, double y, double z, float entityYaw, float partialTicks) {
         super.doRender(entity, x, y, z, entityYaw, partialTicks);
 
-        if (entity.getTarget().isPresent()) {
+        if (entity.getLazerTarget().isPresent()) {
             RenderUtils.drawLazer(renderManager, entity.position().add(ModUtils.yVec(entity.getEyeHeight())), entity.getTarget().get(), new Vec3(x, y, z), ModColors.RED, entity, partialTicks);
         }
     }
