@@ -1,6 +1,0 @@
-{
-   "parent": "mm:item/boomstick",
-   "textures": {
-       "2": "mm:items/energized_shotgun"
-   }
-}

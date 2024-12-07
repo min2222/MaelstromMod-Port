@@ -1,8 +1,0 @@
-{
-    "parent": "block/inner_stairs",
-    "textures": {
-        "bottom": "mm:blocks/gold_stone",
-        "top": "mm:blocks/gold_stone",
-        "side": "mm:blocks/gold_stone"
-    }
-}

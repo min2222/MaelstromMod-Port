@@ -1,8 +1,0 @@
-{
-    "parent": "mm:block/quarter_slab",
-    "textures": {
-        "bottom": "mm:blocks/azure_portal",
-        "top": "mm:blocks/azure_portal",
-        "side": "mm:blocks/azure_portal"
-    }
-}

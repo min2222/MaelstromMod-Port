@@ -1,8 +1,0 @@
-{
-    "parent": "block/stairs",
-    "textures": {
-        "bottom": "mm:blocks/furnace_bricks",
-        "top": "mm:blocks/furnace_bricks",
-        "side": "mm:blocks/furnace_bricks"
-    }
-}

@@ -1,8 +1,0 @@
-{
-    "parent": "mm:block/quarter_slab",
-    "textures": {
-        "bottom": "mm:blocks/dark_nexus_portal",
-        "top": "mm:blocks/dark_nexus_portal",
-        "side": "mm:blocks/dark_nexus_portal"
-    }
-}

@@ -1,8 +1,0 @@
-{
-    "parent": "block/outer_stairs",
-    "textures": {
-        "bottom": "mm:blocks/maelstrom_stonebrick",
-        "top": "mm:blocks/maelstrom_stonebrick",
-        "side": "mm:blocks/maelstrom_stonebrick"
-    }
-}

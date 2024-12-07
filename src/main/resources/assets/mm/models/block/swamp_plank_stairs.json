@@ -1,8 +1,0 @@
-{
-    "parent": "block/stairs",
-    "textures": {
-        "bottom": "mm:blocks/swamp_planks",
-        "top": "mm:blocks/swamp_planks",
-        "side": "mm:blocks/swamp_planks"
-    }
-}

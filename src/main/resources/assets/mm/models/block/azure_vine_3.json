@@ -1,7 +1,0 @@
-{
-    "parent": "block/vine_3",
-    "textures": {
-        "particle": "mm:blocks/azure_vines",
-        "vine": "mm:blocks/azure_vines"
-    }
-}
